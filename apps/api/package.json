@@ -1,0 +1,26 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "migrate:up": "node-pg-migrate up -m ./src/db/migrations",
+    "migrate:down": "node-pg-migrate down -m ./src/db/migrations",
+    "migrate:create": "node-pg-migrate create -m ./src/db/migrations -j sql"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.22.0"
+  },
+    "devDependencies": {
+    "node-pg-migrate": "^9.0.0"
+  }
+}
