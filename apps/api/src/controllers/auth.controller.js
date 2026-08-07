@@ -1,5 +1,5 @@
 import * as authService from "../services/auth.service.js";
-import { registerSchema, loginSchema } from "../schemas/auth.schema.js";
+import { registerSchema, loginSchema, changePasswordSchema } from "../schemas/auth.schema.js";
 
 export async function register(req, res) {
   const validation = registerSchema.safeParse(req.body);
@@ -54,5 +54,25 @@ export async function login(req, res) {
     }
     console.error("Login error:", error);
     res.status(500).json({ error: "Failed to log in" });
+  }
+}
+
+export async function changePassword(req, res) {
+  const validation = changePasswordSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ error: validation.error.issues[0].message });
+  }
+
+  const { currentPassword, newPassword } = validation.data;
+
+  try {
+    await authService.changePassword(req.user.sub, currentPassword, newPassword);
+    res.status(204).send();
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error("Change password error:", error);
+    res.status(500).json({ error: "Failed to change password" });
   }
 }

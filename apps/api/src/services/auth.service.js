@@ -52,3 +52,28 @@ export async function login(email, password) {
   const { password_hash, ...safeUser } = user;
   return { user: safeUser, token };
 }
+
+export async function changePassword(userId, currentPassword, newPassword) {
+  const user = await usersRepository.findById(userId);
+  if (!user) {
+    const error = new Error("User not found");
+    error.status = 404;
+    throw error;
+  }
+
+  const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
+  if (!isMatch) {
+    const error = new Error("Current password is incorrect");
+    error.status = 401;
+    throw error;
+  }
+
+  if (currentPassword === newPassword) {
+    const error = new Error("New password must be different from the current password");
+    error.status = 400;
+    throw error;
+  }
+
+  const newPasswordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+  await usersRepository.updatePassword(userId, newPasswordHash);
+}

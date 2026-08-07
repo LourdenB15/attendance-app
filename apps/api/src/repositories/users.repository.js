@@ -19,3 +19,12 @@ export async function findById(id) {
   const result = await pool.query("SELECT * FROM users WHERE id = $1", [id]);
   return result.rows[0];
 }
+
+export async function updatePassword(id, passwordHash) {
+  await pool.query(
+    `UPDATE users
+     SET password_hash = $1, must_change_password = false, updated_at = now()
+     WHERE id = $2`,
+    [passwordHash, id],
+  );
+}
