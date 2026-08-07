@@ -21,3 +21,14 @@ export async function sendPasswordResetEmail(to, token) {
            <p>If you didn't request this, ignore this email.</p>`,
   });
 }
+
+export async function sendTempPasswordEmail(to, tempPassword) {
+  await transporter.sendMail({
+    from: `"Attendance App" <${process.env.GMAIL_USER}>`,
+    to,
+    subject: "Your attendance app account",
+    html: `<p>An account has been created for you.</p>
+           <p>Temporary password: <strong>${tempPassword}</strong></p>
+           <p>Log in with it — you'll be asked to set a new password right away.</p>`,
+  });
+}
