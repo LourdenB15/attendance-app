@@ -4,6 +4,7 @@ import * as usersRepository from "../repositories/users.repository.js";
 import crypto from "crypto";
 import * as resetTokensRepository from "../repositories/password-reset-tokens.repository.js";
 import * as emailService from "./email.service.js";
+import { httpError } from "../utils/http-error.js";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const SALT_ROUNDS = 10;
@@ -34,22 +35,16 @@ export async function login(email, password) {
   const user = await usersRepository.findByEmail(email);
 
   if (!user) {
-    const error = new Error("Invalid credentials");
-    error.status = 401;
-    throw error;
+    throw httpError(401, "Invalid credentials");
   }
 
   const isMatch = await bcrypt.compare(password, user.password_hash);
   if (!isMatch) {
-    const error = new Error("Invalid credentials");
-    error.status = 401;
-    throw error;
+    throw httpError(401, "Invalid credentials");
   }
 
   if (!user.is_active) {
-    const error = new Error("This account has been deactivated");
-    error.status = 403;
-    throw error;
+    throw httpError(403, "This account has been deactivated");
   }
 
   const token = issueToken(user);
@@ -60,22 +55,16 @@ export async function login(email, password) {
 export async function changePassword(userId, currentPassword, newPassword) {
   const user = await usersRepository.findById(userId);
   if (!user) {
-    const error = new Error("User not found");
-    error.status = 404;
-    throw error;
+    throw httpError(404, "User not found");
   }
 
   const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
   if (!isMatch) {
-    const error = new Error("Current password is incorrect");
-    error.status = 401;
-    throw error;
+    throw httpError(401, "Current password is incorrect");
   }
 
   if (currentPassword === newPassword) {
-    const error = new Error("New password must be different from the current password");
-    error.status = 400;
-    throw error;
+    throw httpError(400, "New password must be different from the current password");
   }
 
   const newPasswordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
@@ -101,9 +90,7 @@ export async function resetPassword(token, newPassword) {
   const invalid =
     !record || record.used_at || new Date(record.expires_at) < new Date();
   if (invalid) {
-    const error = new Error("Invalid or expired reset token");
-    error.status = 400;
-    throw error;
+    throw httpError(400, "Invalid or expired reset token");
   }
 
   const newPasswordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);

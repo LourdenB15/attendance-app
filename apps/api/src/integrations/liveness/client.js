@@ -1,4 +1,5 @@
 import axios from "axios";
+import { httpError } from "../../utils/http-error.js";
 
 const API_KEY = process.env.LIVENESS_API_KEY;
 const API_URL = process.env.LIVENESS_API_URL;
@@ -12,11 +13,7 @@ const http = axios.create({
 
 async function post(path, body) {
   if (!API_KEY || !API_URL) {
-    const error = new Error(
-      "Liveness integration is not configured — set LIVENESS_API_KEY and LIVENESS_API_URL",
-    );
-    error.status = 500;
-    throw error;
+    throw httpError(500, "Liveness integration is not configured — set LIVENESS_API_KEY and LIVENESS_API_URL");
   }
 
   try {
@@ -24,15 +21,9 @@ async function post(path, body) {
     return response.data;
   } catch (err) {
     if (err.response) {
-      const error = new Error(
-        err.response.data?.error || "Liveness service request failed",
-      );
-      error.status = 502;
-      throw error;
+      throw httpError(502, err.response.data?.error || "Liveness service request failed");
     }
-    const error = new Error("Liveness service is unreachable");
-    error.status = 503;
-    throw error;
+    throw httpError(503, "Liveness service is unreachable");
   }
 }
 
