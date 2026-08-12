@@ -19,9 +19,9 @@ async function post(path, body) {
   try {
     const response = await http.post(path, body);
     return response.data;
-  } catch (err) {
-    if (err.response) {
-      throw httpError(502, err.response.data?.error || "Liveness service request failed");
+  } catch (error) {
+    if (error.response) {
+      throw httpError(502, error.response.data?.error || "Liveness service request failed");
     }
     throw httpError(503, "Liveness service is unreachable");
   }
