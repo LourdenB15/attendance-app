@@ -97,3 +97,12 @@ export async function resetPassword(token, newPassword) {
   await usersRepository.updatePassword(record.user_id, newPasswordHash);
   await resetTokensRepository.markUsed(record.id);
 }
+
+export async function getCurrentUser(userId) {
+  const user = await usersRepository.findById(userId);
+  if (!user) {
+    throw httpError(404, "User not found");
+  }
+  const { password_hash, ...safeUser } = user;
+  return safeUser;
+}

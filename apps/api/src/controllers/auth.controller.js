@@ -108,3 +108,25 @@ export async function resetPassword(req, res) {
     res.status(500).json({ error: "Failed to reset password" });
   }
 }
+
+export async function me(req, res) {
+  try {
+    const user = await authService.getCurrentUser(req.user.sub);
+    res.status(200).json({ ...user });
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error("Get current user error:", error);
+    res.status(500).json({ error: "Failed to load user" });
+  }
+}
+
+export function logout(req, res) {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+  });
+  res.status(204).send();
+}
