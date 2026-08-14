@@ -30,3 +30,13 @@ export async function findByIdAndProfessor(classId, professorId) {
   );
   return result.rows[0];
 }
+
+export async function findByJoinCode(joinCode) {
+  const result = await pool.query(
+    `SELECT id, name, semester, section
+     FROM classes
+     WHERE join_code = $1 AND is_archived = false`,
+    [joinCode],
+  );
+  return result.rows[0];
+}
