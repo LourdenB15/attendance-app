@@ -20,3 +20,13 @@ export async function findByProfessor(professorId) {
   );
   return result.rows;
 }
+
+export async function findByIdAndProfessor(classId, professorId) {
+  const result = await pool.query(
+    `SELECT id, name, semester, section
+     FROM classes
+     WHERE id = $1 AND professor_id = $2`,
+    [classId, professorId],
+  );
+  return result.rows[0];
+}

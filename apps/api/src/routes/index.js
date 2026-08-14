@@ -4,6 +4,7 @@ import adminRoutes from "./admin.routes.js";
 import biometricEnrollmentRoutes from "./biometric-enrollment.routes.js";
 import checkInRoutes from "./check-in.routes.js";
 import classesRoutes from "./classes.routes.js";
+import sessionsRoutes from "./sessions.routes.js";
 
 const router = Router();
 
@@ -12,5 +13,6 @@ router.use("/admin", adminRoutes);
 router.use("/biometric-enrollments", biometricEnrollmentRoutes);
 router.use("/check-ins", checkInRoutes);
 router.use("/classes", classesRoutes);
+router.use("/sessions", sessionsRoutes);
 
 export default router;
