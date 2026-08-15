@@ -22,3 +22,22 @@ export async function closeSession(sessionId, professorId) {
   );
   return result.rows[0];
 }
+
+export async function findByIdAndProfessor(sessionId, professorId) {
+  const result = await pool.query(
+    `SELECT s.id, s.class_id, s.status, s.expires_at
+     FROM attendance_sessions s
+     WHERE s.id = $1
+       AND s.class_id IN (SELECT id FROM classes WHERE professor_id = $2)`,
+    [sessionId, professorId],
+  );
+  return result.rows[0];
+}
+
+export async function findById(sessionId) {
+  const result = await pool.query(
+    `SELECT id, class_id, status, expires_at FROM attendance_sessions WHERE id = $1`,
+    [sessionId],
+  );
+  return result.rows[0];
+}
