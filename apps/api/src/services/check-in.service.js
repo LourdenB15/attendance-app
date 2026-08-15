@@ -1,10 +1,21 @@
 import * as enrollmentsRepository from "../repositories/biometric-enrollments.repository.js";
 import * as attemptsRepository from "../repositories/check-in-attempts.repository.js";
 import * as attendanceRepository from "../repositories/attendance-records.repository.js";
+import * as sessionsRepository from "../repositories/sessions.repository.js";
 import { verifyOne } from "../integrations/liveness/client.js";
 import { httpError } from "../utils/http-error.js";
 
 export async function checkIn(studentId, sessionId, livenessResult) {
+  const session = await sessionsRepository.findById(sessionId);
+  if (!session) {
+    throw httpError(404, "Session not found");
+  }
+  if (session.status !== "OPEN") {
+    throw httpError(409, "This session is closed");
+  }
+  if (new Date(session.expires_at) < new Date()) {
+    throw httpError(409, "This session has expired");
+  }
   const enrollment = await enrollmentsRepository.findActiveByStudent(studentId);
   if (!enrollment) {
     throw httpError(409, "No active biometric enrollment — enroll your face first");
