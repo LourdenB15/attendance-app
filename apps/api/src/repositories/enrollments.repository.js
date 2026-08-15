@@ -22,3 +22,11 @@ export async function findStudentsByClass(classId) {
   );
   return result.rows;
 }
+
+export async function findActiveEnrollment(classId, studentId) {
+  const result = await pool.query(
+    `SELECT id FROM enrollments WHERE class_id = $1 AND student_id = $2 AND status = 'ACTIVE'`,
+    [classId, studentId],
+  );
+  return result.rows[0];
+}

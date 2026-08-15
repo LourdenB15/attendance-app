@@ -1,4 +1,4 @@
-import * as enrollmentsRepository from "../repositories/biometric-enrollments.repository.js";
+import * as biometricEnrollmentsRepository from "../repositories/biometric-enrollments.repository.js";
 import * as usersRepository from "../repositories/users.repository.js";
 import { enroll } from "../integrations/liveness/client.js";
 import { httpError } from "../utils/http-error.js";
@@ -10,7 +10,7 @@ export async function enrollStudent(studentId, livenessResult) {
   }
 
   const saasEnrollment = await enroll(livenessResult, student.full_name);
-  const enrollment = await enrollmentsRepository.replaceActiveEnrollment(studentId, saasEnrollment.id);
+  const enrollment = await biometricEnrollmentsRepository.replaceActiveEnrollment(studentId, saasEnrollment.id);
 
   return enrollment;
 }

@@ -1,4 +1,5 @@
-import * as enrollmentsRepository from "../repositories/biometric-enrollments.repository.js";
+import * as biometricEnrollmentsRepository from "../repositories/biometric-enrollments.repository.js";
+import * as enrollmentsRepository from "../repositories/enrollments.repository.js";
 import * as attemptsRepository from "../repositories/check-in-attempts.repository.js";
 import * as attendanceRepository from "../repositories/attendance-records.repository.js";
 import * as sessionsRepository from "../repositories/sessions.repository.js";
@@ -16,7 +17,16 @@ export async function checkIn(studentId, sessionId, livenessResult) {
   if (new Date(session.expires_at) < new Date()) {
     throw httpError(409, "This session has expired");
   }
-  const enrollment = await enrollmentsRepository.findActiveByStudent(studentId);
+  
+  const classEnrollment = await enrollmentsRepository.findActiveEnrollment(
+    session.class_id,
+    studentId,
+  );
+  if (!classEnrollment) {
+    throw httpError(409, "You are not enrolled in this class");
+  }
+  
+  const enrollment = await biometricEnrollmentsRepository.findActiveByStudent(studentId);
   if (!enrollment) {
     throw httpError(409, "No active biometric enrollment — enroll your face first");
   }
