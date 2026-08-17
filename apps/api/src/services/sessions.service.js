@@ -10,7 +10,10 @@ export async function openSession(professorId, classId, durationMinutes, label) 
   if (!foundClass) {
     throw httpError(404, "Class not found");
   }
-
+  if (foundClass.is_archived) {
+    throw httpError(409, "This class is archived — cannot open a session for it");
+  }
+  
   const minutes = durationMinutes ?? DEFAULT_DURATION_MINUTES;
   const expiresAt = new Date(Date.now() + minutes * 60 * 1000);
 

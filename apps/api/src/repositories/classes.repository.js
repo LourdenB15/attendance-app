@@ -23,7 +23,7 @@ export async function findByProfessor(professorId) {
 
 export async function findByIdAndProfessor(classId, professorId) {
   const result = await pool.query(
-    `SELECT id, name, semester, section
+    `SELECT id, name, semester, section, is_archived
      FROM classes
      WHERE id = $1 AND professor_id = $2`,
     [classId, professorId],
