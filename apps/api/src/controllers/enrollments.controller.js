@@ -37,3 +37,16 @@ export async function getStudents(req, res) {
     res.status(500).json({ error: "Failed to load students" });
   }
 }
+
+export async function getMyClasses(req, res) {
+  try {
+    const classes = await enrollmentsService.getMyClasses(req.user.sub);
+    res.status(200).json(classes);
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error("Get my classes error:", error);
+    res.status(500).json({ error: "Failed to load classes" });
+  }
+}

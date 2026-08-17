@@ -30,3 +30,15 @@ export async function findActiveEnrollment(classId, studentId) {
   );
   return result.rows[0];
 }
+
+export async function findClassesByStudent(studentId) {
+  const result = await pool.query(
+    `SELECT c.id AS class_id, c.name, c.semester, c.section, c.join_code, e.enrolled_at
+     FROM enrollments e
+     JOIN classes c ON c.id = e.class_id
+     WHERE e.student_id = $1 AND e.status = 'ACTIVE'
+     ORDER BY c.name ASC`,
+    [studentId],
+  );
+  return result.rows;
+}

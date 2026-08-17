@@ -33,3 +33,7 @@ export async function getStudents(professorId, classId) {
   }
   return enrollmentsRepository.findStudentsByClass(classId);
 }
+
+export async function getMyClasses(studentId) {
+  return enrollmentsRepository.findClassesByStudent(studentId);
+}
