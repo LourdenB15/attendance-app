@@ -3,6 +3,7 @@ import express from "express";
 import cookieParser from "cookie-parser";
 import routes from "./routes/index.js";
 import cors from "cors";
+import { apiLimiter } from "./middleware/rate-limit.js";
 
 const PORT = process.env.PORT;
 const app = express();
@@ -18,7 +19,7 @@ app.get("/health", (req, res) => {
   return res.json({ status: "ok" });
 });
 
-app.use("/api", routes);
+app.use("/api", apiLimiter, routes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}!`);
