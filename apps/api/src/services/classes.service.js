@@ -64,3 +64,11 @@ export async function updateClass(professorId, classId, updates) {
 
   return updated;
 }
+
+export async function archiveClass(professorId, classId) {
+  const archived = await classesRepository.archiveClass(classId, professorId);
+  if (!archived) {
+    throw httpError(404, "Class not found");
+  }
+  return archived;
+}

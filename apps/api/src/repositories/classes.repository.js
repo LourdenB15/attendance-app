@@ -53,3 +53,14 @@ export async function updateClass(classId, professorId, { name, semester, sectio
   );
   return result.rows[0];
 }
+
+export async function archiveClass(classId, professorId) {
+  const result = await pool.query(
+    `UPDATE classes
+     SET is_archived = true
+     WHERE id = $1 AND professor_id = $2
+     RETURNING id, name, is_archived`,
+    [classId, professorId],
+  );
+  return result.rows[0];
+}

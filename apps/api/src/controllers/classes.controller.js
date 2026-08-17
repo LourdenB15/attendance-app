@@ -58,3 +58,16 @@ export async function updateClass(req, res) {
     res.status(500).json({ error: "Failed to update class" });
   }
 }
+
+export async function archiveClass(req, res) {
+  try {
+    const archived = await classesService.archiveClass(req.user.sub, req.params.id);
+    res.status(200).json(archived);
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error("Archive class error:", error);
+    res.status(500).json({ error: "Failed to archive class" });
+  }
+}
