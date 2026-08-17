@@ -46,3 +46,21 @@ export async function createClass(professorId, name, semester, section) {
 export async function listClasses(professorId) {
   return classesRepository.findByProfessor(professorId);
 }
+
+export async function updateClass(professorId, classId, updates) {
+  let updated;
+  try {
+    updated = await classesRepository.updateClass(classId, professorId, updates);
+  } catch (error) {
+    if (error.code === UNIQUE_VIOLATION && error.constraint === "classes_professor_name_semester_section_key") {
+      throw httpError(409, "You already have a class with this name, semester, and section");
+    }
+    throw error;
+  }
+
+  if (!updated) {
+    throw httpError(404, "Class not found");
+  }
+
+  return updated;
+}

@@ -40,3 +40,16 @@ export async function findByJoinCode(joinCode) {
   );
   return result.rows[0];
 }
+
+export async function updateClass(classId, professorId, { name, semester, section }) {
+  const result = await pool.query(
+    `UPDATE classes
+     SET name = COALESCE($3, name),
+         semester = COALESCE($4, semester),
+         section = COALESCE($5, section)
+     WHERE id = $1 AND professor_id = $2
+     RETURNING id, name, semester, section, join_code, is_archived, created_at`,
+    [classId, professorId, name ?? null, semester ?? null, section ?? null],
+  );
+  return result.rows[0];
+}

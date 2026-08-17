@@ -1,5 +1,5 @@
 import * as classesService from "../services/classes.service.js";
-import { createClassSchema } from "../schemas/classes.schema.js";
+import { createClassSchema, updateClassSchema } from "../schemas/classes.schema.js";
 
 export async function createClass(req, res) {
   const validation = createClassSchema.safeParse(req.body);
@@ -34,5 +34,27 @@ export async function listClasses(req, res) {
   } catch (error) {
     console.error("List classes error:", error);
     res.status(500).json({ error: "Failed to load classes" });
+  }
+}
+
+export async function updateClass(req, res) {
+  const validation = updateClassSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ error: validation.error.issues[0].message });
+  }
+
+  try {
+    const updated = await classesService.updateClass(
+      req.user.sub,
+      req.params.id,
+      validation.data,
+    );
+    res.status(200).json(updated);
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error("Update class error:", error);
+    res.status(500).json({ error: "Failed to update class" });
   }
 }
