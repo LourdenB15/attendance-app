@@ -6,6 +6,7 @@ import checkInRoutes from "./check-in.routes.js";
 import classesRoutes from "./classes.routes.js";
 import sessionsRoutes from "./sessions.routes.js";
 import enrollmentsRoutes from "./enrollments.routes.js";
+import attendanceRoutes from "./attendance.routes.js";
 
 const router = Router();
 
@@ -16,5 +17,6 @@ router.use("/check-ins", checkInRoutes);
 router.use("/classes", classesRoutes);
 router.use("/sessions", sessionsRoutes);
 router.use("/enrollments", enrollmentsRoutes);
+router.use("/attendance", attendanceRoutes);
 
 export default router;

@@ -42,3 +42,16 @@ export async function overrideAttendance(req, res) {
     res.status(500).json({ error: "Failed to override attendance" });
   }
 }
+
+export async function getMyAttendance(req, res) {
+  try {
+    const attendance = await attendanceService.getMyAttendance(req.user.sub);
+    res.status(200).json(attendance);
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error("Get my attendance error:", error);
+    res.status(500).json({ error: "Failed to load attendance" });
+  }
+}

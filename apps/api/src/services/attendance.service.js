@@ -29,3 +29,8 @@ export async function overrideAttendance(professorId, sessionId, studentId, stat
     reason ?? null,
   );
 }
+
+export async function getMyAttendance(studentId) {
+  return attendanceRepository.findForStudent(studentId);
+}
+

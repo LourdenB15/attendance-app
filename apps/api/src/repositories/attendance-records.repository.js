@@ -51,3 +51,20 @@ export async function upsertOverride(sessionId, studentId, status, recordedBy, r
   );
   return result.rows[0];
 }
+
+export async function findForStudent(studentId) {
+  const result = await pool.query(
+    `SELECT s.id AS session_id, s.label AS session_label, s.opened_at, s.status AS session_status,
+            c.name AS class_name, c.section,
+            COALESCE(ar.status, 'ABSENT') AS status, ar.source, ar.recorded_at, ar.override_reason
+     FROM enrollments e
+     JOIN classes c ON c.id = e.class_id
+     JOIN attendance_sessions s ON s.class_id = e.class_id
+     LEFT JOIN attendance_records ar
+       ON ar.session_id = s.id AND ar.student_id = e.student_id
+     WHERE e.student_id = $1 AND e.status = 'ACTIVE'
+     ORDER BY s.opened_at DESC`,
+    [studentId],
+  );
+  return result.rows;
+}
