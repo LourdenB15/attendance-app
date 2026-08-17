@@ -20,3 +20,27 @@ export async function createProfessor(req, res) {
     res.status(500).json({ error: "Failed to create professor" });
   }
 }
+
+export async function listUsers(req, res) {
+  try {
+    const users = await adminService.listUsers(req.query.role);
+    res.status(200).json(users);
+  } catch (error) {
+    console.error("List users error:", error);
+    res.status(500).json({ error: "Failed to load users" });
+  }
+}
+
+export async function deactivateUser(req, res) {
+  try {
+    const updated = await adminService.deactivateUser(req.user.sub, req.params.id);
+    res.status(200).json(updated);
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error("Deactivate user error:", error);
+    res.status(500).json({ error: "Failed to deactivate user" });
+  }
+}
+

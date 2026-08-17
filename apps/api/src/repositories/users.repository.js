@@ -28,3 +28,21 @@ export async function updatePassword(id, passwordHash) {
     [passwordHash, id],
   );
 }
+
+export async function findAll(role) {
+  const query = role
+    ? `SELECT id, full_name, email, role, is_active, must_change_password, created_at
+       FROM users WHERE role = $1 ORDER BY full_name ASC`
+    : `SELECT id, full_name, email, role, is_active, must_change_password, created_at
+       FROM users ORDER BY full_name ASC`;
+  const result = await pool.query(query, role ? [role] : []);
+  return result.rows;
+}
+
+export async function setActive(userId, isActive) {
+  const result = await pool.query(
+    `UPDATE users SET is_active = $2 WHERE id = $1 RETURNING id, full_name, email, role, is_active`,
+    [userId, isActive],
+  );
+  return result.rows[0];
+}
