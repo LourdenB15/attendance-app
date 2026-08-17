@@ -9,6 +9,7 @@ const router = Router();
 router.post("/", authenticate, requirePasswordChange, requireRole("PROFESSOR"), classesController.createClass);
 router.get("/", authenticate, requirePasswordChange, requireRole("PROFESSOR"), classesController.listClasses);
 router.get("/:classId/students", authenticate, requirePasswordChange, requireRole("PROFESSOR"), enrollmentsController.getStudents);
+router.post("/:classId/students/:studentId/drop", authenticate, requirePasswordChange, requireRole("PROFESSOR"), enrollmentsController.dropStudent);
 router.patch("/:id", authenticate, requirePasswordChange, requireRole("PROFESSOR"), classesController.updateClass);
 router.post("/:id/archive", authenticate, requirePasswordChange, requireRole("PROFESSOR"), classesController.archiveClass);
 

@@ -50,3 +50,20 @@ export async function getMyClasses(req, res) {
     res.status(500).json({ error: "Failed to load classes" });
   }
 }
+
+export async function dropStudent(req, res) {
+  try {
+    const dropped = await enrollmentsService.dropStudent(
+      req.user.sub,
+      req.params.classId,
+      req.params.studentId,
+    );
+    res.status(200).json(dropped);
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error("Drop student error:", error);
+    res.status(500).json({ error: "Failed to drop student" });
+  }
+}

@@ -2,8 +2,6 @@ import * as enrollmentsRepository from "../repositories/enrollments.repository.j
 import * as classesRepository from "../repositories/classes.repository.js";
 import { httpError } from "../utils/http-error.js";
 
-const UNIQUE_VIOLATION = "23505";
-
 export async function joinClass(studentId, joinCode) {
   const code = joinCode.trim().toUpperCase();
 
@@ -12,18 +10,19 @@ export async function joinClass(studentId, joinCode) {
     throw httpError(404, "No class found for that join code");
   }
 
-  try {
-    return await enrollmentsRepository.createEnrollment(
-      foundClass.id,
-      studentId,
-      "SELF_ENROLLED",
-    );
-  } catch (error) {
-    if (error.code === UNIQUE_VIOLATION) {
-      throw httpError(409, "You are already enrolled in this class");
+  const existing = await enrollmentsRepository.findEnrollment(foundClass.id, studentId);
+  if (existing) {
+    if (existing.status === "DROPPED") {
+      throw httpError(403, "You were removed from this class and cannot rejoin");
     }
-    throw error;
+    throw httpError(409, "You are already enrolled in this class");
   }
+
+  return enrollmentsRepository.createEnrollment(foundClass.id, studentId, "SELF_ENROLLED");
+}
+
+export async function getMyClasses(studentId) {
+  return enrollmentsRepository.findClassesByStudent(studentId);
 }
 
 export async function getStudents(professorId, classId) {
@@ -34,6 +33,10 @@ export async function getStudents(professorId, classId) {
   return enrollmentsRepository.findStudentsByClass(classId);
 }
 
-export async function getMyClasses(studentId) {
-  return enrollmentsRepository.findClassesByStudent(studentId);
+export async function dropStudent(professorId, classId, studentId) {
+  const dropped = await enrollmentsRepository.dropEnrollment(classId, studentId, professorId);
+  if (!dropped) {
+    throw httpError(404, "Enrollment not found");
+  }
+  return dropped;
 }

@@ -42,3 +42,23 @@ export async function findClassesByStudent(studentId) {
   );
   return result.rows;
 }
+
+export async function dropEnrollment(classId, studentId, professorId) {
+  const result = await pool.query(
+    `UPDATE enrollments
+     SET status = 'DROPPED'
+     WHERE class_id = $1 AND student_id = $2 AND status = 'ACTIVE'
+       AND class_id IN (SELECT id FROM classes WHERE professor_id = $3)
+     RETURNING id, class_id, student_id, status`,
+    [classId, studentId, professorId],
+  );
+  return result.rows[0];
+}
+
+export async function findEnrollment(classId, studentId) {
+  const result = await pool.query(
+    `SELECT id, status FROM enrollments WHERE class_id = $1 AND student_id = $2`,
+    [classId, studentId],
+  );
+  return result.rows[0];
+}
