@@ -5,10 +5,13 @@ import crypto from "crypto";
 import * as resetTokensRepository from "../repositories/password-reset-tokens.repository.js";
 import * as emailService from "./email.service.js";
 import { httpError } from "../utils/http-error.js";
+import { OAuth2Client } from "google-auth-library";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const SALT_ROUNDS = 10;
 const RESET_TOKEN_TTL_MS = 30 * 60 * 1000;
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 function issueToken(user) {
   return jwt.sign({ sub: user.id, role: user.role }, JWT_SECRET, {
@@ -105,4 +108,49 @@ export async function getCurrentUser(userId) {
   }
   const { password_hash, ...safeUser } = user;
   return safeUser;
+}
+
+export async function loginWithGoogle(idToken) {
+  if (!GOOGLE_CLIENT_ID) {
+    throw httpError(500, "Google sign-in is not configured");
+  }
+
+  let payload;
+  try {
+    const ticket = await googleClient.verifyIdToken({
+      idToken,
+      audience: GOOGLE_CLIENT_ID,
+    });
+    payload = ticket.getPayload();
+  } catch {
+    throw httpError(401, "Invalid Google credential");
+  }
+
+  if (!payload.email_verified) {
+    throw httpError(403, "Google account email is not verified");
+  }
+
+  const { sub: googleId, email, name } = payload;
+
+  let user = await usersRepository.findByGoogleId(googleId);
+
+  if (!user) {
+    const existing = await usersRepository.findByEmail(email);
+    if (existing) {
+      if (existing.role !== "STUDENT") {
+        throw httpError(403, "Google sign-in is only available for student accounts");
+      }
+      user = await usersRepository.linkGoogleAccount(existing.id, googleId);
+    } else {
+      user = await usersRepository.createGoogleStudent(name, email, googleId);
+    }
+  }
+
+  if (user.role !== "STUDENT") {
+    throw httpError(403, "Google sign-in is only available for student accounts");
+  }
+
+  const token = issueToken(user);
+  const { password_hash, ...safeUser } = user;
+  return { user: safeUser, token };
 }

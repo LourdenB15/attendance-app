@@ -12,6 +12,7 @@ router.post("/forgot-password", authLimiter, authController.forgotPassword);
 router.post("/reset-password", authLimiter, authController.resetPassword);
 router.get("/me", authenticate, authController.me);
 router.post("/logout", authController.logout);
+router.post("/google", authLimiter, authController.loginWithGoogle);
 
 export default router;
 

@@ -46,3 +46,27 @@ export async function setActive(userId, isActive) {
   );
   return result.rows[0];
 }
+
+export async function findByGoogleId(googleId) {
+  const result = await pool.query("SELECT * FROM users WHERE google_id = $1", [googleId]);
+  return result.rows[0];
+}
+
+export async function linkGoogleAccount(userId, googleId) {
+  const result = await pool.query(
+    `UPDATE users SET google_id = $1 WHERE id = $2
+     RETURNING id, full_name, email, role, must_change_password, is_active, created_at`,
+    [googleId, userId],
+  );
+  return result.rows[0];
+}
+
+export async function createGoogleStudent(fullName, email, googleId) {
+  const result = await pool.query(
+    `INSERT INTO users (full_name, email, password_hash, role, must_change_password, google_id)
+     VALUES ($1, $2, NULL, 'STUDENT', false, $3)
+     RETURNING id, full_name, email, role, must_change_password, is_active, created_at`,
+    [fullName, email, googleId],
+  );
+  return result.rows[0];
+}

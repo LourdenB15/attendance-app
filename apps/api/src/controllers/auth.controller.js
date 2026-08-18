@@ -1,5 +1,5 @@
 import * as authService from "../services/auth.service.js";
-import { registerSchema, loginSchema, changePasswordSchema, forgotPasswordSchema, resetPasswordSchema } from "../schemas/auth.schema.js";
+import { registerSchema, loginSchema, changePasswordSchema, forgotPasswordSchema, resetPasswordSchema, googleLoginSchema } from "../schemas/auth.schema.js";
 
 export async function register(req, res) {
   const validation = registerSchema.safeParse(req.body);
@@ -129,4 +129,28 @@ export function logout(req, res) {
     sameSite: "lax",
   });
   res.status(204).send();
+}
+
+export async function loginWithGoogle(req, res) {
+  const validation = googleLoginSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ error: validation.error.issues[0].message });
+  }
+
+  try {
+    const { user, token } = await authService.loginWithGoogle(validation.data.credential);
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+    res.status(200).json({ ...user });
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error("Google login error:", error);
+    res.status(500).json({ error: "Failed to sign in with Google" });
+  }
 }
