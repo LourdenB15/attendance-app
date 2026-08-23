@@ -29,7 +29,7 @@ export function LivenessCamera({ onComplete, onCancel, title = "Liveness Face Sc
 
         sdk.on("ready", () => {
           if (!isMounted) return;
-          setStatusText("Ready! Follow the instructions on screen.");
+          setStatusText("Camera ready! Follow the instructions on screen.");
           setIsInitializing(false);
         });
 
@@ -88,7 +88,7 @@ export function LivenessCamera({ onComplete, onCancel, title = "Liveness Face Sc
   const handleRetry = async () => {
     setErrorMsg(null);
     setProgress(0);
-    setStatusText("Restarting...");
+    setStatusText("Restarting camera...");
     setInstruction("Please look directly at the camera");
     if (sdkRef.current && videoRef.current && canvasRef.current) {
       try {
@@ -101,75 +101,104 @@ export function LivenessCamera({ onComplete, onCancel, title = "Liveness Face Sc
   };
 
   return (
-    <fieldset style={{ border: "2px solid #333", padding: "16px", margin: "16px 0", maxWidth: "680px" }}>
-      <legend><strong>{title}</strong></legend>
+    <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-6 max-w-xl mx-auto my-6">
+      <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-4">
+        <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-indigo-600 animate-pulse"></span>
+          {title}
+        </h3>
+        <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">
+          {statusText}
+        </span>
+      </div>
 
       {errorMsg ? (
-        <div style={{ color: "red", margin: "10px 0" }}>
-          <p><strong>Error:</strong> {errorMsg}</p>
-          <button type="button" onClick={handleRetry} style={{ marginRight: "8px" }}>Retry</button>
-          <button type="button" onClick={onCancel}>Cancel</button>
+        <div className="bg-rose-50 border border-rose-200 rounded-xl p-5 text-center my-4">
+          <div className="text-rose-600 font-semibold text-base mb-1">Scan Failed</div>
+          <p className="text-rose-700 text-sm mb-4">{errorMsg}</p>
+          <div className="flex justify-center gap-3">
+            <button
+              type="button"
+              onClick={handleRetry}
+              className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-medium shadow-sm transition"
+            >
+              Try Again
+            </button>
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-sm font-medium transition"
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       ) : (
-        <div>
-          <div style={{ marginBottom: "8px" }}>
-            <strong>Status:</strong> {statusText}
+        <div className="space-y-4">
+          {/* Active instruction banner */}
+          <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-3.5 text-center">
+            <div className="text-xs uppercase tracking-wider text-indigo-500 font-semibold mb-0.5">Instruction</div>
+            <div className="text-base font-bold text-indigo-900">{instruction}</div>
+            {distanceInfo && (
+              <div
+                className={`text-xs font-semibold mt-1 ${
+                  distanceInfo === "CLOSER" ? "text-amber-600" : "text-sky-600"
+                }`}
+              >
+                ⚠️ Please move {distanceInfo.toLowerCase()} to the camera
+              </div>
+            )}
           </div>
 
-          <div style={{ backgroundColor: "#eee", padding: "8px", margin: "8px 0", fontWeight: "bold" }}>
-            👉 Instruction: {instruction}
-          </div>
-
-          {distanceInfo && (
-            <div style={{ color: distanceInfo === "CLOSER" ? "orange" : "blue", marginBottom: "8px" }}>
-              Distance feedback: Move {distanceInfo.toLowerCase()}
+          {/* Progress bar */}
+          <div>
+            <div className="flex justify-between text-xs font-medium text-slate-500 mb-1">
+              <span>Challenge Completion</span>
+              <span className="font-bold text-indigo-600">{progress}%</span>
             </div>
-          )}
-
-          <div style={{ marginBottom: "12px" }}>
-            <label htmlFor="liveness-progress"><strong>Challenge Progress:</strong> {progress}%</label>
-            <br />
-            <progress id="liveness-progress" value={progress} max="100" style={{ width: "100%", height: "20px" }} />
+            <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+              <div
+                className="bg-indigo-600 h-2 rounded-full transition-all duration-300 ease-out"
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
           </div>
 
-          {/* Video and Canvas container */}
-          <div style={{ position: "relative", width: "480px", height: "360px", background: "#000", margin: "0 auto" }}>
+          {/* Video & Canvas Frame */}
+          <div className="relative w-[480px] h-[360px] max-w-full mx-auto bg-slate-900 rounded-xl overflow-hidden shadow-inner border border-slate-800">
             <video
               ref={videoRef}
               playsInline
               muted
               autoPlay
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "480px",
-                height: "360px",
-                objectFit: "cover",
-              }}
+              className="absolute inset-0 w-full h-full object-cover scale-x-[-1]"
             />
             <canvas
               ref={canvasRef}
               width={480}
               height={360}
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "480px",
-                height: "360px",
-                pointerEvents: "none",
-              }}
+              className="absolute inset-0 w-full h-full pointer-events-none scale-x-[-1]"
             />
+
+            {/* Oval Face Alignment Guide Overlay */}
+            <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+              <div className="w-56 h-72 rounded-[50%] border-2 border-dashed border-white/60 shadow-[0_0_0_9999px_rgba(0,0,0,0.35)]"></div>
+            </div>
           </div>
 
-          <div style={{ marginTop: "12px", textAlign: "right" }}>
-            <button type="button" onClick={onCancel} disabled={isInitializing}>
+          {/* Cancel button */}
+          <div className="flex justify-end pt-2">
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={isInitializing}
+              className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800 font-medium hover:bg-slate-100 rounded-lg transition"
+            >
               Cancel Scan
             </button>
           </div>
         </div>
       )}
-    </fieldset>
+    </div>
   );
 }

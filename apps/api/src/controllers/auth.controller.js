@@ -1,5 +1,11 @@
+// apps/api/src/controllers/auth.controller.js
 import * as authService from "../services/auth.service.js";
-import { registerSchema } from "../schemas/auth.schema.js";
+import {
+  registerSchema,
+  loginSchema,
+  changePasswordSchema,
+  googleLoginSchema,
+} from "../schemas/auth.schema.js";
 
 export async function register(req, res) {
   const validation = registerSchema.safeParse(req.body);
@@ -28,5 +34,97 @@ export async function register(req, res) {
     }
     console.error("Register error:", error);
     res.status(500).json({ error: "Failed to create account" });
+  }
+}
+
+export async function login(req, res) {
+  const validation = loginSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ error: validation.error.issues[0].message });
+  }
+
+  const { email, password } = validation.data;
+
+  try {
+    const { user, token } = await authService.login(email, password);
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+    res.status(200).json({ ...user });
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error("Login error:", error);
+    res.status(500).json({ error: "Failed to log in" });
+  }
+}
+
+export async function me(req, res) {
+  try {
+    const user = await authService.getCurrentUser(req.user.sub);
+    res.status(200).json({ ...user });
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error("Get current user error:", error);
+    res.status(500).json({ error: "Failed to load user" });
+  }
+}
+
+export function logout(req, res) {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+  });
+  res.status(204).send();
+}
+
+export async function changePassword(req, res) {
+  const validation = changePasswordSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ error: validation.error.issues[0].message });
+  }
+
+  const { currentPassword, newPassword } = validation.data;
+
+  try {
+    await authService.changePassword(req.user.sub, currentPassword, newPassword);
+    res.status(204).send();
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error("Change password error:", error);
+    res.status(500).json({ error: "Failed to change password" });
+  }
+}
+
+export async function loginWithGoogle(req, res) {
+  const validation = googleLoginSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ error: validation.error.issues[0].message });
+  }
+
+  try {
+    const { user, token } = await authService.loginWithGoogle(validation.data.credential);
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+    res.status(200).json({ ...user });
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error("Google login error:", error);
+    res.status(500).json({ error: "Failed to sign in with Google" });
   }
 }
