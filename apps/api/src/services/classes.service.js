@@ -1,34 +1,74 @@
-// apps/api/src/services/classes.service.js
 import crypto from "crypto";
 import * as classesRepository from "../repositories/classes.repository.js";
 import { httpError } from "../utils/http-error.js";
 
+const JOIN_CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+const JOIN_CODE_LENGTH = 6;
+const MAX_JOIN_CODE_ATTEMPTS = 5;
+const UNIQUE_VIOLATION = "23505";
+
 function generateJoinCode() {
-  return crypto.randomBytes(3).toString("hex").toUpperCase();
+  let code = "";
+  for (let i = 0; i < JOIN_CODE_LENGTH; i++) {
+    code += JOIN_CODE_ALPHABET[crypto.randomInt(JOIN_CODE_ALPHABET.length)];
+  }
+  return code;
 }
 
-export async function createClass(professorId, name, semester) {
-  const joinCode = generateJoinCode();
-  return classesRepository.createClass(professorId, name, semester, joinCode);
+export async function createClass(professorId, name, semester, section) {
+  for (let attempt = 0; attempt < MAX_JOIN_CODE_ATTEMPTS; attempt++) {
+    const joinCode = generateJoinCode();
+    try {
+      return await classesRepository.createClass(
+        professorId,
+        name,
+        semester,
+        section,
+        joinCode,
+      );
+    } catch (error) {
+      if (error.code === UNIQUE_VIOLATION) {
+        if (error.constraint === "classes_join_code_key") continue;
+        if (error.constraint === "classes_professor_name_semester_section_key") {
+          throw httpError(
+            409,
+            "You already have a class with this name, semester, and section",
+          );
+        }
+      }
+      throw error;
+    }
+  }
+  throw httpError(500, "Could not generate a unique join code — please try again");
 }
+
 
 export async function listClasses(professorId) {
   return classesRepository.findByProfessor(professorId);
 }
 
-export async function updateClass(professorId, classId, name, semester) {
-  const cls = await classesRepository.findById(classId);
-  if (!cls) throw httpError(404, "Class not found");
-  if (cls.professor_id !== professorId) throw httpError(403, "Not authorized to edit this class");
-  if (cls.is_archived) throw httpError(400, "Cannot edit an archived class");
+export async function updateClass(professorId, classId, updates) {
+  let updated;
+  try {
+    updated = await classesRepository.updateClass(classId, professorId, updates);
+  } catch (error) {
+    if (error.code === UNIQUE_VIOLATION && error.constraint === "classes_professor_name_semester_section_key") {
+      throw httpError(409, "You already have a class with this name, semester, and section");
+    }
+    throw error;
+  }
 
-  return classesRepository.updateClass(classId, name, semester);
+  if (!updated) {
+    throw httpError(404, "Class not found");
+  }
+
+  return updated;
 }
 
 export async function archiveClass(professorId, classId) {
-  const cls = await classesRepository.findById(classId);
-  if (!cls) throw httpError(404, "Class not found");
-  if (cls.professor_id !== professorId) throw httpError(403, "Not authorized to archive this class");
-
-  return classesRepository.archiveClass(classId);
+  const archived = await classesRepository.archiveClass(classId, professorId);
+  if (!archived) {
+    throw httpError(404, "Class not found");
+  }
+  return archived;
 }

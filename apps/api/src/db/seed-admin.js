@@ -1,33 +1,32 @@
 import "dotenv/config";
 import bcrypt from "bcrypt";
 import pool from "./db.js";
+import { createUser } from "../repositories/users.repository.js";
 
 const { ADMIN_NAME, ADMIN_EMAIL, ADMIN_PASSWORD } = process.env;
 
-if (!ADMIN_NAME || !ADMIN_EMAIL || !ADMIN_PASSWORD) {
-  console.error("Please set ADMIN_NAME, ADMIN_EMAIL, and ADMIN_PASSWORD in your .env");
-  process.exit(1);
-}
-
 async function seedAdmin() {
+  if (!ADMIN_NAME || !ADMIN_EMAIL || !ADMIN_PASSWORD) {
+    console.error("Set ADMIN_NAME, ADMIN_EMAIL, ADMIN_PASSWORD in .env");
+    process.exit(1);
+  }
+
   const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
-
-  const query = `
-    INSERT INTO users (full_name, email, password_hash, role, must_change_password, is_active)
-    VALUES ($1, $2, $3, 'ADMIN', false, true)
-    ON CONFLICT (email) DO UPDATE
-      SET full_name = EXCLUDED.full_name,
-          password_hash = EXCLUDED.password_hash,
-          role = 'ADMIN',
-          is_active = true
-    RETURNING id, full_name, email, role;
-  `;
-
   try {
-    const res = await pool.query(query, [ADMIN_NAME, ADMIN_EMAIL, passwordHash]);
-    console.log("Admin account seeded successfully:", res.rows[0]);
-  } catch (err) {
-    console.error("Failed to seed admin:", err);
+    const user = await createUser(
+      ADMIN_NAME,
+      ADMIN_EMAIL,
+      passwordHash,
+      "ADMIN",
+      false,
+    );
+    console.log(`Seeded admin: ${user.email}`);
+  } catch (error) {
+    if (error.code === "23505") {
+      console.log(`Admin ${ADMIN_EMAIL} already exists — nothing to do.`);
+    } else {
+      throw error;
+    }
   } finally {
     await pool.end();
   }

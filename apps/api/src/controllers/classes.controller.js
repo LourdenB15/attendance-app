@@ -1,56 +1,72 @@
-// apps/api/src/controllers/classes.controller.js
 import * as classesService from "../services/classes.service.js";
+import { createClassSchema, updateClassSchema } from "../schemas/classes.schema.js";
 
 export async function createClass(req, res) {
-  const { name, semester } = req.body;
-  if (!name || !semester) {
-    return res.status(400).json({ error: "Name and semester are required" });
+  const validation = createClassSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ error: validation.error.issues[0].message });
   }
 
+  const { name, semester, section } = validation.data;
+
   try {
-    const cls = await classesService.createClass(req.user.sub, name, semester);
-    res.status(201).json(cls);
+    const created = await classesService.createClass(
+      req.user.sub,
+      name,
+      semester,
+      section,
+    );
+    res.status(201).json(created);
   } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
     console.error("Create class error:", error);
     res.status(500).json({ error: "Failed to create class" });
   }
 }
 
+
 export async function listClasses(req, res) {
   try {
-    const list = await classesService.listClasses(req.user.sub);
-    res.status(200).json(list);
+    const classes = await classesService.listClasses(req.user.sub);
+    res.status(200).json(classes);
   } catch (error) {
     console.error("List classes error:", error);
-    res.status(500).json({ error: "Failed to list classes" });
+    res.status(500).json({ error: "Failed to load classes" });
   }
 }
 
 export async function updateClass(req, res) {
-  const { classId } = req.params;
-  const { name, semester } = req.body;
-  if (!name || !semester) {
-    return res.status(400).json({ error: "Name and semester are required" });
+  const validation = updateClassSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ error: validation.error.issues[0].message });
   }
 
   try {
-    const updated = await classesService.updateClass(req.user.sub, classId, name, semester);
+    const updated = await classesService.updateClass(
+      req.user.sub,
+      req.params.id,
+      validation.data,
+    );
     res.status(200).json(updated);
   } catch (error) {
-    if (error.status) return res.status(error.status).json({ error: error.message });
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
     console.error("Update class error:", error);
     res.status(500).json({ error: "Failed to update class" });
   }
 }
 
 export async function archiveClass(req, res) {
-  const { classId } = req.params;
-
   try {
-    const archived = await classesService.archiveClass(req.user.sub, classId);
+    const archived = await classesService.archiveClass(req.user.sub, req.params.id);
     res.status(200).json(archived);
   } catch (error) {
-    if (error.status) return res.status(error.status).json({ error: error.message });
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
     console.error("Archive class error:", error);
     res.status(500).json({ error: "Failed to archive class" });
   }

@@ -1,13 +1,10 @@
-// apps/api/src/routes/biometric-enrollment.routes.js
 import { Router } from "express";
-import * as biometricsController from "../controllers/biometrics.controller.js";
+import * as biometricController from "../controllers/biometric-enrollment.controller.js";
 import { authenticate, requireRole } from "../middleware/auth.js";
+import { checkAccountStatus } from "../middleware/check-account-status.js";
 
 const router = Router();
 
-router.use(authenticate);
-router.use(requireRole("STUDENT"));
-
-router.post("/", biometricsController.enrollBiometric);
+router.post("/", authenticate, checkAccountStatus, requireRole("STUDENT"), biometricController.enrollBiometric);
 
 export default router;

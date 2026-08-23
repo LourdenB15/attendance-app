@@ -1,54 +1,41 @@
-// apps/api/src/services/sessions.service.js
 import * as sessionsRepository from "../repositories/sessions.repository.js";
 import * as classesRepository from "../repositories/classes.repository.js";
-import * as attendanceRepository from "../repositories/attendance.repository.js";
 import { httpError } from "../utils/http-error.js";
 
-export async function openSession(professorId, classId, durationMinutes = 60, label = null) {
-  const cls = await classesRepository.findById(classId);
-  if (!cls) throw httpError(404, "Class not found");
-  if (cls.professor_id !== professorId) throw httpError(403, "Not authorized to start a session for this class");
-  if (cls.is_archived) throw httpError(400, "Cannot start a session for an archived class");
+const DEFAULT_DURATION_MINUTES = 60;
+const UNIQUE_VIOLATION = "23505";
 
-  const existing = await sessionsRepository.findOpenByClass(classId);
-  if (existing) {
-    throw httpError(409, "An active session is already running for this class");
+export async function openSession(professorId, classId, durationMinutes, label) {
+  const foundClass = await classesRepository.findByIdAndProfessor(classId, professorId);
+  if (!foundClass) {
+    throw httpError(404, "Class not found");
   }
+  if (foundClass.is_archived) {
+    throw httpError(409, "This class is archived — cannot open a session for it");
+  }
+  
+  const minutes = durationMinutes ?? DEFAULT_DURATION_MINUTES;
+  const expiresAt = new Date(Date.now() + minutes * 60 * 1000);
 
-  return sessionsRepository.createSession(classId, professorId, durationMinutes, label);
+  try {
+    return await sessionsRepository.createSession(
+      classId,
+      professorId,
+      label ?? null,
+      expiresAt,
+    );
+  } catch (error) {
+    if (error.code === UNIQUE_VIOLATION) {
+      throw httpError(409, "This class already has an open session — close it first");
+    }
+    throw error;
+  }
 }
 
 export async function closeSession(professorId, sessionId) {
-  const session = await sessionsRepository.findById(sessionId);
-  if (!session) throw httpError(404, "Session not found");
-  if (session.opened_by !== professorId) throw httpError(403, "Not authorized to close this session");
-
-  return sessionsRepository.closeSession(sessionId);
-}
-
-export async function getSessionAttendance(professorId, sessionId) {
-  const session = await sessionsRepository.findById(sessionId);
-  if (!session) throw httpError(404, "Session not found");
-  if (session.opened_by !== professorId) throw httpError(403, "Not authorized to view attendance");
-
-  return attendanceRepository.findBySession(sessionId);
-}
-
-export async function overrideAttendance(professorId, sessionId, studentId, status, reason = null) {
-  const session = await sessionsRepository.findById(sessionId);
-  if (!session) throw httpError(404, "Session not found");
-  if (session.opened_by !== professorId) throw httpError(403, "Not authorized to override attendance");
-
-  return attendanceRepository.upsertAttendance(
-    sessionId,
-    studentId,
-    status,
-    "MANUAL_OVERRIDE",
-    professorId,
-    reason,
-  );
-}
-
-export async function getMyAttendance(studentId) {
-  return attendanceRepository.findByStudent(studentId);
+  const closed = await sessionsRepository.closeSession(sessionId, professorId);
+  if (!closed) {
+    throw httpError(404, "No open session found for you to close");
+  }
+  return closed;
 }

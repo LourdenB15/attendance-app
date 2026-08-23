@@ -1,11 +1,5 @@
-// apps/api/src/controllers/auth.controller.js
 import * as authService from "../services/auth.service.js";
-import {
-  registerSchema,
-  loginSchema,
-  changePasswordSchema,
-  googleLoginSchema,
-} from "../schemas/auth.schema.js";
+import { registerSchema, loginSchema, changePasswordSchema, forgotPasswordSchema, resetPasswordSchema, googleLoginSchema } from "../schemas/auth.schema.js";
 
 export async function register(req, res) {
   const validation = registerSchema.safeParse(req.body);
@@ -63,6 +57,58 @@ export async function login(req, res) {
   }
 }
 
+export async function changePassword(req, res) {
+  const validation = changePasswordSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ error: validation.error.issues[0].message });
+  }
+
+  const { currentPassword, newPassword } = validation.data;
+
+  try {
+    await authService.changePassword(req.user.sub, currentPassword, newPassword);
+    res.status(204).send();
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error("Change password error:", error);
+    res.status(500).json({ error: "Failed to change password" });
+  }
+}
+
+export async function forgotPassword(req, res) {
+  const validation = forgotPasswordSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ error: validation.error.issues[0].message });
+  }
+  try {
+    await authService.forgotPassword(validation.data.email);
+    res.json({ message: "If that email is registered, a reset link has been sent." });
+  } catch (error) {
+    console.error("Forgot password error:", error);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+}
+
+export async function resetPassword(req, res) {
+  const validation = resetPasswordSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ error: validation.error.issues[0].message });
+  }
+  const { token, newPassword } = validation.data;
+  try {
+    await authService.resetPassword(token, newPassword);
+    res.status(204).send();
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error("Reset password error:", error);
+    res.status(500).json({ error: "Failed to reset password" });
+  }
+}
+
 export async function me(req, res) {
   try {
     const user = await authService.getCurrentUser(req.user.sub);
@@ -83,26 +129,6 @@ export function logout(req, res) {
     sameSite: "lax",
   });
   res.status(204).send();
-}
-
-export async function changePassword(req, res) {
-  const validation = changePasswordSchema.safeParse(req.body);
-  if (!validation.success) {
-    return res.status(400).json({ error: validation.error.issues[0].message });
-  }
-
-  const { currentPassword, newPassword } = validation.data;
-
-  try {
-    await authService.changePassword(req.user.sub, currentPassword, newPassword);
-    res.status(204).send();
-  } catch (error) {
-    if (error.status) {
-      return res.status(error.status).json({ error: error.message });
-    }
-    console.error("Change password error:", error);
-    res.status(500).json({ error: "Failed to change password" });
-  }
 }
 
 export async function loginWithGoogle(req, res) {
