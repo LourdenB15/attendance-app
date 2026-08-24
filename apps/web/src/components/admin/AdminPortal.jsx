@@ -38,6 +38,16 @@ export function AdminPortal() {
     };
   }, [roleFilter, showToast]);
 
+  const handleUpdateRole = async (userId, newRole) => {
+    try {
+      const updated = await adminApi.updateUserRole(userId, newRole);
+      showToast("success", `Role updated to ${newRole} for ${updated.full_name}.`);
+      loadUsers(roleFilter);
+    } catch (err) {
+      showToast("error", err.message);
+    }
+  };
+
   const handleDeactivate = async (userId) => {
     if (!window.confirm("Are you sure you want to deactivate this user?")) return;
     try {
@@ -49,12 +59,22 @@ export function AdminPortal() {
     }
   };
 
+  const handleReactivate = async (userId) => {
+    try {
+      await adminApi.reactivateUser(userId);
+      showToast("success", "User reactivated successfully.");
+      loadUsers(roleFilter);
+    } catch (err) {
+      showToast("error", err.message);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between pb-4 border-b border-slate-200">
         <div>
           <h2 className="text-xl font-bold text-slate-900">Admin Control Center</h2>
-          <p className="text-xs text-slate-500 mt-0.5">Manage user accounts and professor invitations</p>
+          <p className="text-xs text-slate-500 mt-0.5">Manage user accounts, roles, and professor invitations</p>
         </div>
 
         <div className="flex bg-slate-200 p-1 rounded-xl text-xs font-semibold">
@@ -95,7 +115,9 @@ export function AdminPortal() {
           roleFilter={roleFilter}
           onRoleFilterChange={setRoleFilter}
           onRefresh={() => loadUsers(roleFilter)}
+          onUpdateRole={handleUpdateRole}
           onDeactivate={handleDeactivate}
+          onReactivate={handleReactivate}
         />
       )}
     </div>

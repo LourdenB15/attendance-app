@@ -1,3 +1,4 @@
+// apps/api/src/controllers/admin.controller.js
 import * as adminService from "../services/admin.service.js";
 import { createProfessorSchema } from "../schemas/admin.schema.js";
 
@@ -7,10 +8,10 @@ export async function createProfessor(req, res) {
     return res.status(400).json({ error: validation.error.issues[0].message });
   }
 
-  const { fullName, email } = validation.data;
+  const { fullName, email, password } = validation.data;
 
   try {
-    const user = await adminService.createProfessor(fullName, email);
+    const user = await adminService.createProfessor(fullName, email, password);
     res.status(201).json({ ...user });
   } catch (error) {
     if (error.code === "23505") {
@@ -31,6 +32,28 @@ export async function listUsers(req, res) {
   }
 }
 
+export async function updateUserRole(req, res) {
+  const { role } = req.body;
+  if (!role) {
+    return res.status(400).json({ error: "Role is required" });
+  }
+
+  try {
+    const updated = await adminService.updateUserRole(
+      req.user.sub,
+      req.params.id,
+      role.toUpperCase(),
+    );
+    res.status(200).json(updated);
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error("Update user role error:", error);
+    res.status(500).json({ error: "Failed to update user role" });
+  }
+}
+
 export async function deactivateUser(req, res) {
   try {
     const updated = await adminService.deactivateUser(req.user.sub, req.params.id);
@@ -44,3 +67,15 @@ export async function deactivateUser(req, res) {
   }
 }
 
+export async function reactivateUser(req, res) {
+  try {
+    const updated = await adminService.reactivateUser(req.params.id);
+    res.status(200).json(updated);
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error("Reactivate user error:", error);
+    res.status(500).json({ error: "Failed to reactivate user" });
+  }
+}

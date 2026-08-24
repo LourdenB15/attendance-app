@@ -45,6 +45,13 @@ async function request(path, options = {}) {
 // Authentication API
 export const authApi = {
   register: (body) => request("/auth/register", { method: "POST", body }),
+  verifyEmail: (payload) =>
+    request("/auth/verify-email", {
+      method: "POST",
+      body: typeof payload === "string" ? { code: payload } : payload,
+    }),
+  resendVerification: (email) =>
+    request("/auth/resend-verification", { method: "POST", body: { email } }),
   login: (body) => request("/auth/login", { method: "POST", body }),
   loginWithGoogle: (credential) =>
     request("/auth/google", { method: "POST", body: { credential } }),
@@ -66,8 +73,12 @@ export const adminApi = {
   },
   createProfessor: (body) =>
     request("/admin/professors", { method: "POST", body }),
+  updateUserRole: (id, role) =>
+    request(`/admin/users/${id}/role`, { method: "PATCH", body: { role } }),
   deactivateUser: (id) =>
     request(`/admin/users/${id}/deactivate`, { method: "POST" }),
+  reactivateUser: (id) =>
+    request(`/admin/users/${id}/reactivate`, { method: "POST" }),
 };
 
 // Classes API (Professor)
@@ -87,6 +98,8 @@ export const classesApi = {
 
 // Sessions & Attendance API (Professor)
 export const sessionsApi = {
+  getActiveSession: (classId) =>
+    request(`/sessions/active?classId=${encodeURIComponent(classId)}`, { method: "GET" }),
   openSession: (body) => request("/sessions", { method: "POST", body }),
   closeSession: (id) => request(`/sessions/${id}/close`, { method: "POST" }),
   getSessionAttendance: (sessionId) =>

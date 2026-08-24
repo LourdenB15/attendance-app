@@ -1,5 +1,13 @@
+// apps/api/src/controllers/auth.controller.js
 import * as authService from "../services/auth.service.js";
-import { registerSchema, loginSchema, changePasswordSchema, forgotPasswordSchema, resetPasswordSchema, googleLoginSchema } from "../schemas/auth.schema.js";
+import {
+  registerSchema,
+  loginSchema,
+  changePasswordSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  googleLoginSchema,
+} from "../schemas/auth.schema.js";
 
 export async function register(req, res) {
   const validation = registerSchema.safeParse(req.body);
@@ -10,24 +18,60 @@ export async function register(req, res) {
   const { fullName, email, password } = validation.data;
 
   try {
-    const { user, token } = await authService.register(
-      fullName,
-      email,
-      password,
-    );
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 24 * 60 * 60 * 1000,
-    });
-    res.status(201).json({ ...user });
+    const result = await authService.register(fullName, email, password);
+    res.status(201).json(result);
   } catch (error) {
     if (error.code === "23505") {
       return res.status(409).json({ error: "Email already registered" });
     }
     console.error("Register error:", error);
     res.status(500).json({ error: "Failed to create account" });
+  }
+}
+
+export async function verifyEmail(req, res) {
+  const { code, token, email } = req.body;
+  if (!code && !token) {
+    return res.status(400).json({ error: "6-digit verification code is required" });
+  }
+
+  try {
+    const { user, token: sessionToken } = await authService.verifyEmail({
+      code,
+      token,
+      email,
+    });
+    res.cookie("token", sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+    res.status(200).json({ user, message: "Email verified successfully!" });
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error("Verify email error:", error);
+    res.status(500).json({ error: "Failed to verify email" });
+  }
+}
+
+export async function resendVerification(req, res) {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: "Email is required" });
+  }
+
+  try {
+    const result = await authService.resendVerification(email);
+    res.status(200).json(result);
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error("Resend verification error:", error);
+    res.status(500).json({ error: "Failed to resend verification email" });
   }
 }
 
@@ -99,7 +143,12 @@ export async function resetPassword(req, res) {
   const { token, newPassword } = validation.data;
   try {
     await authService.resetPassword(token, newPassword);
-    res.status(204).send();
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    });
+    res.status(200).json({ message: "Password reset successfully! Please log in with your new password." });
   } catch (error) {
     if (error.status) {
       return res.status(error.status).json({ error: error.message });

@@ -53,10 +53,34 @@ export function AuthProvider({ children }) {
 
   const register = async ({ fullName, email, password }) => {
     try {
-      const user = await authApi.register({ fullName, email, password });
-      setCurrentUser(user);
-      showToast("success", `Account created! Welcome, ${user.full_name}.`);
-      return user;
+      const result = await authApi.register({ fullName, email, password });
+      showToast("info", result.message || "Please check your email to verify your account.");
+      return result;
+    } catch (err) {
+      showToast("error", err.message);
+      throw err;
+    }
+  };
+
+  const verifyEmail = async (token) => {
+    try {
+      const result = await authApi.verifyEmail(token);
+      if (result.user) {
+        setCurrentUser(result.user);
+      }
+      showToast("success", result.message || "Email verified successfully!");
+      return result;
+    } catch (err) {
+      showToast("error", err.message);
+      throw err;
+    }
+  };
+
+  const resendVerification = async (email) => {
+    try {
+      const result = await authApi.resendVerification(email);
+      showToast("info", result.message || "Verification email resent.");
+      return result;
     } catch (err) {
       showToast("error", err.message);
       throw err;
@@ -93,6 +117,8 @@ export function AuthProvider({ children }) {
         login,
         loginWithGoogle,
         register,
+        verifyEmail,
+        resendVerification,
         changePassword,
         logout,
       }}

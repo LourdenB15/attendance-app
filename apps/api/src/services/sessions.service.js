@@ -39,3 +39,11 @@ export async function closeSession(professorId, sessionId) {
   }
   return closed;
 }
+
+export async function getActiveSession(professorId, classId) {
+  const foundClass = await classesRepository.findByIdAndProfessor(classId, professorId);
+  if (!foundClass) {
+    throw httpError(404, "Class not found");
+  }
+  return sessionsRepository.findActiveSessionByClass(classId);
+}

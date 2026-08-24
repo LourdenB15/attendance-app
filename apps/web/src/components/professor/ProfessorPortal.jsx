@@ -11,7 +11,6 @@ import { EnrolledStudentsTable } from "./EnrolledStudentsTable";
 
 export function ProfessorPortal() {
   const { showToast } = useToast();
-  const [profTab, setProfTab] = useState("classes"); // "classes" | "class-detail"
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null);
   const [classStudents, setClassStudents] = useState([]);
@@ -45,6 +44,22 @@ export function ProfessorPortal() {
     }
   }, [showToast]);
 
+  const loadActiveSession = useCallback(async (classId) => {
+    try {
+      const session = await sessionsApi.getActiveSession(classId);
+      if (session) {
+        setActiveSession(session);
+        loadAttendance(session.id);
+      } else {
+        setActiveSession(null);
+        setSessionAttendance([]);
+      }
+    } catch {
+      setActiveSession(null);
+      setSessionAttendance([]);
+    }
+  }, [loadAttendance]);
+
   useEffect(() => {
     let ignore = false;
     async function fetchInitialClasses() {
@@ -63,15 +78,15 @@ export function ProfessorPortal() {
 
   const handleSelectClass = (cls) => {
     setSelectedClass(cls);
-    setProfTab("class-detail");
     loadStudents(cls.id);
+    loadActiveSession(cls.id);
   };
 
   const handleBackToClasses = () => {
     setSelectedClass(null);
-    setProfTab("classes");
     setActiveSession(null);
     setSessionAttendance([]);
+    loadClasses();
   };
 
   return (
@@ -82,31 +97,18 @@ export function ProfessorPortal() {
           <p className="text-xs text-slate-500 mt-0.5">Manage classes, launch attendance sessions, and review rosters</p>
         </div>
 
-        <div className="flex bg-slate-200 p-1 rounded-xl text-xs font-semibold">
+        {selectedClass && (
           <button
             type="button"
             onClick={handleBackToClasses}
-            className={`px-3 py-1.5 rounded-lg transition ${
-              profTab === "classes" ? "bg-white text-indigo-600 shadow-xs font-bold" : "text-slate-600 hover:text-slate-900"
-            }`}
+            className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition flex items-center gap-1.5"
           >
-            Classes
+            ← Back to Classes List
           </button>
-          {selectedClass && (
-            <button
-              type="button"
-              onClick={() => setProfTab("class-detail")}
-              className={`px-3 py-1.5 rounded-lg transition ${
-                profTab === "class-detail" ? "bg-white text-indigo-600 shadow-xs font-bold" : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              Class: {selectedClass.name}
-            </button>
-          )}
-        </div>
+        )}
       </div>
 
-      {profTab === "classes" && (
+      {!selectedClass ? (
         <div className="space-y-6">
           <CreateClassCard onCreated={loadClasses} />
           <ClassesTable
@@ -115,9 +117,7 @@ export function ProfessorPortal() {
             onRefresh={loadClasses}
           />
         </div>
-      )}
-
-      {profTab === "class-detail" && selectedClass && (
+      ) : (
         <div className="space-y-6">
           <ClassDetailHeader
             selectedClass={selectedClass}

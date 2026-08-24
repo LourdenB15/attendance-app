@@ -1,12 +1,13 @@
 // apps/web/src/components/auth/LoginForm.jsx
 import { useState } from "react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/useAuth";
+import { GoogleLoginButton } from "./GoogleLoginButton";
+import { PasswordInput } from "../ui/PasswordInput";
 
-export function LoginForm() {
-  const { login, loginWithGoogle } = useAuth();
+export function LoginForm({ onForgotPassword }) {
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [googleCredential, setGoogleCredential] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleStandardLogin = async (e) => {
@@ -14,19 +15,6 @@ export function LoginForm() {
     setLoading(true);
     try {
       await login({ email, password });
-    } catch {
-      // toast shown in context
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleAuth = async (e) => {
-    e.preventDefault();
-    if (!googleCredential.trim()) return;
-    setLoading(true);
-    try {
-      await loginWithGoogle(googleCredential.trim());
     } catch {
       // toast shown in context
     } finally {
@@ -51,16 +39,25 @@ export function LoginForm() {
           />
         </div>
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
-            Password
-          </label>
-          <input
-            type="password"
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600">
+              Password
+            </label>
+            {onForgotPassword && (
+              <button
+                type="button"
+                onClick={onForgotPassword}
+                className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold transition"
+              >
+                Forgot password?
+              </button>
+            )}
+          </div>
+          <PasswordInput
             required
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
           />
         </div>
         <button
@@ -81,27 +78,7 @@ export function LoginForm() {
         </span>
       </div>
 
-      <form onSubmit={handleGoogleAuth} className="space-y-3">
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
-            Google Credential (ID Token)
-          </label>
-          <input
-            type="text"
-            placeholder="Paste Google JWT credential..."
-            value={googleCredential}
-            onChange={(e) => setGoogleCredential(e.target.value)}
-            className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition"
-        >
-          Sign In with Google (Student)
-        </button>
-      </form>
+      <GoogleLoginButton />
     </div>
   );
 }

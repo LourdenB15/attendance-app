@@ -8,10 +8,11 @@ export async function openSession(req, res) {
   }
 
   const { classId, durationMinutes, label } = validation.data;
+  const professorId = req.user.sub || req.user.id;
 
   try {
     const session = await sessionsService.openSession(
-      req.user.sub,
+      professorId,
       classId,
       durationMinutes,
       label,
@@ -27,8 +28,9 @@ export async function openSession(req, res) {
 }
 
 export async function closeSession(req, res) {
+  const professorId = req.user.sub || req.user.id;
   try {
-    const session = await sessionsService.closeSession(req.user.sub, req.params.id);
+    const session = await sessionsService.closeSession(professorId, req.params.id);
     res.status(200).json(session);
   } catch (error) {
     if (error.status) {
@@ -36,5 +38,24 @@ export async function closeSession(req, res) {
     }
     console.error("Close session error:", error);
     res.status(500).json({ error: "Failed to close session" });
+  }
+}
+
+export async function getActiveSession(req, res) {
+  const { classId } = req.query;
+  if (!classId) {
+    return res.status(400).json({ error: "classId query param is required" });
+  }
+  const professorId = req.user.sub || req.user.id;
+
+  try {
+    const session = await sessionsService.getActiveSession(professorId, classId);
+    res.json(session);
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error("Get active session error:", error);
+    res.status(500).json({ error: "Failed to fetch active session" });
   }
 }

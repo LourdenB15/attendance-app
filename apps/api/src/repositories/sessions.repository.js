@@ -23,6 +23,20 @@ export async function closeSession(sessionId, professorId) {
   return result.rows[0];
 }
 
+export async function findActiveSessionByClass(classId) {
+  const result = await pool.query(
+    `SELECT id, class_id, label, status, opened_at, expires_at
+     FROM attendance_sessions
+     WHERE class_id = $1
+       AND status = 'OPEN'
+       AND expires_at > now()
+     ORDER BY opened_at DESC
+     LIMIT 1`,
+    [classId],
+  );
+  return result.rows[0] || null;
+}
+
 export async function findByIdAndProfessor(sessionId, professorId) {
   const result = await pool.query(
     `SELECT s.id, s.class_id, s.status, s.expires_at

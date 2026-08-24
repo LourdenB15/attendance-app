@@ -6,6 +6,7 @@ import { checkAccountStatus } from "../middleware/check-account-status.js";
 
 const router = Router();
 
+router.get("/active", authenticate, checkAccountStatus, requireRole("PROFESSOR"), sessionsController.getActiveSession);
 router.post("/", authenticate, checkAccountStatus, requireRole("PROFESSOR"), sessionsController.openSession);
 router.post("/:id/close", authenticate, checkAccountStatus, requireRole("PROFESSOR"), sessionsController.closeSession);
 router.get("/:id/attendance", authenticate, checkAccountStatus, requireRole("PROFESSOR"), attendanceController.getAttendance);

@@ -1,6 +1,6 @@
 {
   "name": "attendance-app",
-  "private":"true",
+  "private": "true",
   "version": "1.0.0",
   "description": "",
   "workspaces": [
@@ -14,5 +14,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@liveness/engine": "^1.0.4",
+    "@liveness/sdk": "^1.0.4"
+  }
 }

@@ -1,3 +1,4 @@
+// apps/api/src/routes/admin.routes.js
 import { Router } from "express";
 import * as adminController from "../controllers/admin.controller.js";
 import { authenticate, requireRole } from "../middleware/auth.js";
@@ -7,6 +8,8 @@ const router = Router();
 
 router.post("/professors", authenticate, checkAccountStatus, requireRole("ADMIN"), adminController.createProfessor);
 router.get("/users", authenticate, checkAccountStatus, requireRole("ADMIN"), adminController.listUsers);
+router.patch("/users/:id/role", authenticate, checkAccountStatus, requireRole("ADMIN"), adminController.updateUserRole);
 router.post("/users/:id/deactivate", authenticate, checkAccountStatus, requireRole("ADMIN"), adminController.deactivateUser);
+router.post("/users/:id/reactivate", authenticate, checkAccountStatus, requireRole("ADMIN"), adminController.reactivateUser);
 
 export default router;
