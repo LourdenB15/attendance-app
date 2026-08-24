@@ -1,5 +1,5 @@
 // apps/web/src/components/professor/ProfessorPortal.jsx
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { classesApi, sessionsApi } from "../../api";
 import { useToast } from "../../context/useToast";
 import { CreateClassCard } from "./CreateClassCard";
@@ -17,30 +17,41 @@ export function ProfessorPortal() {
   const [activeSession, setActiveSession] = useState(null);
   const [sessionAttendance, setSessionAttendance] = useState([]);
 
-  const loadClasses = useCallback(async () => {
+  const selectedClassRef = useRef(selectedClass);
+  const activeSessionRef = useRef(activeSession);
+
+  useEffect(() => {
+    selectedClassRef.current = selectedClass;
+  }, [selectedClass]);
+
+  useEffect(() => {
+    activeSessionRef.current = activeSession;
+  }, [activeSession]);
+
+  const loadClasses = useCallback(async (silent = false) => {
     try {
       const list = await classesApi.getClasses();
       setClasses(list);
     } catch (err) {
-      showToast("error", err.message);
+      if (!silent) showToast("error", err.message);
     }
   }, [showToast]);
 
-  const loadStudents = useCallback(async (classId) => {
+  const loadStudents = useCallback(async (classId, silent = false) => {
     try {
       const list = await classesApi.getClassStudents(classId);
       setClassStudents(list);
     } catch (err) {
-      showToast("error", err.message);
+      if (!silent) showToast("error", err.message);
     }
   }, [showToast]);
 
-  const loadAttendance = useCallback(async (sessionId) => {
+  const loadAttendance = useCallback(async (sessionId, silent = false) => {
     try {
       const att = await sessionsApi.getSessionAttendance(sessionId);
       setSessionAttendance(att);
     } catch (err) {
-      showToast("error", err.message);
+      if (!silent) showToast("error", err.message);
     }
   }, [showToast]);
 
@@ -49,7 +60,7 @@ export function ProfessorPortal() {
       const session = await sessionsApi.getActiveSession(classId);
       if (session) {
         setActiveSession(session);
-        loadAttendance(session.id);
+        loadAttendance(session.id, true);
       } else {
         setActiveSession(null);
         setSessionAttendance([]);
@@ -60,9 +71,10 @@ export function ProfessorPortal() {
     }
   }, [loadAttendance]);
 
+  // Initial fetch and focus / visibility re-fetch
   useEffect(() => {
     let ignore = false;
-    async function fetchInitialClasses() {
+    async function fetchInitial() {
       try {
         const list = await classesApi.getClasses();
         if (!ignore) setClasses(list);
@@ -70,11 +82,50 @@ export function ProfessorPortal() {
         if (!ignore) showToast("error", err.message);
       }
     }
-    fetchInitialClasses();
+    fetchInitial();
+
+    const handleFocus = () => {
+      if (document.visibilityState === "visible") {
+        if (selectedClassRef.current) {
+          loadStudents(selectedClassRef.current.id, true);
+          loadActiveSession(selectedClassRef.current.id);
+        } else {
+          loadClasses(true);
+        }
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleFocus);
+
     return () => {
       ignore = true;
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleFocus);
     };
-  }, [showToast]);
+  }, [loadClasses, loadStudents, loadActiveSession, showToast]);
+
+  // Live polling interval
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (document.hidden) return; // don't poll if backgrounded
+
+      if (selectedClassRef.current) {
+        if (activeSessionRef.current) {
+          // Poll attendance roster in real-time
+          loadAttendance(activeSessionRef.current.id, true);
+        } else {
+          // Check if session opened
+          loadActiveSession(selectedClassRef.current.id, true);
+        }
+      } else {
+        // Poll classes table
+        loadClasses(true);
+      }
+    }, 3000);
+
+    return () => clearInterval(timer);
+  }, [loadAttendance, loadActiveSession, loadClasses]);
 
   const handleSelectClass = (cls) => {
     setSelectedClass(cls);
@@ -93,8 +144,16 @@ export function ProfessorPortal() {
     <div className="space-y-6">
       <div className="flex items-center justify-between pb-4 border-b border-slate-200">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">Professor Portal</h2>
-          <p className="text-xs text-slate-500 mt-0.5">Manage classes, launch attendance sessions, and review rosters</p>
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-bold text-slate-900">Professor Portal</h2>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              Live Sync Active
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Manage classes, launch attendance sessions, and review rosters
+          </p>
         </div>
 
         {selectedClass && (

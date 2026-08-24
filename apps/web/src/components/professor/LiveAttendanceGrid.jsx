@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Badge } from "../ui/Badge";
 import { sessionsApi } from "../../api";
-import { useToast } from "../../context/ToastContext";
+import { useToast } from "../../context/useToast";
 
 export function LiveAttendanceGrid({ activeSessionId, attendance, onOverrideSuccess }) {
   const [studentId, setStudentId] = useState("");

@@ -1,5 +1,5 @@
 // apps/web/src/components/admin/AdminPortal.jsx
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { adminApi } from "../../api";
 import { useAuth } from "../../context/useAuth";
 import { useToast } from "../../context/useToast";
@@ -13,12 +13,17 @@ export function AdminPortal() {
   const [userList, setUserList] = useState([]);
   const [roleFilter, setRoleFilter] = useState("ALL");
 
-  const loadUsers = useCallback(async (role) => {
+  const roleFilterRef = useRef(roleFilter);
+  useEffect(() => {
+    roleFilterRef.current = roleFilter;
+  }, [roleFilter]);
+
+  const loadUsers = useCallback(async (role, silent = false) => {
     try {
       const users = await adminApi.getUsers(role);
       setUserList(users);
     } catch (err) {
-      showToast("error", err.message);
+      if (!silent) showToast("error", err.message);
     }
   }, [showToast]);
 
@@ -33,10 +38,22 @@ export function AdminPortal() {
       }
     }
     fetchUsers();
+
+    const handleFocus = () => {
+      if (document.visibilityState === "visible") {
+        loadUsers(roleFilterRef.current, true);
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleFocus);
+
     return () => {
       ignore = true;
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleFocus);
     };
-  }, [roleFilter, showToast]);
+  }, [roleFilter, loadUsers, showToast]);
 
   const handleUpdateRole = async (userId, newRole) => {
     try {
@@ -99,25 +116,42 @@ export function AdminPortal() {
         </div>
       </div>
 
+      {adminTab === "users" && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold uppercase text-slate-500">Filter Role:</span>
+            {["ALL", "STUDENT", "PROFESSOR", "ADMIN"].map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => setRoleFilter(r)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition ${
+                  roleFilter === r
+                    ? "bg-indigo-600 text-white shadow-xs"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
+
+          <UserDirectoryTable
+            currentUserId={currentUser?.id}
+            users={userList}
+            onRoleChange={handleUpdateRole}
+            onDeactivate={handleDeactivate}
+            onReactivate={handleReactivate}
+          />
+        </div>
+      )}
+
       {adminTab === "create-prof" && (
         <CreateProfessorCard
           onCreated={() => {
-            loadUsers(roleFilter);
             setAdminTab("users");
+            loadUsers(roleFilter);
           }}
-        />
-      )}
-
-      {adminTab === "users" && (
-        <UserDirectoryTable
-          users={userList}
-          currentUserId={currentUser?.id}
-          roleFilter={roleFilter}
-          onRoleFilterChange={setRoleFilter}
-          onRefresh={() => loadUsers(roleFilter)}
-          onUpdateRole={handleUpdateRole}
-          onDeactivate={handleDeactivate}
-          onReactivate={handleReactivate}
         />
       )}
     </div>

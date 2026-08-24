@@ -1,5 +1,5 @@
 // apps/web/src/components/student/StudentPortal.jsx
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { studentApi, livenessApi } from "../../api";
 import { useToast } from "../../context/useToast";
 import { JoinClassCard } from "./JoinClassCard";
@@ -17,31 +17,37 @@ export function StudentPortal() {
   const [selectedClassId, setSelectedClassId] = useState(null);
   const [activeScanningClassId, setActiveScanningClassId] = useState(null);
 
-  const loadClasses = useCallback(async () => {
+  const studentTabRef = useRef(studentTab);
+  useEffect(() => {
+    studentTabRef.current = studentTab;
+  }, [studentTab]);
+
+  const loadClasses = useCallback(async (silent = false) => {
     try {
       const list = await studentApi.getMyClasses();
       setClasses(list);
     } catch (err) {
-      showToast("error", err.message);
+      if (!silent) showToast("error", err.message);
     }
   }, [showToast]);
 
-  const loadAttendance = useCallback(async () => {
+  const loadAttendance = useCallback(async (silent = false) => {
     try {
       const att = await studentApi.getMyAttendance();
       setAttendance(att);
     } catch (err) {
-      showToast("error", err.message);
+      if (!silent) showToast("error", err.message);
     }
   }, [showToast]);
 
-  const refreshAll = useCallback(async () => {
-    await Promise.all([loadClasses(), loadAttendance()]);
+  const refreshAll = useCallback(async (silent = false) => {
+    await Promise.all([loadClasses(silent), loadAttendance(silent)]);
   }, [loadClasses, loadAttendance]);
 
+  // Initial fetch and focus / visibility re-fetch
   useEffect(() => {
     let ignore = false;
-    async function fetchInitialData() {
+    async function fetchInitial() {
       try {
         const [list, att] = await Promise.all([
           studentApi.getMyClasses(),
@@ -55,11 +61,38 @@ export function StudentPortal() {
         if (!ignore) showToast("error", err.message);
       }
     }
-    fetchInitialData();
+    fetchInitial();
+
+    const handleFocus = () => {
+      if (document.visibilityState === "visible") {
+        refreshAll(true);
+      }
+    };
+
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleFocus);
+
     return () => {
       ignore = true;
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleFocus);
     };
-  }, [showToast]);
+  }, [refreshAll, showToast]);
+
+  // Live polling interval (every 4 seconds for active classes & session statuses)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (document.hidden) return; // don't poll if backgrounded
+
+      if (studentTabRef.current === "classes") {
+        loadClasses(true);
+      } else if (studentTabRef.current === "history") {
+        loadAttendance(true);
+      }
+    }, 4000);
+
+    return () => clearInterval(timer);
+  }, [loadClasses, loadAttendance]);
 
   const selectedClass = useMemo(() => {
     if (!selectedClassId) return null;
@@ -77,7 +110,7 @@ export function StudentPortal() {
 
   const handleBackToClasses = () => {
     setSelectedClassId(null);
-    loadClasses();
+    loadClasses(true);
   };
 
   const handleDirectTakeAttendance = (classId) => {
@@ -98,7 +131,7 @@ export function StudentPortal() {
       const res = await livenessApi.checkIn(cls.active_session_id, livenessResult);
       if (res.present) {
         showToast("success", `Attendance recorded as PRESENT for ${cls.name}!`);
-        await refreshAll();
+        await refreshAll(true);
       } else {
         showToast("error", res.message || "Face not recognized. Attendance not recorded.");
       }
@@ -112,7 +145,13 @@ export function StudentPortal() {
       {/* Top Header & Stable Static Navigation Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">Student Hub</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-bold text-slate-900">Student Hub</h2>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              Live Sync Active
+            </span>
+          </div>
           <p className="text-xs text-slate-500 mt-0.5">
             View enrolled classes, open live attendance sessions, and register biometrics
           </p>
@@ -173,12 +212,12 @@ export function StudentPortal() {
           <StudentClassDetail
             classItem={selectedClass}
             onBack={handleBackToClasses}
-            onAttendanceMarked={refreshAll}
+            onAttendanceMarked={() => refreshAll(true)}
             attendanceRecords={attendance}
           />
         ) : (
           <div className="space-y-6">
-            <JoinClassCard onJoined={loadClasses} />
+            <JoinClassCard onJoined={() => loadClasses(false)} />
             <EnrolledClassesTable
               classes={classes}
               onSelectClass={handleSelectClass}
@@ -191,7 +230,7 @@ export function StudentPortal() {
       {studentTab === "enroll-face" && <BiometricEnrollmentCard />}
 
       {studentTab === "history" && (
-        <AttendanceHistoryTable records={attendance} onRefresh={loadAttendance} />
+        <AttendanceHistoryTable records={attendance} onRefresh={() => loadAttendance(false)} />
       )}
     </div>
   );
