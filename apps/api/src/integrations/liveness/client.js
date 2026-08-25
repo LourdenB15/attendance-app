@@ -44,6 +44,10 @@ export function enroll(livenessResult, name) {
   return post("/enroll", { name, ...livenessResult });
 }
 
+export function verify(livenessResult, threshold) {
+  return post("/verify", { ...livenessResult, threshold });
+}
+
 export function verifyOne(livenessResult, targetId) {
   return post("/verify-one", { ...livenessResult, targetId });
 }

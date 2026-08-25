@@ -38,3 +38,15 @@ export async function findActiveByStudent(studentId) {
   );
   return result.rows[0];
 }
+
+export async function findActiveByLivenessExternalId(livenessExternalId) {
+  const result = await pool.query(
+    `SELECT be.id, be.student_id, be.liveness_external_id, be.status, be.enrolled_at, u.full_name, u.email
+     FROM biometric_enrollments be
+     JOIN users u ON u.id = be.student_id
+     WHERE be.liveness_external_id = $1 AND be.revoked_at IS NULL`,
+    [livenessExternalId],
+  );
+  return result.rows[0];
+}
+
