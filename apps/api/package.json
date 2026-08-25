@@ -8,8 +8,7 @@
     "seed:admin": "node src/db/seed-admin.js",
     "migrate:up": "node-pg-migrate up -m ./src/db/migrations",
     "migrate:down": "node-pg-migrate down -m ./src/db/migrations",
-    "migrate:create": "node-pg-migrate create -m ./src/db/migrations -j sql",
-    "seed:admin": "node src/db/seed-admin.js"
+    "migrate:create": "node-pg-migrate create -m ./src/db/migrations -j sql"    
   },
   "keywords": [],
   "author": "",
