@@ -26,3 +26,17 @@ export async function enrollBiometric(req, res) {
     res.status(500).json({ error: "Failed to enroll biometric" });
   }
 }
+
+export async function getEnrollmentStatus(req, res) {
+  try {
+    const status = await enrollmentService.getStudentEnrollmentStatus(req.user.sub);
+    res.status(200).json(status);
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error("Get biometric status error:", error);
+    res.status(500).json({ error: "Failed to get biometric enrollment status" });
+  }
+}
+

@@ -5,6 +5,7 @@ import * as usersRepository from "../repositories/users.repository.js";
 import crypto from "crypto";
 import * as resetTokensRepository from "../repositories/password-reset-tokens.repository.js";
 import * as emailVerificationTokensRepository from "../repositories/email-verification-tokens.repository.js";
+import * as biometricEnrollmentsRepository from "../repositories/biometric-enrollments.repository.js";
 import * as emailService from "./email.service.js";
 import { httpError } from "../utils/http-error.js";
 import { OAuth2Client } from "google-auth-library";
@@ -185,6 +186,13 @@ export async function getCurrentUser(userId) {
     throw httpError(404, "User not found");
   }
   const { password_hash, ...safeUser } = user;
+
+  if (safeUser.role === "STUDENT") {
+    const biometric = await biometricEnrollmentsRepository.findActiveByStudent(userId);
+    safeUser.has_biometric_enrolled = Boolean(biometric);
+    safeUser.biometric_enrolled_at = biometric?.enrolled_at || null;
+  }
+
   return safeUser;
 }
 

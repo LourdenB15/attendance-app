@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { studentApi, livenessApi } from "../../api";
 import { useToast } from "../../context/useToast";
+import { useAuth } from "../../context/useAuth";
 import { JoinClassCard } from "./JoinClassCard";
 import { EnrolledClassesTable } from "./EnrolledClassesTable";
 import { StudentClassDetail } from "./StudentClassDetail";
@@ -10,12 +11,15 @@ import { AttendanceHistoryTable } from "./AttendanceHistoryTable";
 import { LivenessCamera } from "../liveness/LivenessCamera";
 
 export function StudentPortal() {
+  const { currentUser, setBiometricEnrolled } = useAuth();
   const { showToast } = useToast();
   const [studentTab, setStudentTab] = useState("classes"); // "classes" | "enroll-face" | "history"
   const [classes, setClasses] = useState([]);
   const [attendance, setAttendance] = useState([]);
   const [selectedClassId, setSelectedClassId] = useState(null);
   const [activeScanningClassId, setActiveScanningClassId] = useState(null);
+
+  const isBiometricEnrolled = Boolean(currentUser?.has_biometric_enrolled);
 
   const studentTabRef = useRef(studentTab);
   useEffect(() => {
@@ -49,13 +53,17 @@ export function StudentPortal() {
     let ignore = false;
     async function fetchInitial() {
       try {
-        const [list, att] = await Promise.all([
+        const [list, att, statusRes] = await Promise.allSettled([
           studentApi.getMyClasses(),
           studentApi.getMyAttendance(),
+          livenessApi.getEnrollmentStatus(),
         ]);
         if (!ignore) {
-          setClasses(list);
-          setAttendance(att);
+          if (list.status === "fulfilled") setClasses(list.value);
+          if (att.status === "fulfilled") setAttendance(att.value);
+          if (statusRes.status === "fulfilled" && statusRes.value.isEnrolled) {
+            setBiometricEnrolled(true);
+          }
         }
       } catch (err) {
         if (!ignore) showToast("error", err.message);
@@ -77,7 +85,7 @@ export function StudentPortal() {
       window.removeEventListener("focus", handleFocus);
       document.removeEventListener("visibilitychange", handleFocus);
     };
-  }, [refreshAll, showToast]);
+  }, [refreshAll, showToast, setBiometricEnrolled]);
 
   // Live polling interval (every 4 seconds for active classes & session statuses)
   useEffect(() => {
@@ -114,6 +122,12 @@ export function StudentPortal() {
   };
 
   const handleDirectTakeAttendance = (classId) => {
+    if (!isBiometricEnrolled) {
+      showToast("error", "Please enroll your face first in the Face Setup tab.");
+      setStudentTab("enroll-face");
+      return;
+    }
+
     const cls = classes.find((c) => c.class_id === classId);
     if (!cls || !cls.active_session_id) {
       showToast("error", "No active session is open for this class.");
@@ -174,13 +188,16 @@ export function StudentPortal() {
           <button
             type="button"
             onClick={() => setStudentTab("enroll-face")}
-            className={`px-3.5 py-1.5 rounded-lg transition ${
+            className={`px-3.5 py-1.5 rounded-lg transition relative ${
               studentTab === "enroll-face"
                 ? "bg-white text-indigo-600 shadow-xs font-bold"
                 : "text-slate-600 hover:text-slate-900"
             }`}
           >
             Face Setup
+            {!isBiometricEnrolled && (
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-500 ring-2 ring-white"></span>
+            )}
           </button>
           <button
             type="button"
@@ -199,8 +216,35 @@ export function StudentPortal() {
         </div>
       </div>
 
+      {/* Enrollment Reminder Banner if unenrolled */}
+      {studentTab === "classes" && !isBiometricEnrolled && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-lg font-bold shrink-0">
+              👤
+            </div>
+            <div>
+              <h4 className="text-xs font-bold text-amber-950">
+                Action Required: Register Your Face Profile
+              </h4>
+              <p className="text-[11px] text-amber-800 mt-0.5">
+                You must complete biometric face enrollment before you can check into live classes.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setStudentTab("enroll-face")}
+            className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-xs shadow-xs transition shrink-0"
+          >
+            Set Up Face Now →
+          </button>
+        </div>
+      )}
+
       {activeScanningClass && (
         <LivenessCamera
+          mode="attendance"
           title={`Take Attendance: ${activeScanningClass.name}`}
           onComplete={handleDirectScanSuccess}
           onCancel={() => setActiveScanningClassId(null)}
@@ -213,6 +257,7 @@ export function StudentPortal() {
             classItem={selectedClass}
             onBack={handleBackToClasses}
             onAttendanceMarked={() => refreshAll(true)}
+            onGoToEnroll={() => setStudentTab("enroll-face")}
             attendanceRecords={attendance}
           />
         ) : (
@@ -220,6 +265,7 @@ export function StudentPortal() {
             <JoinClassCard onJoined={() => loadClasses(false)} />
             <EnrolledClassesTable
               classes={classes}
+              isBiometricEnrolled={isBiometricEnrolled}
               onSelectClass={handleSelectClass}
               onTakeAttendance={handleDirectTakeAttendance}
             />
@@ -227,7 +273,14 @@ export function StudentPortal() {
         )
       )}
 
-      {studentTab === "enroll-face" && <BiometricEnrollmentCard />}
+      {studentTab === "enroll-face" && (
+        <BiometricEnrollmentCard
+          onEnrollmentComplete={() => {
+            refreshAll(true);
+            setStudentTab("classes");
+          }}
+        />
+      )}
 
       {studentTab === "history" && (
         <AttendanceHistoryTable records={attendance} onRefresh={() => loadAttendance(false)} />

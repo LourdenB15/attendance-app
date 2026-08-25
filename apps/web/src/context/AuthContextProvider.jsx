@@ -109,6 +109,20 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const refreshUser = async () => {
+    try {
+      const user = await authApi.getMe();
+      setCurrentUser(user);
+      return user;
+    } catch {
+      return null;
+    }
+  };
+
+  const setBiometricEnrolled = (enrolled = true) => {
+    setCurrentUser((prev) => (prev ? { ...prev, has_biometric_enrolled: enrolled } : null));
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -121,6 +135,8 @@ export function AuthProvider({ children }) {
         resendVerification,
         changePassword,
         logout,
+        refreshUser,
+        setBiometricEnrolled,
       }}
     >
       {children}

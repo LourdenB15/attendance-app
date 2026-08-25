@@ -1,5 +1,9 @@
-// apps/web/src/components/student/EnrolledClassesTable.jsx
-export function EnrolledClassesTable({ classes, onSelectClass, onTakeAttendance }) {
+export function EnrolledClassesTable({
+  classes,
+  onSelectClass,
+  onTakeAttendance,
+  isBiometricEnrolled = true,
+}) {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
       <div className="p-4 border-b border-slate-100 flex items-center justify-between">
@@ -88,9 +92,13 @@ export function EnrolledClassesTable({ classes, onSelectClass, onTakeAttendance 
                             e.stopPropagation();
                             if (onTakeAttendance) onTakeAttendance(c.class_id);
                           }}
-                          className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shadow-xs text-xs transition inline-flex items-center gap-1.5"
+                          className={`px-3.5 py-1.5 font-bold rounded-lg shadow-xs text-xs transition inline-flex items-center gap-1.5 ${
+                            !isBiometricEnrolled
+                              ? "bg-amber-600 hover:bg-amber-700 text-white"
+                              : "bg-indigo-600 hover:bg-indigo-700 text-white"
+                          }`}
                         >
-                          📸 Take Attendance
+                          {!isBiometricEnrolled ? "👤 Enroll Face First" : "📸 Take Attendance"}
                         </button>
                       ) : (
                         <button

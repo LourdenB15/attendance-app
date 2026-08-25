@@ -16,18 +16,19 @@ export function LivenessCamera({
   onComplete,
   onCancel,
   title = "Liveness Face Scan",
+  mode = "attendance", // "attendance" | "enrollment"
+  defaultChallenges,
 }) {
+  const isAttendance = mode === "attendance";
   const [uiState, setUiState] = useState(UI_STATE.LOADING_MODELS);
   const [instruction, setInstruction] = useState("Loading AI models, please wait...");
   const [currentChallenge, setCurrentChallenge] = useState(null);
   const [distanceHint, setDistanceHint] = useState(null);
   const [progress, setProgress] = useState(0);
-  const [selectedChallenges, setSelectedChallenges] = useState([
-    "WAITING",
-    "BLINK",
-    "TURN_LEFT",
-    "TURN_RIGHT",
-  ]);
+  const [selectedChallenges, setSelectedChallenges] = useState(() => {
+    if (defaultChallenges) return defaultChallenges;
+    return isAttendance ? ["WAITING"] : ["WAITING", "BLINK", "TURN_LEFT", "TURN_RIGHT"];
+  });
   const [resultData, setResultData] = useState(null);
 
   const videoRef = useRef(null);
@@ -60,13 +61,21 @@ export function LivenessCamera({
     sdk.on("ready", () => {
       if (!isMounted) return;
       setUiState(UI_STATE.READY_TO_START);
-      setInstruction('Click "Start Session" to begin biometric scan.');
+      setInstruction(
+        isAttendance
+          ? 'Look at the camera and click "Check In Now"'
+          : 'Click "Start Session" to begin biometric face scan.'
+      );
     });
 
     sdk.on("challenge", ({ type, instruction: challengeInstruction, distance }) => {
       if (!isMounted) return;
       setCurrentChallenge(type);
-      setInstruction(challengeInstruction || `Perform: ${type}`);
+      setInstruction(
+        isAttendance && type === "WAITING"
+          ? "Align face in frame to verify identity..."
+          : challengeInstruction || `Perform: ${type}`
+      );
       setDistanceHint(distance);
       setProgress(0);
     });
@@ -81,11 +90,19 @@ export function LivenessCamera({
       setCurrentChallenge(null);
       setResultData(livenessResult);
       setUiState(UI_STATE.SUCCESS);
-      setInstruction("Liveness Verification Passed!");
+      setInstruction(isAttendance ? "Identity Verified!" : "Biometric Scan Passed!");
       try {
         sdk.stop(videoRef.current);
       } catch {
         // ignore
+      }
+
+      if (isAttendance && onComplete) {
+        setTimeout(() => {
+          if (isMounted) {
+            onComplete(livenessResult);
+          }
+        }, 600);
       }
     });
 
@@ -171,8 +188,8 @@ export function LivenessCamera({
         </button>
       </div>
 
-      {/* Challenge Checklist Selection (When Ready or Idle) */}
-      {(uiState === UI_STATE.READY_TO_START || uiState === UI_STATE.LOADING_MODELS) && (
+      {/* Challenge Checklist Selection (When Ready or Idle in Enrollment Mode) */}
+      {(uiState === UI_STATE.READY_TO_START || uiState === UI_STATE.LOADING_MODELS) && !isAttendance && (
         <div className="mb-4 w-full rounded-2xl border border-slate-200 bg-slate-50 p-3.5">
           <h4 className="mb-2 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
             Active Challenges Sequence
@@ -264,7 +281,9 @@ export function LivenessCamera({
               className="flex transform items-center gap-2 rounded-full px-8 py-3.5 font-bold shadow-xl transition-all bg-blue-600 text-white hover:scale-105 hover:bg-blue-500 active:scale-95 text-sm"
             >
               {uiState === UI_STATE.READY_TO_START
-                ? "▶ Start Session"
+                ? isAttendance
+                  ? "▶ Check In Now"
+                  : "▶ Start Face Enrollment"
                 : "🔄 Retry Check"}
             </button>
           </div>

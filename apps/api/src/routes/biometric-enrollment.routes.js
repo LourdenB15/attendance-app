@@ -5,6 +5,7 @@ import { checkAccountStatus } from "../middleware/check-account-status.js";
 
 const router = Router();
 
+router.get("/status", authenticate, checkAccountStatus, requireRole("STUDENT"), biometricController.getEnrollmentStatus);
 router.post("/", authenticate, checkAccountStatus, requireRole("STUDENT"), biometricController.enrollBiometric);
 
 export default router;

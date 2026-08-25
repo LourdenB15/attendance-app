@@ -2,17 +2,22 @@
 import { useState } from "react";
 import { livenessApi } from "../../api";
 import { useToast } from "../../context/useToast";
+import { useAuth } from "../../context/useAuth";
 import { LivenessCamera } from "../liveness/LivenessCamera";
 
 export function StudentClassDetail({
   classItem,
   onBack,
   onAttendanceMarked,
+  onGoToEnroll,
   attendanceRecords = [],
 }) {
+  const { currentUser } = useAuth();
   const [showScanner, setShowScanner] = useState(false);
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
+
+  const isEnrolled = Boolean(currentUser?.has_biometric_enrolled);
 
   const classRecords = attendanceRecords.filter(
     (r) => r.class_id === classItem.class_id || r.class_name === classItem.name,
@@ -20,6 +25,15 @@ export function StudentClassDetail({
 
   const hasActiveSession = Boolean(classItem.active_session_id);
   const isAlreadyPresent = classItem.my_attendance_status === "PRESENT";
+
+  const handleTakeAttendanceClick = () => {
+    if (!isEnrolled) {
+      showToast("error", "Please enroll your face first in the Face Setup tab.");
+      if (onGoToEnroll) onGoToEnroll();
+      return;
+    }
+    setShowScanner(true);
+  };
 
   const handleTakeAttendance = async (livenessResult) => {
     setShowScanner(false);
@@ -88,6 +102,30 @@ export function StudentClassDetail({
                   PRESENT
                 </span>
               </div>
+            ) : !isEnrolled ? (
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl font-bold">
+                    👤
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-amber-950">
+                      Face Setup Required Before Attendance
+                    </h4>
+                    <p className="text-xs text-amber-800 mt-0.5">
+                      A live session is open, but you haven't registered your face profile yet. Please complete Face Setup to check in.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={onGoToEnroll}
+                  className="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl shadow-md text-xs transition shrink-0 flex items-center gap-2"
+                >
+                  👤 Go to Face Setup
+                </button>
+              </div>
             ) : (
               <div className="bg-linear-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
                 <div className="flex items-center gap-3">
@@ -102,7 +140,7 @@ export function StudentClassDetail({
                       )}
                     </h4>
                     <p className="text-xs text-indigo-700 mt-0.5">
-                      Your professor is currently taking attendance. Verify your active liveness to check in.
+                      Your professor is currently taking attendance. Complete quick face verification to check in.
                     </p>
                   </div>
                 </div>
@@ -110,7 +148,7 @@ export function StudentClassDetail({
                 <button
                   type="button"
                   disabled={loading}
-                  onClick={() => setShowScanner(true)}
+                  onClick={handleTakeAttendanceClick}
                   className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold rounded-xl shadow-md text-xs transition shrink-0 flex items-center gap-2"
                 >
                   📸 Take Attendance Now
@@ -132,6 +170,7 @@ export function StudentClassDetail({
       {/* Liveness Scanner Modal / Container */}
       {showScanner && (
         <LivenessCamera
+          mode="attendance"
           title={`Attendance Check-In: ${classItem.name}`}
           onComplete={handleTakeAttendance}
           onCancel={() => setShowScanner(false)}

@@ -1,13 +1,17 @@
 // apps/web/src/components/student/SessionCheckInCard.jsx
 import { useState } from "react";
 import { livenessApi } from "../../api";
-import { useToast } from "../../context/ToastContext";
+import { useToast } from "../../context/useToast";
+import { useAuth } from "../../context/useAuth";
 import { LivenessCamera } from "../liveness/LivenessCamera";
 
-export function SessionCheckInCard({ onCheckInSuccess }) {
+export function SessionCheckInCard({ onCheckInSuccess, onGoToEnroll }) {
+  const { currentUser } = useAuth();
   const [sessionId, setSessionId] = useState("");
   const [showCamera, setShowCamera] = useState(false);
   const { showToast } = useToast();
+
+  const isEnrolled = Boolean(currentUser?.has_biometric_enrolled);
 
   const handleCheckIn = async (livenessResult) => {
     setShowCamera(false);
@@ -28,6 +32,19 @@ export function SessionCheckInCard({ onCheckInSuccess }) {
     }
   };
 
+  const handleStartScanClick = () => {
+    if (!isEnrolled) {
+      showToast("error", "Please enroll your face first in the Face Setup tab.");
+      if (onGoToEnroll) onGoToEnroll();
+      return;
+    }
+    if (!sessionId.trim()) {
+      showToast("error", "Please enter a valid Session ID first.");
+      return;
+    }
+    setShowCamera(true);
+  };
+
   return (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 max-w-xl mx-auto">
       <div className="text-center mb-6">
@@ -39,6 +56,27 @@ export function SessionCheckInCard({ onCheckInSuccess }) {
           Paste the active session UUID provided by your professor and scan your face.
         </p>
       </div>
+
+      {!isEnrolled && (
+        <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl p-3.5 flex items-start gap-3">
+          <span className="text-base">⚠️</span>
+          <div className="flex-1 text-xs text-amber-800">
+            <strong className="font-bold block text-amber-900 mb-0.5">
+              Face Setup Required
+            </strong>
+            You must register your face profile before you can check in to class sessions.
+            {onGoToEnroll && (
+              <button
+                type="button"
+                onClick={onGoToEnroll}
+                className="mt-2 block font-bold text-indigo-700 hover:text-indigo-900 underline"
+              >
+                Go to Face Setup →
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="mb-4">
         <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
@@ -56,6 +94,7 @@ export function SessionCheckInCard({ onCheckInSuccess }) {
 
       {showCamera ? (
         <LivenessCamera
+          mode="attendance"
           title="Live Attendance Verification"
           onComplete={handleCheckIn}
           onCancel={() => setShowCamera(false)}
@@ -64,13 +103,7 @@ export function SessionCheckInCard({ onCheckInSuccess }) {
         <div className="text-center pt-2">
           <button
             type="button"
-            onClick={() => {
-              if (!sessionId.trim()) {
-                showToast("error", "Please enter a valid Session ID first.");
-                return;
-              }
-              setShowCamera(true);
-            }}
+            onClick={handleStartScanClick}
             className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md text-sm transition"
           >
             🎥 Start Facial Check-In Scan

@@ -122,6 +122,8 @@ export const studentApi = {
 
 // Biometric & Check-in API
 export const livenessApi = {
+  getEnrollmentStatus: () =>
+    request("/biometric-enrollments/status", { method: "GET" }),
   enrollBiometric: (livenessResult) =>
     request("/biometric-enrollments", {
       method: "POST",

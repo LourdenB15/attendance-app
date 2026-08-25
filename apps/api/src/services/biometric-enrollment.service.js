@@ -14,3 +14,13 @@ export async function enrollStudent(studentId, livenessResult) {
 
   return enrollment;
 }
+
+export async function getStudentEnrollmentStatus(studentId) {
+  const enrollment = await biometricEnrollmentsRepository.findActiveByStudent(studentId);
+  return {
+    isEnrolled: Boolean(enrollment),
+    enrolledAt: enrollment?.enrolled_at || null,
+    status: enrollment?.status || "NOT_ENROLLED",
+  };
+}
+
