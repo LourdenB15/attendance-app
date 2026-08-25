@@ -8,11 +8,13 @@ import { ClassDetailHeader } from "./ClassDetailHeader";
 import { SessionController } from "./SessionController";
 import { LiveAttendanceGrid } from "./LiveAttendanceGrid";
 import { EnrolledStudentsTable } from "./EnrolledStudentsTable";
+import { SectionAttendanceHistory } from "./SectionAttendanceHistory";
 
 export function ProfessorPortal() {
   const { showToast } = useToast();
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null);
+  const [classViewTab, setClassViewTab] = useState("live"); // "live" | "history" | "roster"
   const [classStudents, setClassStudents] = useState([]);
   const [activeSession, setActiveSession] = useState(null);
   const [sessionAttendance, setSessionAttendance] = useState([]);
@@ -116,7 +118,7 @@ export function ProfessorPortal() {
           loadAttendance(activeSessionRef.current.id, true);
         } else {
           // Check if session opened
-          loadActiveSession(selectedClassRef.current.id, true);
+          loadActiveSession(selectedClassRef.current.id);
         }
       } else {
         // Poll classes table
@@ -129,6 +131,7 @@ export function ProfessorPortal() {
 
   const handleSelectClass = (cls) => {
     setSelectedClass(cls);
+    setClassViewTab("live");
     loadStudents(cls.id);
     loadActiveSession(cls.id);
   };
@@ -183,38 +186,95 @@ export function ProfessorPortal() {
             onBack={handleBackToClasses}
           />
 
-          {!selectedClass.is_archived && (
-            <SessionController
+          {/* In-Class Navigation Tabs */}
+          <div className="flex border-b border-slate-200 gap-6 text-sm font-semibold">
+            <button
+              type="button"
+              onClick={() => setClassViewTab("live")}
+              className={`pb-3 transition border-b-2 flex items-center gap-2 ${
+                classViewTab === "live"
+                  ? "border-indigo-600 text-indigo-600 font-bold"
+                  : "border-transparent text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              <span>📡</span> Live Session & Check-In
+              {activeSession && (
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => setClassViewTab("history")}
+              className={`pb-3 transition border-b-2 flex items-center gap-2 ${
+                classViewTab === "history"
+                  ? "border-indigo-600 text-indigo-600 font-bold"
+                  : "border-transparent text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              <span>📊</span> Section Attendance History
+            </button>
+            <button
+              type="button"
+              onClick={() => setClassViewTab("roster")}
+              className={`pb-3 transition border-b-2 flex items-center gap-2 ${
+                classViewTab === "roster"
+                  ? "border-indigo-600 text-indigo-600 font-bold"
+                  : "border-transparent text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              <span>👥</span> Enrolled Students ({classStudents.length})
+            </button>
+          </div>
+
+          {/* TAB 1: LIVE SESSION */}
+          {classViewTab === "live" && (
+            <div className="space-y-6">
+              {!selectedClass.is_archived && (
+                <SessionController
+                  classId={selectedClass.id}
+                  activeSession={activeSession}
+                  onSessionOpened={(session) => {
+                    setActiveSession(session);
+                    loadAttendance(session.id);
+                  }}
+                  onSessionClosed={() => {
+                    setActiveSession(null);
+                    setSessionAttendance([]);
+                  }}
+                  onRefreshAttendance={() => {
+                    if (activeSession) loadAttendance(activeSession.id);
+                  }}
+                />
+              )}
+
+              {activeSession && (
+                <LiveAttendanceGrid
+                  activeSessionId={activeSession.id}
+                  attendance={sessionAttendance}
+                  onOverrideSuccess={() => loadAttendance(activeSession.id)}
+                />
+              )}
+            </div>
+          )}
+
+          {/* TAB 2: ATTENDANCE HISTORY FOR THIS SECTION */}
+          {classViewTab === "history" && (
+            <SectionAttendanceHistory
               classId={selectedClass.id}
-              activeSession={activeSession}
-              onSessionOpened={(session) => {
-                setActiveSession(session);
-                loadAttendance(session.id);
-              }}
-              onSessionClosed={() => {
-                setActiveSession(null);
-                setSessionAttendance([]);
-              }}
-              onRefreshAttendance={() => {
-                if (activeSession) loadAttendance(activeSession.id);
-              }}
+              className={selectedClass.name}
+              section={selectedClass.section}
             />
           )}
 
-          {activeSession && (
-            <LiveAttendanceGrid
-              activeSessionId={activeSession.id}
-              attendance={sessionAttendance}
-              onOverrideSuccess={() => loadAttendance(activeSession.id)}
+          {/* TAB 3: ROSTER */}
+          {classViewTab === "roster" && (
+            <EnrolledStudentsTable
+              classId={selectedClass.id}
+              joinCode={selectedClass.join_code}
+              students={classStudents}
+              onStudentDropped={() => loadStudents(selectedClass.id)}
             />
           )}
-
-          <EnrolledStudentsTable
-            classId={selectedClass.id}
-            joinCode={selectedClass.join_code}
-            students={classStudents}
-            onStudentDropped={() => loadStudents(selectedClass.id)}
-          />
         </div>
       )}
     </div>

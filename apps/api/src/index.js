@@ -8,7 +8,7 @@ import { apiLimiter } from "./middleware/rate-limit.js";
 const PORT = process.env.PORT;
 const app = express();
 const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(",")
+  ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim().replace(/\/$/, ""))
   : ["http://localhost:5173"];
 
 app.use(cors({ origin: allowedOrigins, credentials: true }));

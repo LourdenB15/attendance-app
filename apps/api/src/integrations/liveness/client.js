@@ -1,28 +1,41 @@
 import axios from "axios";
 import { httpError } from "../../utils/http-error.js";
 
-const API_KEY = process.env.LIVENESS_API_KEY;
-const API_URL = process.env.LIVENESS_API_URL;
-const TIMEOUT_MS = 10_000;
-
-const http = axios.create({
-  baseURL: API_URL,
-  timeout: TIMEOUT_MS,
-  headers: { "x-api-key": API_KEY },
-});
+const TIMEOUT_MS = 15_000;
 
 async function post(path, body) {
-  if (!API_KEY || !API_URL) {
-    throw httpError(500, "Liveness integration is not configured — set LIVENESS_API_KEY and LIVENESS_API_URL");
+  const apiKey = process.env.LIVENESS_API_KEY;
+  const rawApiUrl = process.env.LIVENESS_API_URL;
+
+  if (!apiKey || !rawApiUrl) {
+    throw httpError(
+      500,
+      "Liveness integration is not configured — set LIVENESS_API_KEY and LIVENESS_API_URL in apps/api/.env",
+    );
   }
 
+  const baseURL = rawApiUrl.replace(/\/+$/, "");
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const fullUrl = `${baseURL}${normalizedPath}`;
+
   try {
-    const response = await http.post(path, body);
+    const response = await axios.post(fullUrl, body, {
+      timeout: TIMEOUT_MS,
+      headers: {
+        "x-api-key": apiKey,
+        "Content-Type": "application/json",
+      },
+    });
     return response.data;
   } catch (error) {
     if (error.response) {
-      throw httpError(502, error.response.data?.error || "Liveness service request failed");
+      const errDetail =
+        error.response.data?.error ||
+        error.response.data?.message ||
+        "Liveness service request failed";
+      throw httpError(502, errDetail);
     }
+    console.error("Liveness connection error:", error.message);
     throw httpError(503, "Liveness service is unreachable");
   }
 }

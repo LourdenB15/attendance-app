@@ -1,7 +1,7 @@
 // apps/web/src/components/professor/SessionController.jsx
 import { useState } from "react";
 import { sessionsApi } from "../../api";
-import { useToast } from "../../context/ToastContext";
+import { useToast } from "../../context/useToast";
 
 export function SessionController({
   classId,

@@ -23,6 +23,36 @@ export async function closeSession(sessionId, professorId) {
   return result.rows[0];
 }
 
+export async function closeExpiredSessions(classId = null) {
+  if (classId) {
+    await pool.query(
+      `UPDATE attendance_sessions
+       SET status = 'CLOSED', closed_at = COALESCE(expires_at, now())
+       WHERE class_id = $1 AND status = 'OPEN' AND expires_at <= now()`,
+      [classId],
+    );
+  } else {
+    await pool.query(
+      `UPDATE attendance_sessions
+       SET status = 'CLOSED', closed_at = COALESCE(expires_at, now())
+       WHERE status = 'OPEN' AND expires_at <= now()`,
+    );
+  }
+}
+
+export async function closeAnyOpenSessionForClass(classId, professorId) {
+  const result = await pool.query(
+    `UPDATE attendance_sessions
+     SET status = 'CLOSED', closed_at = now()
+     WHERE class_id = $1
+       AND status = 'OPEN'
+       AND class_id IN (SELECT id FROM classes WHERE professor_id = $2)
+     RETURNING id, status, closed_at`,
+    [classId, professorId],
+  );
+  return result.rows;
+}
+
 export async function findActiveSessionByClass(classId) {
   const result = await pool.query(
     `SELECT id, class_id, label, status, opened_at, expires_at

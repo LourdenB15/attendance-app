@@ -48,3 +48,40 @@ export async function findByStudent(studentId) {
   );
   return result.rows;
 }
+
+export async function findSessionsWithStatsByClass(classId, professorId) {
+  const result = await pool.query(
+    `SELECT s.id, s.class_id, s.label, s.status, s.opened_at, s.closed_at, s.expires_at,
+            COUNT(DISTINCT e.student_id)::int AS total_enrolled,
+            COUNT(DISTINCT CASE WHEN ar.status = 'PRESENT' THEN ar.student_id END)::int AS present_count,
+            COUNT(DISTINCT CASE WHEN ar.status = 'ABSENT' THEN ar.student_id END)::int AS absent_count
+     FROM attendance_sessions s
+     JOIN classes c ON c.id = s.class_id AND c.professor_id = $2
+     LEFT JOIN enrollments e ON e.class_id = s.class_id AND e.status = 'ACTIVE'
+     LEFT JOIN attendance_records ar ON ar.session_id = s.id AND ar.student_id = e.student_id
+     WHERE s.class_id = $1
+     GROUP BY s.id, s.class_id, s.label, s.status, s.opened_at, s.closed_at, s.expires_at
+     ORDER BY s.opened_at DESC`,
+    [classId, professorId],
+  );
+  return result.rows;
+}
+
+export async function findSectionAttendanceSummary(classId, professorId) {
+  const result = await pool.query(
+    `SELECT u.id AS student_id, u.full_name, u.email,
+            COUNT(DISTINCT s.id)::int AS total_sessions,
+            COUNT(DISTINCT CASE WHEN ar.status = 'PRESENT' THEN ar.session_id END)::int AS present_sessions,
+            COUNT(DISTINCT CASE WHEN ar.status = 'ABSENT' OR (s.id IS NOT NULL AND ar.status IS NULL) THEN s.id END)::int AS absent_sessions
+     FROM enrollments e
+     JOIN classes c ON c.id = e.class_id AND c.professor_id = $2
+     JOIN users u ON u.id = e.student_id
+     LEFT JOIN attendance_sessions s ON s.class_id = e.class_id
+     LEFT JOIN attendance_records ar ON ar.session_id = s.id AND ar.student_id = e.student_id
+     WHERE e.class_id = $1 AND e.status = 'ACTIVE'
+     GROUP BY u.id, u.full_name, u.email
+     ORDER BY u.full_name ASC`,
+    [classId, professorId],
+  );
+  return result.rows;
+}

@@ -1,6 +1,7 @@
 import * as sessionsRepository from "../repositories/sessions.repository.js";
 import * as attendanceRepository from "../repositories/attendance-records.repository.js";
 import * as enrollmentsRepository from "../repositories/enrollments.repository.js";
+import * as classesRepository from "../repositories/classes.repository.js";
 import { httpError } from "../utils/http-error.js";
 
 export async function getSessionAttendance(professorId, sessionId) {
@@ -34,3 +35,18 @@ export async function getMyAttendance(studentId) {
   return attendanceRepository.findForStudent(studentId);
 }
 
+export async function getClassAttendanceHistory(professorId, classId) {
+  const foundClass = await classesRepository.findByIdAndProfessor(classId, professorId);
+  if (!foundClass) {
+    throw httpError(404, "Class not found");
+  }
+  return attendanceRepository.findSessionsWithStatsByClass(classId, professorId);
+}
+
+export async function getClassAttendanceSummary(professorId, classId) {
+  const foundClass = await classesRepository.findByIdAndProfessor(classId, professorId);
+  if (!foundClass) {
+    throw httpError(404, "Class not found");
+  }
+  return attendanceRepository.findSectionAttendanceSummary(classId, professorId);
+}

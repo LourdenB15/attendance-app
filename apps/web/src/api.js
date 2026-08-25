@@ -90,6 +90,10 @@ export const classesApi = {
   archiveClass: (id) => request(`/classes/${id}/archive`, { method: "POST" }),
   getClassStudents: (classId) =>
     request(`/classes/${classId}/students`, { method: "GET" }),
+  getClassAttendanceHistory: (classId) =>
+    request(`/classes/${classId}/attendance-history`, { method: "GET" }),
+  getClassAttendanceSummary: (classId) =>
+    request(`/classes/${classId}/attendance-summary`, { method: "GET" }),
   dropStudent: (classId, studentId) =>
     request(`/classes/${classId}/students/${studentId}/drop`, {
       method: "POST",

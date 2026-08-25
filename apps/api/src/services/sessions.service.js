@@ -14,6 +14,9 @@ export async function openSession(professorId, classId, durationMinutes, label) 
     throw httpError(409, "This class is archived — cannot open a session for it");
   }
   
+  // 1. Auto-close any expired sessions for this class
+  await sessionsRepository.closeExpiredSessions(classId);
+
   const minutes = durationMinutes ?? DEFAULT_DURATION_MINUTES;
   const expiresAt = new Date(Date.now() + minutes * 60 * 1000);
 
@@ -26,7 +29,14 @@ export async function openSession(professorId, classId, durationMinutes, label) 
     );
   } catch (error) {
     if (error.code === UNIQUE_VIOLATION) {
-      throw httpError(409, "This class already has an open session — close it first");
+      // Auto-close previous active session for this class and create the new one
+      await sessionsRepository.closeAnyOpenSessionForClass(classId, professorId);
+      return await sessionsRepository.createSession(
+        classId,
+        professorId,
+        label ?? null,
+        expiresAt,
+      );
     }
     throw error;
   }
@@ -45,5 +55,7 @@ export async function getActiveSession(professorId, classId) {
   if (!foundClass) {
     throw httpError(404, "Class not found");
   }
+  // Auto-close any expired session before returning active session
+  await sessionsRepository.closeExpiredSessions(classId);
   return sessionsRepository.findActiveSessionByClass(classId);
 }
