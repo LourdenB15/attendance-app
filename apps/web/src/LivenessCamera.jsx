@@ -34,6 +34,7 @@ export function LivenessCamera({
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const sdkRef = useRef(null);
+  const isModelLoadedRef = useRef(false);
 
   const toggleChallenge = (type) => {
     setSelectedChallenges((prev) => {
@@ -60,6 +61,7 @@ export function LivenessCamera({
 
     sdk.on("ready", () => {
       if (!isMounted) return;
+      isModelLoadedRef.current = true;
       setUiState(UI_STATE.READY_TO_START);
       setInstruction(
         isAttendance
@@ -109,18 +111,25 @@ export function LivenessCamera({
     sdk.on("failure", (err) => {
       if (!isMounted) return;
       setCurrentChallenge(null);
+      if (err?.code === "MODEL_LOAD_FAILED") {
+        isModelLoadedRef.current = false;
+      }
       setUiState(UI_STATE.FAILURE);
       setInstruction(err.message || "Liveness verification failed.");
     });
 
     sdk.on("error", (err) => {
       if (!isMounted) return;
+      if (err?.code === "MODEL_LOAD_FAILED") {
+        isModelLoadedRef.current = false;
+      }
       setUiState(UI_STATE.CAMERA_ERROR);
       setInstruction(err.message || "System error initializing camera/models.");
     });
 
     sdk.load().catch((err) => {
       if (!isMounted) return;
+      isModelLoadedRef.current = false;
       console.error("SDK load error:", err);
       setUiState(UI_STATE.FAILURE);
       setInstruction("Failed to load AI models.");
@@ -141,6 +150,23 @@ export function LivenessCamera({
 
   const handleStartClick = async () => {
     if (!videoRef.current || !canvasRef.current || !sdkRef.current) return;
+
+    if (!isModelLoadedRef.current) {
+      setUiState(UI_STATE.LOADING_MODELS);
+      setInstruction("Loading AI models, please wait...");
+      try {
+        await sdkRef.current.load();
+      } catch (err) {
+        console.error("SDK reload error:", err);
+        setUiState(UI_STATE.FAILURE);
+        setInstruction(err.message || "Failed to load AI models.");
+        return;
+      }
+      if (!isModelLoadedRef.current) {
+        return;
+      }
+    }
+
     setProgress(0);
     setCurrentChallenge(null);
     setUiState(UI_STATE.CHECKING);
