@@ -3,7 +3,7 @@ import { z } from "zod";
 export const enrollBiometricSchema = z.object({
   descriptor: z
     .array(z.number())
-    .length(1792, "Descriptor must be exactly 1792 dimensions"),
+    .length(128, "Descriptor must be exactly 128 dimensions"),
   sessionToken: z.string().min(1, "Session token is required"),
   timestamp: z.number(),
   challenges: z.array(z.string()).min(1, "Challenges are required"),

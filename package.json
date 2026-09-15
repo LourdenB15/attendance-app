@@ -16,7 +16,7 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
-    "@liveness/engine": "^1.0.4",
-    "@liveness/sdk": "^1.0.4"
+    "@liveness/engine": "^1.0.6",
+    "@liveness/sdk": "^1.0.6"
   }
 }
