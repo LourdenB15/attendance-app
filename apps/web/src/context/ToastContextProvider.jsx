@@ -1,23 +1,48 @@
 // apps/web/src/context/ToastContextProvider.jsx
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { ToastContext } from "./ToastContext";
+
+const FADE_MS = 300;
 
 export function ToastProvider({ children }) {
   const [toast, setToast] = useState(null);
+  const [visible, setVisible] = useState(false);
+  const autoHideRef = useRef(null);
+  const unmountRef = useRef(null);
 
-  const showToast = useCallback((type, text) => {
-    setToast({ type, text });
+  const dismiss = useCallback(() => {
+    setVisible(false);
+    unmountRef.current = setTimeout(() => setToast(null), FADE_MS);
   }, []);
 
   const clearToast = useCallback(() => {
-    setToast(null);
-  }, []);
+    if (autoHideRef.current) clearTimeout(autoHideRef.current);
+    dismiss();
+  }, [dismiss]);
+
+  const showToast = useCallback(
+    (type, text) => {
+      if (autoHideRef.current) clearTimeout(autoHideRef.current);
+      if (unmountRef.current) clearTimeout(unmountRef.current);
+      setToast({ type, text });
+      setVisible(false);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setVisible(true));
+      });
+      autoHideRef.current = setTimeout(dismiss, 4000);
+    },
+    [dismiss],
+  );
 
   return (
     <ToastContext.Provider value={{ toast, showToast, clearToast }}>
       {children}
       {toast && (
-        <div className="fixed bottom-5 right-5 z-50 max-w-md animate-bounce-in">
+        <div
+          className={`fixed bottom-5 left-4 right-4 sm:left-auto sm:right-5 sm:max-w-md z-50 transition-opacity duration-300 ${
+            visible ? "opacity-100" : "opacity-0"
+          }`}
+        >
           <div
             className={`p-4 rounded-xl border shadow-lg flex items-start justify-between gap-3 text-sm ${
               toast.type === "error"
@@ -27,12 +52,7 @@ export function ToastProvider({ children }) {
                 : "bg-sky-50 border-sky-200 text-sky-800"
             }`}
           >
-            <div>
-              <strong className="uppercase text-[10px] tracking-wider block font-bold mb-0.5">
-                [{toast.type}]
-              </strong>
-              {toast.text}
-            </div>
+            <div>{toast.text}</div>
             <button
               type="button"
               onClick={clearToast}
