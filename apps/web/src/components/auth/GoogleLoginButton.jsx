@@ -64,19 +64,7 @@ export function GoogleLoginButton() {
   }, [clientId, handleCredentialResponse]);
 
   if (!clientId) {
-    return (
-      <div className="text-center p-3 bg-slate-50 border border-dashed border-slate-300 rounded-xl">
-        <p className="text-xs text-slate-500">
-          Google Sign-In is ready. Add{" "}
-          <code className="bg-slate-200 px-1 py-0.5 rounded text-slate-800 font-mono text-[11px]">
-            VITE_GOOGLE_CLIENT_ID
-          </code>{" "}
-          to your{" "}
-          <code className="font-mono text-[11px]">apps/web/.env</code> to
-          activate 1-click Google login.
-        </p>
-      </div>
-    );
+    return null;
   }
 
   return (

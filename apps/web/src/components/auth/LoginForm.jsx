@@ -69,16 +69,20 @@ export function LoginForm({ onForgotPassword }) {
         </button>
       </form>
 
-      <div className="relative my-4 text-center">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-slate-200"></div>
-        </div>
-        <span className="relative px-3 bg-white text-[11px] text-slate-400 font-bold uppercase">
-          or continue with
-        </span>
-      </div>
+      {import.meta.env.VITE_GOOGLE_CLIENT_ID && (
+        <>
+          <div className="relative my-4 text-center">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-slate-200"></div>
+            </div>
+            <span className="relative px-3 bg-white text-[11px] text-slate-400 font-bold uppercase">
+              or continue with
+            </span>
+          </div>
 
-      <GoogleLoginButton />
+          <GoogleLoginButton />
+        </>
+      )}
     </div>
   );
 }
