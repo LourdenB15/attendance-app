@@ -44,7 +44,7 @@ export async function verifyEmail(req, res) {
     res.cookie("token", sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 24 * 60 * 60 * 1000,
     });
     res.status(200).json({ user, message: "Email verified successfully!" });
@@ -88,7 +88,7 @@ export async function login(req, res) {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 24 * 60 * 60 * 1000,
     });
     res.status(200).json({ ...user });
@@ -146,7 +146,7 @@ export async function resetPassword(req, res) {
     res.clearCookie("token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     });
     res.status(200).json({ message: "Password reset successfully! Please log in with your new password." });
   } catch (error) {
@@ -175,7 +175,7 @@ export function logout(req, res) {
   res.clearCookie("token", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
   });
   res.status(204).send();
 }
@@ -191,7 +191,7 @@ export async function loginWithGoogle(req, res) {
     res.cookie("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 24 * 60 * 60 * 1000,
     });
     res.status(200).json({ ...user });
