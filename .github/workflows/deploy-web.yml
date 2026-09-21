@@ -41,7 +41,7 @@ jobs:
 
       - name: Build Web
         env:
-          VITE_BASE_PATH: "/attendance-app/"
+          VITE_BASE_PATH: "/"
           VITE_API_URL: ${{ vars.VITE_API_URL }}
           VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
         run: npm run build -w apps/web
