@@ -52,7 +52,7 @@ export function ToastProvider({ children }) {
                 : "bg-sky-50 border-sky-200 text-sky-800"
             }`}
           >
-            <div>{toast.text}</div>
+            <div className="whitespace-pre-line">{toast.text}</div>
             <button
               type="button"
               onClick={clearToast}

@@ -12,7 +12,7 @@ import {
 export async function register(req, res) {
   const validation = registerSchema.safeParse(req.body);
   if (!validation.success) {
-    return res.status(400).json({ error: validation.error.issues[0].message });
+    return res.status(400).json({ error: validation.error.issues.map((i) => i.message).join("\n") });
   }
 
   const { fullName, email, password } = validation.data;
@@ -104,7 +104,7 @@ export async function login(req, res) {
 export async function changePassword(req, res) {
   const validation = changePasswordSchema.safeParse(req.body);
   if (!validation.success) {
-    return res.status(400).json({ error: validation.error.issues[0].message });
+    return res.status(400).json({ error: validation.error.issues.map((i) => i.message).join("\n") });
   }
 
   const { currentPassword, newPassword } = validation.data;
@@ -138,7 +138,7 @@ export async function forgotPassword(req, res) {
 export async function resetPassword(req, res) {
   const validation = resetPasswordSchema.safeParse(req.body);
   if (!validation.success) {
-    return res.status(400).json({ error: validation.error.issues[0].message });
+    return res.status(400).json({ error: validation.error.issues.map((i) => i.message).join("\n") });
   }
   const { token, newPassword } = validation.data;
   try {

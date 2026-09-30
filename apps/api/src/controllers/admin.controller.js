@@ -5,7 +5,7 @@ import { createProfessorSchema } from "../schemas/admin.schema.js";
 export async function createProfessor(req, res) {
   const validation = createProfessorSchema.safeParse(req.body);
   if (!validation.success) {
-    return res.status(400).json({ error: validation.error.issues[0].message });
+    return res.status(400).json({ error: validation.error.issues.map((i) => i.message).join("\n") });
   }
 
   const { fullName, email, password } = validation.data;

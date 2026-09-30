@@ -1,11 +1,8 @@
 import { z } from "zod";
+import { passwordComplexitySchema } from "./auth.schema.js";
 
 export const createProfessorSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
   email: z.string().email("Invalid email address"),
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .optional()
-    .or(z.literal("")),
+  password: passwordComplexitySchema.optional().or(z.literal("")),
 });

@@ -81,11 +81,10 @@ export function RegisterForm({ onRegistered }) {
       </div>
       <div>
         <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
-          Password (min 8 characters)
+          Password
         </label>
         <PasswordInput
           required
-          minLength={8}
           placeholder="••••••••"
           value={password}
           onChange={(e) => setPassword(e.target.value)}

@@ -66,12 +66,10 @@ export function ResetPasswordForm({ onSuccess, onBackToLogin }) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
-            New Password (min 8 chars)
+            New Password
           </label>
           <PasswordInput
-            required
-            minLength={8}
-            placeholder="••••••••"
+            required            placeholder="••••••••"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
           />
@@ -82,9 +80,7 @@ export function ResetPasswordForm({ onSuccess, onBackToLogin }) {
             Confirm New Password
           </label>
           <PasswordInput
-            required
-            minLength={8}
-            placeholder="••••••••"
+            required            placeholder="••••••••"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
           />

@@ -9,7 +9,7 @@ const SALT_ROUNDS = 10;
 const VALID_ROLES = ["ADMIN", "PROFESSOR", "STUDENT"];
 
 export async function createProfessor(fullName, email, password) {
-  const isCustomPassword = Boolean(password && password.trim().length >= 8);
+  const isCustomPassword = Boolean(password && password.trim().length >= 6);
   const passwordToUse = isCustomPassword
     ? password.trim()
     : crypto.randomBytes(12).toString("base64url");

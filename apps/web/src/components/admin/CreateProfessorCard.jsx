@@ -147,8 +147,7 @@ export function CreateProfessorCard({ onCreated }) {
             <span className="text-[11px] text-slate-400">Leave blank for auto-gen</span>
           </div>
           <PasswordInput
-            minLength={8}
-            placeholder="Optional password (min 8 chars)..."
+            placeholder="Optional password..."
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />

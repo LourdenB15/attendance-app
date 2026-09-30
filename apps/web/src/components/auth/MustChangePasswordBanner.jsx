@@ -57,12 +57,10 @@ export function MustChangePasswordBanner() {
         </div>
         <div>
           <label className="block text-xs font-bold uppercase text-amber-800 mb-1">
-            New Password (min 8 chars)
+            New Password
           </label>
           <PasswordInput
-            required
-            minLength={8}
-            placeholder="New permanent password..."
+            required            placeholder="New permanent password..."
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
           />
@@ -72,9 +70,7 @@ export function MustChangePasswordBanner() {
             Confirm New Password
           </label>
           <PasswordInput
-            required
-            minLength={8}
-            placeholder="Confirm new password..."
+            required            placeholder="Confirm new password..."
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
           />

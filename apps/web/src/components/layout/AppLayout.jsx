@@ -62,12 +62,11 @@ export function AppLayout() {
                 </div>
                 <div>
                   <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
-                    New Password (min 8 chars)
+                    New Password
                   </label>
                   <input
                     type="password"
                     required
-                    minLength={8}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     className="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500"
