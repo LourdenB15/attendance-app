@@ -22,6 +22,16 @@ function issueToken(user) {
   });
 }
 
+async function toSafeUser(user) {
+  const { password_hash, ...safeUser } = user;
+  if (safeUser.role === "STUDENT") {
+    const biometric = await biometricEnrollmentsRepository.findActiveByStudent(safeUser.id);
+    safeUser.has_biometric_enrolled = Boolean(biometric);
+    safeUser.biometric_enrolled_at = biometric?.enrolled_at || null;
+  }
+  return safeUser;
+}
+
 function generate6DigitCode() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
@@ -83,8 +93,7 @@ export async function verifyEmail({ email, code, token }) {
   await emailVerificationTokensRepository.markUsed(record.id);
 
   const sessionToken = issueToken(user);
-  const { password_hash, ...safeUser } = user;
-  return { user: safeUser, token: sessionToken };
+  return { user: await toSafeUser(user), token: sessionToken };
 }
 
 export async function resendVerification(email) {
@@ -128,8 +137,7 @@ export async function login(email, password) {
   }
 
   const token = issueToken(user);
-  const { password_hash, ...safeUser } = user;
-  return { user: safeUser, token };
+  return { user: await toSafeUser(user), token };
 }
 
 export async function changePassword(userId, currentPassword, newPassword) {
@@ -185,15 +193,7 @@ export async function getCurrentUser(userId) {
   if (!user) {
     throw httpError(404, "User not found");
   }
-  const { password_hash, ...safeUser } = user;
-
-  if (safeUser.role === "STUDENT") {
-    const biometric = await biometricEnrollmentsRepository.findActiveByStudent(userId);
-    safeUser.has_biometric_enrolled = Boolean(biometric);
-    safeUser.biometric_enrolled_at = biometric?.enrolled_at || null;
-  }
-
-  return safeUser;
+  return toSafeUser(user);
 }
 
 export async function loginWithGoogle(idToken) {
@@ -242,6 +242,5 @@ export async function loginWithGoogle(idToken) {
   }
 
   const token = issueToken(user);
-  const { password_hash, ...safeUser } = user;
-  return { user: safeUser, token };
+  return { user: await toSafeUser(user), token };
 }
