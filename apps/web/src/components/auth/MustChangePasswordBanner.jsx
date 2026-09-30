@@ -60,7 +60,8 @@ export function MustChangePasswordBanner() {
             New Password
           </label>
           <PasswordInput
-            required            placeholder="New permanent password..."
+            required
+            placeholder="New permanent password..."
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
           />
@@ -70,7 +71,8 @@ export function MustChangePasswordBanner() {
             Confirm New Password
           </label>
           <PasswordInput
-            required            placeholder="Confirm new password..."
+            required
+            placeholder="Confirm new password..."
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
           />

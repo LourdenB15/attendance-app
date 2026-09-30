@@ -78,17 +78,11 @@ export function AuthView() {
           )}
 
           {authTab === "forgot" && (
-            <ForgotPasswordForm
-              onBackToLogin={() => setAuthTab("login")}
-              onGoToReset={() => setAuthTab("reset")}
-            />
+            <ForgotPasswordForm onBackToLogin={() => setAuthTab("login")} />
           )}
 
           {authTab === "reset" && (
-            <ResetPasswordForm
-              onSuccess={() => setAuthTab("login")}
-              onBackToLogin={() => setAuthTab("login")}
-            />
+            <ResetPasswordForm onBackToLogin={() => setAuthTab("login")} />
           )}
         </div>
       </div>

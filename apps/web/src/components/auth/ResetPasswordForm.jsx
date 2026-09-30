@@ -1,11 +1,12 @@
 // apps/web/src/components/auth/ResetPasswordForm.jsx
 import { useState } from "react";
-import { authApi } from "../../api";
+import { useAuth } from "../../context/useAuth";
 import { useToast } from "../../context/useToast";
 import { PasswordInput } from "../ui/PasswordInput";
 
-export function ResetPasswordForm({ onSuccess, onBackToLogin }) {
-  const [token, setToken] = useState(
+export function ResetPasswordForm({ onBackToLogin }) {
+  const { resetPassword } = useAuth();
+  const [token] = useState(
     () => new URLSearchParams(window.location.search).get("token") || "",
   );
   const [newPassword, setNewPassword] = useState("");
@@ -28,17 +29,10 @@ export function ResetPasswordForm({ onSuccess, onBackToLogin }) {
 
     setLoading(true);
     try {
-      const res = await authApi.resetPassword({ token: token.trim(), newPassword });
-      showToast(
-        "success",
-        res.message || "Password reset successfully! Please sign in with your new password.",
-      );
-      setNewPassword("");
-      setConfirmPassword("");
+      await resetPassword({ token: token.trim(), newPassword });
       window.history.replaceState({}, document.title, window.location.pathname);
-      if (onSuccess) onSuccess();
-    } catch (err) {
-      showToast("error", err.message);
+    } catch {
+      
     } finally {
       setLoading(false);
     }
@@ -69,7 +63,8 @@ export function ResetPasswordForm({ onSuccess, onBackToLogin }) {
             New Password
           </label>
           <PasswordInput
-            required            placeholder="••••••••"
+            required
+            placeholder="••••••••"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
           />
@@ -80,34 +75,19 @@ export function ResetPasswordForm({ onSuccess, onBackToLogin }) {
             Confirm New Password
           </label>
           <PasswordInput
-            required            placeholder="••••••••"
+            required
+            placeholder="••••••••"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
         </div>
-
-        {!token && (
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
-              Reset Token (from email link)
-            </label>
-            <input
-              type="text"
-              required
-              placeholder="Paste token..."
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-        )}
 
         <button
           type="submit"
           disabled={loading}
           className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-xl shadow-xs text-sm transition"
         >
-          {loading ? "Updating password..." : "Update Password & Return to Login"}
+          {loading ? "Updating password..." : "Update Password & Sign In"}
         </button>
       </form>
     </div>

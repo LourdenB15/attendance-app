@@ -76,6 +76,20 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const resetPassword = async ({ token, newPassword }) => {
+    try {
+      const result = await authApi.resetPassword({ token, newPassword });
+      if (result.user) {
+        setCurrentUser(result.user);
+      }
+      showToast("success", result.message || "Password reset successfully!");
+      return result;
+    } catch (err) {
+      showToast("error", err.message);
+      throw err;
+    }
+  };
+
   const resendVerification = async (email) => {
     try {
       const result = await authApi.resendVerification(email);
@@ -138,6 +152,7 @@ export function AuthProvider({ children }) {
         loginWithGoogle,
         register,
         verifyEmail,
+        resetPassword,
         resendVerification,
         changePassword,
         logout,

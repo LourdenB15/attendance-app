@@ -186,6 +186,16 @@ export async function resetPassword(token, newPassword) {
   const newPasswordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
   await usersRepository.updatePassword(record.user_id, newPasswordHash);
   await resetTokensRepository.markUsed(record.id);
+
+  let user = await usersRepository.findById(record.user_id);
+  if (!user.is_active) {
+    throw httpError(403, "This account has been deactivated");
+  }
+  if (!user.is_email_verified) {
+    user = await usersRepository.setEmailVerified(user.id);
+  }
+
+  return { user: await toSafeUser(user), token: issueToken(user) };
 }
 
 export async function getCurrentUser(userId) {

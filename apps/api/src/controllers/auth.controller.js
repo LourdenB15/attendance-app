@@ -142,13 +142,14 @@ export async function resetPassword(req, res) {
   }
   const { token, newPassword } = validation.data;
   try {
-    await authService.resetPassword(token, newPassword);
-    res.clearCookie("token", {
+    const { user, token: sessionToken } = await authService.resetPassword(token, newPassword);
+    res.cookie("token", sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 24 * 60 * 60 * 1000,
     });
-    res.status(200).json({ message: "Password reset successfully! Please log in with your new password." });
+    res.status(200).json({ user, message: "Password reset successfully! You are now signed in." });
   } catch (error) {
     if (error.status) {
       return res.status(error.status).json({ error: error.message });
