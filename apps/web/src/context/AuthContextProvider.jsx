@@ -1,5 +1,5 @@
 // apps/web/src/context/AuthContextProvider.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { authApi } from "../api";
 import { useToast } from "./useToast";
 import { AuthContext } from "./AuthContext";
@@ -119,9 +119,15 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const setBiometricEnrolled = (enrolled = true) => {
-    setCurrentUser((prev) => (prev ? { ...prev, has_biometric_enrolled: enrolled } : null));
-  };
+  // Stable identity + no-op when unchanged: consumers list this in effect deps,
+  // so a new function or user object on every call would re-run their fetches in a loop
+  const setBiometricEnrolled = useCallback((enrolled = true) => {
+    setCurrentUser((prev) =>
+      prev && prev.has_biometric_enrolled !== enrolled
+        ? { ...prev, has_biometric_enrolled: enrolled }
+        : prev,
+    );
+  }, []);
 
   return (
     <AuthContext.Provider

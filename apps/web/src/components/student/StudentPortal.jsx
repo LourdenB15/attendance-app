@@ -90,20 +90,19 @@ export function StudentPortal() {
     };
   }, [refreshAll, showToast, setBiometricEnrolled]);
 
-  // Live polling interval (every 4 seconds for active classes & session statuses)
+  // Poll My Classes every 30 seconds to pick up newly opened sessions.
+  // History is not polled: it reloads on tab open, window focus, and the Refresh button.
   useEffect(() => {
     const timer = setInterval(() => {
       if (document.hidden) return; // don't poll if backgrounded
 
       if (studentTabRef.current === "classes") {
         loadClasses(true);
-      } else if (studentTabRef.current === "history") {
-        loadAttendance(true);
       }
-    }, 4000);
+    }, 30000);
 
     return () => clearInterval(timer);
-  }, [loadClasses, loadAttendance]);
+  }, [loadClasses]);
 
   const selectedClass = useMemo(() => {
     if (!selectedClassId) return null;
