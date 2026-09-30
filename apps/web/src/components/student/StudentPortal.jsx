@@ -21,10 +21,13 @@ export function StudentPortal() {
 
   const isBiometricEnrolled = Boolean(currentUser?.has_biometric_enrolled);
 
-  const studentTabRef = useRef(studentTab);
+  // Face Setup is hidden once enrolled, so fall back to My Classes if it was open
+  const activeTab = studentTab === "enroll-face" && isBiometricEnrolled ? "classes" : studentTab;
+
+  const studentTabRef = useRef(activeTab);
   useEffect(() => {
-    studentTabRef.current = studentTab;
-  }, [studentTab]);
+    studentTabRef.current = activeTab;
+  }, [activeTab]);
 
   const loadClasses = useCallback(async (silent = false) => {
     try {
@@ -178,27 +181,27 @@ export function StudentPortal() {
               setStudentTab("classes");
             }}
             className={`px-3.5 py-1.5 rounded-lg transition ${
-              studentTab === "classes"
+              activeTab === "classes"
                 ? "bg-white text-indigo-600 shadow-xs font-bold"
                 : "text-slate-600 hover:text-slate-900"
             }`}
           >
             My Classes
           </button>
-          <button
-            type="button"
-            onClick={() => setStudentTab("enroll-face")}
-            className={`px-3.5 py-1.5 rounded-lg transition relative ${
-              studentTab === "enroll-face"
-                ? "bg-white text-indigo-600 shadow-xs font-bold"
-                : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            Face Setup
-            {!isBiometricEnrolled && (
+          {!isBiometricEnrolled && (
+            <button
+              type="button"
+              onClick={() => setStudentTab("enroll-face")}
+              className={`px-3.5 py-1.5 rounded-lg transition relative ${
+                activeTab === "enroll-face"
+                  ? "bg-white text-indigo-600 shadow-xs font-bold"
+                  : "text-slate-600 hover:text-slate-900"
+              }`}
+            >
+              Face Setup
               <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-500 ring-2 ring-white"></span>
-            )}
-          </button>
+            </button>
+          )}
           <button
             type="button"
             onClick={() => {
@@ -206,7 +209,7 @@ export function StudentPortal() {
               loadAttendance();
             }}
             className={`px-3.5 py-1.5 rounded-lg transition ${
-              studentTab === "history"
+              activeTab === "history"
                 ? "bg-white text-indigo-600 shadow-xs font-bold"
                 : "text-slate-600 hover:text-slate-900"
             }`}
@@ -217,7 +220,7 @@ export function StudentPortal() {
       </div>
 
       {/* Enrollment Reminder Banner if unenrolled */}
-      {studentTab === "classes" && !isBiometricEnrolled && (
+      {activeTab === "classes" && !isBiometricEnrolled && (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-lg font-bold shrink-0">
@@ -251,7 +254,7 @@ export function StudentPortal() {
         />
       )}
 
-      {studentTab === "classes" && (
+      {activeTab === "classes" && (
         selectedClass ? (
           <StudentClassDetail
             classItem={selectedClass}
@@ -273,7 +276,7 @@ export function StudentPortal() {
         )
       )}
 
-      {studentTab === "enroll-face" && (
+      {activeTab === "enroll-face" && (
         <BiometricEnrollmentCard
           onEnrollmentComplete={() => {
             refreshAll(true);
@@ -282,7 +285,7 @@ export function StudentPortal() {
         />
       )}
 
-      {studentTab === "history" && (
+      {activeTab === "history" && (
         <AttendanceHistoryTable records={attendance} onRefresh={() => loadAttendance(false)} />
       )}
     </div>

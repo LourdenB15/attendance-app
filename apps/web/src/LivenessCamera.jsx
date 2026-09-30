@@ -25,29 +25,14 @@ export function LivenessCamera({
   const [currentChallenge, setCurrentChallenge] = useState(null);
   const [distanceHint, setDistanceHint] = useState(null);
   const [progress, setProgress] = useState(0);
-  const [selectedChallenges, setSelectedChallenges] = useState(() => {
-    if (defaultChallenges) return defaultChallenges;
-    return isAttendance ? ["WAITING"] : ["WAITING", "BLINK", "TURN_LEFT", "TURN_RIGHT"];
-  });
+  const selectedChallenges =
+    defaultChallenges ?? (isAttendance ? ["WAITING"] : ["WAITING", "BLINK", "TURN_LEFT", "TURN_RIGHT"]);
   const [resultData, setResultData] = useState(null);
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
   const sdkRef = useRef(null);
   const isModelLoadedRef = useRef(false);
-
-  const toggleChallenge = (type) => {
-    setSelectedChallenges((prev) => {
-      if (prev.includes(type)) {
-        if (prev.length === 1) return prev;
-        return prev.filter((c) => c !== type);
-      } else {
-        const order = ["WAITING", "BLINK", "TURN_LEFT", "TURN_RIGHT"];
-        const next = [...prev, type];
-        return order.filter((c) => next.includes(c));
-      }
-    });
-  };
 
   useEffect(() => {
     let isMounted = true;
@@ -213,41 +198,6 @@ export function LivenessCamera({
           ✕ Close
         </button>
       </div>
-
-      {/* Challenge Checklist Selection (When Ready or Idle in Enrollment Mode) */}
-      {(uiState === UI_STATE.READY_TO_START || uiState === UI_STATE.LOADING_MODELS) && !isAttendance && (
-        <div className="mb-4 w-full rounded-2xl border border-slate-200 bg-slate-50 p-3.5">
-          <h4 className="mb-2 text-[11px] font-bold tracking-wider text-slate-500 uppercase">
-            Active Challenges Sequence
-          </h4>
-          <div className="grid grid-cols-2 gap-2">
-            {[
-              { id: "WAITING", label: "Center Face" },
-              { id: "BLINK", label: "Eye Blink" },
-              { id: "TURN_LEFT", label: "Turn Left" },
-              { id: "TURN_RIGHT", label: "Turn Right" },
-            ].map((ch) => (
-              <label
-                key={ch.id}
-                className={`flex cursor-pointer items-center justify-between rounded-xl border p-2.5 text-xs font-bold transition-all ${
-                  selectedChallenges.includes(ch.id)
-                    ? "border-blue-300 bg-blue-50 text-blue-700 shadow-xs"
-                    : "border-slate-200 bg-white text-slate-400 hover:bg-slate-50"
-                }`}
-              >
-                <span>{ch.label}</span>
-                <input
-                  type="checkbox"
-                  disabled={uiState !== UI_STATE.READY_TO_START}
-                  checked={selectedChallenges.includes(ch.id)}
-                  onChange={() => toggleChallenge(ch.id)}
-                  className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                />
-              </label>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Video Viewport with Dark Aesthetic & Floating Glassmorphic Overlays */}
       <div className="relative aspect-4/3 w-full overflow-hidden rounded-2xl bg-black shadow-2xl ring-1 ring-slate-900/10">
