@@ -133,7 +133,11 @@ export async function login(email, password) {
   }
 
   if (user.role === "STUDENT" && user.is_email_verified === false) {
-    throw httpError(403, "Please verify your email before logging in. Enter the 6-digit code sent to your inbox.");
+    throw httpError(
+      403,
+      "Please verify your email before logging in. Enter the 6-digit code sent to your inbox.",
+      "EMAIL_NOT_VERIFIED",
+    );
   }
 
   const token = issueToken(user);

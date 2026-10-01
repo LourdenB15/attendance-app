@@ -94,7 +94,7 @@ export async function login(req, res) {
     res.status(200).json({ ...user });
   } catch (error) {
     if (error.status) {
-      return res.status(error.status).json({ error: error.message });
+      return res.status(error.status).json({ error: error.message, code: error.code });
     }
     console.error("Login error:", error);
     res.status(500).json({ error: "Failed to log in" });

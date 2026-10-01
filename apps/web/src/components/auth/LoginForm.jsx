@@ -4,7 +4,7 @@ import { useAuth } from "../../context/useAuth";
 import { GoogleLoginButton } from "./GoogleLoginButton";
 import { PasswordInput } from "../ui/PasswordInput";
 
-export function LoginForm({ onForgotPassword }) {
+export function LoginForm({ onForgotPassword, onNeedsVerification }) {
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,8 +15,11 @@ export function LoginForm({ onForgotPassword }) {
     setLoading(true);
     try {
       await login({ email, password });
-    } catch {
-      // toast shown in context
+    } catch (err) {
+      // toast shown in context; unverified students go to the code screen
+      if (err.code === "EMAIL_NOT_VERIFIED" && onNeedsVerification) {
+        onNeedsVerification(email);
+      }
     } finally {
       setLoading(false);
     }

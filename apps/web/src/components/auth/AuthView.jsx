@@ -57,7 +57,13 @@ export function AuthView() {
 
           {/* Tab Content */}
           {authTab === "login" && (
-            <LoginForm onForgotPassword={() => setAuthTab("forgot")} />
+            <LoginForm
+              onForgotPassword={() => setAuthTab("forgot")}
+              onNeedsVerification={(email) => {
+                setPendingEmail(email);
+                setAuthTab("verify");
+              }}
+            />
           )}
 
           {authTab === "register" && (
