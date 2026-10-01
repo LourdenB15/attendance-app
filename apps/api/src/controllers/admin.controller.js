@@ -8,10 +8,10 @@ export async function createProfessor(req, res) {
     return res.status(400).json({ error: validation.error.issues.map((i) => i.message).join("\n") });
   }
 
-  const { fullName, email, password } = validation.data;
+  const { fullName, email } = validation.data;
 
   try {
-    const user = await adminService.createProfessor(fullName, email, password);
+    const user = await adminService.createProfessor(fullName, email);
     res.status(201).json({ ...user });
   } catch (error) {
     if (error.code === "23505") {
