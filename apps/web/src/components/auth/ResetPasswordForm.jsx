@@ -32,7 +32,7 @@ export function ResetPasswordForm({ onBackToLogin }) {
       await resetPassword({ token: token.trim(), newPassword });
       window.history.replaceState({}, document.title, window.location.pathname);
     } catch {
-      
+      // toast handled in auth context
     } finally {
       setLoading(false);
     }
