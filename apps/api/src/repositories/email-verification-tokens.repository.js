@@ -29,6 +29,15 @@ export async function findLatestUnusedByUser(userId) {
   return result.rows[0];
 }
 
+// Cancel every still-unused code for this user (called before sending a new one)
+export async function invalidateUnusedByUser(userId) {
+  await pool.query(
+    `UPDATE email_verification_tokens SET used_at = now()
+     WHERE user_id = $1 AND used_at IS NULL`,
+    [userId],
+  );
+}
+
 export async function markUsed(id) {
   await pool.query(
     `UPDATE email_verification_tokens SET used_at = now() WHERE id = $1`,

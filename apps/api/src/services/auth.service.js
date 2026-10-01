@@ -90,7 +90,8 @@ export async function verifyEmail({ email, code, token }) {
   }
 
   const user = await usersRepository.setEmailVerified(record.user_id);
-  await emailVerificationTokensRepository.markUsed(record.id);
+  // Uses up this code and any other outstanding codes for the user
+  await emailVerificationTokensRepository.invalidateUnusedByUser(record.user_id);
 
   const sessionToken = issueToken(user);
   return { user: await toSafeUser(user), token: sessionToken };
@@ -110,6 +111,8 @@ export async function resendVerification(email) {
   const codeHash = crypto.createHash("sha256").update(code).digest("hex");
   const expiresAt = new Date(Date.now() + VERIFY_CODE_TTL_MS);
 
+  // Only the newest code should work
+  await emailVerificationTokensRepository.invalidateUnusedByUser(user.id);
   await emailVerificationTokensRepository.addToken(user.id, codeHash, expiresAt);
   await emailService.sendVerificationEmail(user.email, code);
 
