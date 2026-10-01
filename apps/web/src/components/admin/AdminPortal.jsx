@@ -139,7 +139,7 @@ export function AdminPortal() {
           <UserDirectoryTable
             currentUserId={currentUser?.id}
             users={userList}
-            onRoleChange={handleUpdateRole}
+            onUpdateRole={handleUpdateRole}
             onDeactivate={handleDeactivate}
             onReactivate={handleReactivate}
           />
