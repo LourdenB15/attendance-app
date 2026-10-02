@@ -12,12 +12,6 @@ const UI_STATE = {
   CAMERA_ERROR: "CAMERA_ERROR",
 };
 
-function isPortraitScreen() {
-  const type = window.screen.orientation?.type;
-  if (type) return type.startsWith("portrait");
-  return window.matchMedia("(orientation: portrait)").matches;
-}
-
 export function LivenessCamera({
   onComplete,
   onCancel,
@@ -31,8 +25,7 @@ export function LivenessCamera({
   const [currentChallenge, setCurrentChallenge] = useState(null);
   const [distanceHint, setDistanceHint] = useState(null);
   const [progress, setProgress] = useState(0);
-  const selectedChallenges =
-    defaultChallenges ?? (isAttendance ? ["WAITING"] : ["WAITING", "BLINK", "TURN_LEFT", "TURN_RIGHT"]);
+  const selectedChallenges = defaultChallenges ?? (isAttendance ? ["WAITING"] : null);
   const [resultData, setResultData] = useState(null);
 
   const videoRef = useRef(null);
@@ -164,12 +157,9 @@ export function LivenessCamera({
     setInstruction("Starting camera...");
 
     const sessionToken = `sess_${Math.random().toString(36).substring(2, 15)}`;
-    const challenges = isPortraitScreen()
-      ? selectedChallenges.filter((c) => c !== "BLINK")
-      : selectedChallenges;
     sdkRef.current.updateConfig({
       sessionToken,
-      challenges,
+      challenges: selectedChallenges,
     });
 
     try {
