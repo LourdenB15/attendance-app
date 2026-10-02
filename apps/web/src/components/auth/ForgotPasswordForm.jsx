@@ -55,7 +55,7 @@ export function ForgotPasswordForm({ onBackToLogin }) {
       ) : (
         <>
           <p className="text-xs text-slate-500">
-            Enter your registered email address and we'll dispatch a 30-minute password reset link.
+            Enter your registered email address and we'll send you a password reset link. It expires in 30 minutes.
           </p>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>

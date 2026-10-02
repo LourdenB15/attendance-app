@@ -116,7 +116,7 @@ export async function resendVerification(email) {
   await emailVerificationTokensRepository.addToken(user.id, codeHash, expiresAt);
   await emailService.sendVerificationEmail(user.email, code);
 
-  return { message: "A new 6-digit verification code has been dispatched." };
+  return { message: "A new 6-digit verification code has been sent." };
 }
 
 export async function login(email, password) {

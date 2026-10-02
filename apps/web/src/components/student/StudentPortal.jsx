@@ -9,6 +9,7 @@ import { StudentClassDetail } from "./StudentClassDetail";
 import { BiometricEnrollmentCard } from "./BiometricEnrollmentCard";
 import { AttendanceHistoryTable } from "./AttendanceHistoryTable";
 import { LivenessCamera } from "../liveness/LivenessCamera";
+import { LoadingOverlay } from "../ui/LoadingOverlay";
 
 export function StudentPortal() {
   const { currentUser, setBiometricEnrolled } = useAuth();
@@ -18,6 +19,7 @@ export function StudentPortal() {
   const [attendance, setAttendance] = useState([]);
   const [selectedClassId, setSelectedClassId] = useState(null);
   const [activeScanningClassId, setActiveScanningClassId] = useState(null);
+  const [verifying, setVerifying] = useState(false); // check-in sent, waiting for the server
 
   const isBiometricEnrolled = Boolean(currentUser?.has_biometric_enrolled);
 
@@ -143,11 +145,12 @@ export function StudentPortal() {
     setActiveScanningClassId(null);
     if (!cls || !cls.active_session_id) return;
 
+    setVerifying(true);
     try {
       const res = await livenessApi.checkIn(cls.active_session_id, livenessResult);
       if (res.present) {
+        await refreshAll(true); // show the updated row before the overlay goes away
         showToast("success", `Attendance recorded as PRESENT for ${cls.name}!`);
-        await refreshAll(true);
       } else {
         showToast("error", res.message || "Face not recognized. Attendance not recorded.");
       }
@@ -155,6 +158,8 @@ export function StudentPortal() {
       showToast("error", err.message);
       // Refresh so the row shows the professor's decision instead of the button
       if (err.code === "ATTENDANCE_OVERRIDDEN") await refreshAll(true);
+    } finally {
+      setVerifying(false);
     }
   };
 
@@ -265,6 +270,8 @@ export function StudentPortal() {
           </button>
         </div>
       )}
+
+      {verifying && <LoadingOverlay message="Verifying your identity..." />}
 
       {activeScanningClass && (
         <LivenessCamera

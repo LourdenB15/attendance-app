@@ -4,6 +4,7 @@ import { livenessApi } from "../../api";
 import { useToast } from "../../context/useToast";
 import { useAuth } from "../../context/useAuth";
 import { LivenessCamera } from "../liveness/LivenessCamera";
+import { LoadingOverlay } from "../ui/LoadingOverlay";
 
 export function StudentClassDetail({
   classItem,
@@ -44,8 +45,8 @@ export function StudentClassDetail({
     try {
       const res = await livenessApi.checkIn(classItem.active_session_id, livenessResult);
       if (res.present) {
+        if (onAttendanceMarked) await onAttendanceMarked(); // reload before the overlay goes away
         showToast("success", `Attendance recorded as PRESENT for ${classItem.name}!`);
-        if (onAttendanceMarked) onAttendanceMarked();
       } else {
         showToast("error", res.message || "Face not recognized. Attendance not recorded.");
       }
@@ -60,6 +61,8 @@ export function StudentClassDetail({
 
   return (
     <div className="space-y-6">
+      {loading && <LoadingOverlay message="Verifying your identity..." />}
+
       {/* Top Banner & Header */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">

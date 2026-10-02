@@ -76,7 +76,8 @@ export function LivenessCamera({
       setCurrentChallenge(null);
       setResultData(livenessResult);
       setUiState(UI_STATE.SUCCESS);
-      setInstruction(isAttendance ? "Identity Verified!" : "Biometric Scan Passed!");
+      // The face match happens on the server afterwards, so don't claim "verified" here
+      setInstruction(isAttendance ? "Face Captured!" : "Biometric Scan Passed!");
       try {
         sdk.stop(videoRef.current);
       } catch {
