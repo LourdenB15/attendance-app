@@ -1,5 +1,6 @@
 // apps/web/src/App.jsx
 import { ToastProvider } from "./context/ToastContextProvider";
+import { ConfirmProvider } from "./context/ConfirmContextProvider";
 import { AuthProvider } from "./context/AuthContextProvider";
 import { useAuth } from "./context/useAuth";
 import { AuthView } from "./components/auth/AuthView";
@@ -30,9 +31,11 @@ function RootContent() {
 export default function App() {
   return (
     <ToastProvider>
-      <AuthProvider>
-        <RootContent />
-      </AuthProvider>
+      <ConfirmProvider>
+        <AuthProvider>
+          <RootContent />
+        </AuthProvider>
+      </ConfirmProvider>
     </ToastProvider>
   );
 }

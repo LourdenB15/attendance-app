@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Badge } from "../ui/Badge";
 import { classesApi } from "../../api";
 import { useToast } from "../../context/ToastContext";
+import { useConfirm } from "../../context/useConfirm";
 
 export function ClassesTable({ classes, onSelectClass, onRefresh }) {
   const [editingClass, setEditingClass] = useState(null);
@@ -11,6 +12,7 @@ export function ClassesTable({ classes, onSelectClass, onRefresh }) {
   const [editSection, setEditSection] = useState("");
   const [listTab, setListTab] = useState("active"); // "active" | "archived"
   const { showToast } = useToast();
+  const confirm = useConfirm();
 
   const activeClasses = classes.filter((c) => !c.is_archived);
   const archivedClasses = classes.filter((c) => c.is_archived);
@@ -40,10 +42,15 @@ export function ClassesTable({ classes, onSelectClass, onRefresh }) {
     }
   };
 
-  const handleArchive = async (classId) => {
-    if (!window.confirm("Are you sure you want to archive this class?")) return;
+  const handleArchive = async (cls) => {
+    const confirmed = await confirm({
+      title: "Archive this class?",
+      message: `${cls.name} will move to the Archived tab. Students can't join it and no sessions can be opened. You can unarchive it anytime.`,
+      confirmLabel: "Archive",
+    });
+    if (!confirmed) return;
     try {
-      await classesApi.archiveClass(classId);
+      await classesApi.archiveClass(cls.id);
       showToast("success", "Class archived successfully.");
       if (onRefresh) onRefresh();
     } catch (err) {
@@ -206,7 +213,7 @@ export function ClassesTable({ classes, onSelectClass, onRefresh }) {
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation(); // don't also open the class
-                              handleArchive(cls.id);
+                              handleArchive(cls);
                             }}
                             className="px-2.5 py-1 text-rose-600 hover:bg-rose-50 rounded-lg text-xs font-medium transition"
                           >

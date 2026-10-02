@@ -3,12 +3,14 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { adminApi } from "../../api";
 import { useAuth } from "../../context/useAuth";
 import { useToast } from "../../context/useToast";
+import { useConfirm } from "../../context/useConfirm";
 import { CreateProfessorCard } from "./CreateProfessorCard";
 import { UserDirectoryTable } from "./UserDirectoryTable";
 
 export function AdminPortal() {
   const { currentUser } = useAuth();
   const { showToast } = useToast();
+  const confirm = useConfirm();
   const [adminTab, setAdminTab] = useState("users"); // "users" | "create-prof"
   const [userList, setUserList] = useState([]);
   const [roleFilter, setRoleFilter] = useState("ALL");
@@ -66,7 +68,14 @@ export function AdminPortal() {
   };
 
   const handleDeactivate = async (userId) => {
-    if (!window.confirm("Are you sure you want to deactivate this user?")) return;
+    const user = userList.find((u) => u.id === userId);
+    const confirmed = await confirm({
+      title: "Deactivate this user?",
+      message: `${user?.full_name || "This user"} won't be able to sign in until you reactivate them.`,
+      confirmLabel: "Deactivate",
+      danger: true,
+    });
+    if (!confirmed) return;
     try {
       await adminApi.deactivateUser(userId);
       showToast("success", "User deactivated successfully.");

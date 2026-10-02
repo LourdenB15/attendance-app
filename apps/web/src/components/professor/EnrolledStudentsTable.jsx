@@ -2,14 +2,22 @@
 import { Badge } from "../ui/Badge";
 import { classesApi } from "../../api";
 import { useToast } from "../../context/ToastContext";
+import { useConfirm } from "../../context/useConfirm";
 
 export function EnrolledStudentsTable({ classId, joinCode, students, onStudentDropped }) {
   const { showToast } = useToast();
+  const confirm = useConfirm();
 
-  const handleDrop = async (studentId) => {
-    if (!window.confirm("Are you sure you want to drop this student from the class?")) return;
+  const handleDrop = async (student) => {
+    const confirmed = await confirm({
+      title: "Drop this student?",
+      message: `${student.full_name} will be removed from this class and won't be able to rejoin it.`,
+      confirmLabel: "Drop student",
+      danger: true,
+    });
+    if (!confirmed) return;
     try {
-      await classesApi.dropStudent(classId, studentId);
+      await classesApi.dropStudent(classId, student.student_id);
       showToast("success", "Student dropped from class.");
       if (onStudentDropped) onStudentDropped();
     } catch (err) {
@@ -60,7 +68,7 @@ export function EnrolledStudentsTable({ classId, joinCode, students, onStudentDr
                     {s.status === "ACTIVE" && (
                       <button
                         type="button"
-                        onClick={() => handleDrop(s.student_id)}
+                        onClick={() => handleDrop(s)}
                         className="px-2.5 py-1 text-xs text-rose-600 hover:bg-rose-50 rounded-md font-medium transition"
                       >
                         Drop Student
