@@ -8,6 +8,7 @@ import * as emailVerificationTokensRepository from "../repositories/email-verifi
 import * as biometricEnrollmentsRepository from "../repositories/biometric-enrollments.repository.js";
 import * as emailService from "./email.service.js";
 import { httpError } from "../utils/http-error.js";
+import { normalizeEmail } from "../utils/normalize-email.js";
 import { OAuth2Client } from "google-auth-library";
 
 const JWT_SECRET = process.env.JWT_SECRET || "default_jwt_secret";
@@ -74,7 +75,7 @@ export async function verifyEmail({ email, code, token }) {
 
   // If not found by direct hash and email is provided, check user's latest token
   if (!record && email) {
-    const user = await usersRepository.findByEmail(email.trim());
+    const user = await usersRepository.findByEmail(normalizeEmail(email));
     if (user) {
       const latest = await emailVerificationTokensRepository.findLatestUnusedByUser(user.id);
       if (latest && latest.token_hash === codeHash) {
@@ -98,7 +99,7 @@ export async function verifyEmail({ email, code, token }) {
 }
 
 export async function resendVerification(email) {
-  const user = await usersRepository.findByEmail(email.trim());
+  const user = await usersRepository.findByEmail(normalizeEmail(email));
   if (!user) {
     return { message: "If an account exists, a new 6-digit verification code was sent." };
   }
@@ -253,7 +254,8 @@ export async function loginWithGoogle(idToken) {
     throw httpError(403, "Google account email is not verified");
   }
 
-  const { sub: googleId, email, name } = payload;
+  const { sub: googleId, name } = payload;
+  const email = normalizeEmail(payload.email);
 
   let user = await usersRepository.findByGoogleId(googleId);
 

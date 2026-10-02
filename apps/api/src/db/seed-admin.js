@@ -2,6 +2,7 @@ import "dotenv/config";
 import bcrypt from "bcrypt";
 import pool from "./db.js";
 import { createUser } from "../repositories/users.repository.js";
+import { normalizeEmail } from "../utils/normalize-email.js";
 
 const { ADMIN_NAME, ADMIN_EMAIL, ADMIN_PASSWORD } = process.env;
 
@@ -15,7 +16,7 @@ async function seedAdmin() {
   try {
     const user = await createUser(
       ADMIN_NAME,
-      ADMIN_EMAIL,
+      normalizeEmail(ADMIN_EMAIL),
       passwordHash,
       "ADMIN",
       false,
