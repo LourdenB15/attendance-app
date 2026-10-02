@@ -71,3 +71,16 @@ export async function archiveClass(req, res) {
     res.status(500).json({ error: "Failed to archive class" });
   }
 }
+
+export async function unarchiveClass(req, res) {
+  try {
+    const unarchived = await classesService.unarchiveClass(req.user.sub, req.params.id);
+    res.status(200).json(unarchived);
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error("Unarchive class error:", error);
+    res.status(500).json({ error: "Failed to unarchive class" });
+  }
+}

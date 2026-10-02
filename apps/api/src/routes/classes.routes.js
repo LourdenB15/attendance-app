@@ -15,5 +15,6 @@ router.get("/:classId/attendance-summary", authenticate, checkAccountStatus, req
 router.post("/:classId/students/:studentId/drop", authenticate, checkAccountStatus, requireRole("PROFESSOR"), enrollmentsController.dropStudent);
 router.patch("/:id", authenticate, checkAccountStatus, requireRole("PROFESSOR"), classesController.updateClass);
 router.post("/:id/archive", authenticate, checkAccountStatus, requireRole("PROFESSOR"), classesController.archiveClass);
+router.post("/:id/unarchive", authenticate, checkAccountStatus, requireRole("PROFESSOR"), classesController.unarchiveClass);
 
 export default router;

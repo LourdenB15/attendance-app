@@ -72,3 +72,11 @@ export async function archiveClass(professorId, classId) {
   }
   return archived;
 }
+
+export async function unarchiveClass(professorId, classId) {
+  const unarchived = await classesRepository.unarchiveClass(classId, professorId);
+  if (!unarchived) {
+    throw httpError(404, "Class not found");
+  }
+  return unarchived;
+}

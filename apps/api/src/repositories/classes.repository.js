@@ -64,3 +64,14 @@ export async function archiveClass(classId, professorId) {
   );
   return result.rows[0];
 }
+
+export async function unarchiveClass(classId, professorId) {
+  const result = await pool.query(
+    `UPDATE classes
+     SET is_archived = false
+     WHERE id = $1 AND professor_id = $2
+     RETURNING id, name, is_archived`,
+    [classId, professorId],
+  );
+  return result.rows[0];
+}

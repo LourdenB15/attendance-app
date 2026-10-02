@@ -93,6 +93,7 @@ export const classesApi = {
   updateClass: (id, body) =>
     request(`/classes/${id}`, { method: "PATCH", body }),
   archiveClass: (id) => request(`/classes/${id}/archive`, { method: "POST" }),
+  unarchiveClass: (id) => request(`/classes/${id}/unarchive`, { method: "POST" }),
   getClassStudents: (classId) =>
     request(`/classes/${classId}/students`, { method: "GET" }),
   getClassAttendanceHistory: (classId) =>

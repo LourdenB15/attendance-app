@@ -9,7 +9,12 @@ export function ClassesTable({ classes, onSelectClass, onRefresh }) {
   const [editName, setEditName] = useState("");
   const [editSemester, setEditSemester] = useState("");
   const [editSection, setEditSection] = useState("");
+  const [listTab, setListTab] = useState("active"); // "active" | "archived"
   const { showToast } = useToast();
+
+  const activeClasses = classes.filter((c) => !c.is_archived);
+  const archivedClasses = classes.filter((c) => c.is_archived);
+  const visibleClasses = listTab === "archived" ? archivedClasses : activeClasses;
 
   const startEdit = (cls) => {
     setEditingClass(cls);
@@ -40,6 +45,16 @@ export function ClassesTable({ classes, onSelectClass, onRefresh }) {
     try {
       await classesApi.archiveClass(classId);
       showToast("success", "Class archived successfully.");
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      showToast("error", err.message);
+    }
+  };
+
+  const handleUnarchive = async (classId) => {
+    try {
+      await classesApi.unarchiveClass(classId);
+      showToast("success", "Class restored.");
       if (onRefresh) onRefresh();
     } catch (err) {
       showToast("error", err.message);
@@ -99,8 +114,27 @@ export function ClassesTable({ classes, onSelectClass, onRefresh }) {
       )}
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-          <h3 className="font-bold text-slate-800 text-sm">Your Classes ({classes.length})</h3>
+        <div className="p-4 border-b border-slate-100 flex items-center justify-between gap-3">
+          <h3 className="font-bold text-slate-800 text-sm">Your Classes</h3>
+          <div className="flex bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+            {[
+              { id: "active", label: `Active (${activeClasses.length})` },
+              { id: "archived", label: `Archived (${archivedClasses.length})` },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setListTab(tab.id)}
+                className={`px-3 py-1.5 rounded-lg transition ${
+                  listTab === tab.id
+                    ? "bg-white text-indigo-600 shadow-xs font-bold"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="overflow-x-auto">
@@ -116,15 +150,22 @@ export function ClassesTable({ classes, onSelectClass, onRefresh }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {classes.length === 0 ? (
+              {visibleClasses.length === 0 ? (
                 <tr>
                   <td colSpan="6" className="px-5 py-8 text-center text-slate-400">
-                    No classes created yet. Use the form above to add your first class.
+                    {listTab === "archived"
+                      ? "No archived classes."
+                      : "No active classes. Use the form above to add a class."}
                   </td>
                 </tr>
               ) : (
-                classes.map((cls) => (
-                  <tr key={cls.id} className="hover:bg-slate-50/80 transition">
+                visibleClasses.map((cls) => (
+                  <tr
+                    key={cls.id}
+                    // Active rows open the class; archived rows only offer Unarchive
+                    onClick={cls.is_archived ? undefined : () => onSelectClass(cls)}
+                    className={cls.is_archived ? "" : "hover:bg-slate-50/80 cursor-pointer transition"}
+                  >
                     <td className="px-5 py-3 font-semibold text-slate-900">{cls.name}</td>
                     <td className="px-5 py-3 text-slate-600">{cls.semester}</td>
                     <td className="px-5 py-3 text-slate-600">{cls.section}</td>
@@ -141,25 +182,32 @@ export function ClassesTable({ classes, onSelectClass, onRefresh }) {
                       )}
                     </td>
                     <td className="px-5 py-3 text-right space-x-2">
-                      <button
-                        type="button"
-                        onClick={() => onSelectClass(cls)}
-                        className="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-semibold transition"
-                      >
-                        Manage
-                      </button>
-                      {!cls.is_archived && (
+                      {cls.is_archived ? (
+                        <button
+                          type="button"
+                          onClick={() => handleUnarchive(cls.id)}
+                          className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition"
+                        >
+                          Unarchive
+                        </button>
+                      ) : (
                         <>
                           <button
                             type="button"
-                            onClick={() => startEdit(cls)}
+                            onClick={(e) => {
+                              e.stopPropagation(); // don't also open the class
+                              startEdit(cls);
+                            }}
                             className="px-2.5 py-1 text-slate-600 hover:bg-slate-100 rounded-lg text-xs font-medium transition"
                           >
                             Edit
                           </button>
                           <button
                             type="button"
-                            onClick={() => handleArchive(cls.id)}
+                            onClick={(e) => {
+                              e.stopPropagation(); // don't also open the class
+                              handleArchive(cls.id);
+                            }}
                             className="px-2.5 py-1 text-rose-600 hover:bg-rose-50 rounded-lg text-xs font-medium transition"
                           >
                             Archive
