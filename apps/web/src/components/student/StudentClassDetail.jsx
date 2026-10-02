@@ -25,6 +25,9 @@ export function StudentClassDetail({
 
   const hasActiveSession = Boolean(classItem.active_session_id);
   const isAlreadyPresent = classItem.my_attendance_status === "PRESENT";
+  // Professor marked them absent for this session: no more check-ins
+  const isMarkedAbsent =
+    classItem.my_attendance_source === "MANUAL_OVERRIDE" && !isAlreadyPresent;
 
   const handleTakeAttendanceClick = () => {
     if (!isEnrolled) {
@@ -48,6 +51,8 @@ export function StudentClassDetail({
       }
     } catch (err) {
       showToast("error", err.message);
+      // Refresh so the page shows the professor's decision instead of the button
+      if (err.code === "ATTENDANCE_OVERRIDDEN" && onAttendanceMarked) onAttendanceMarked();
     } finally {
       setLoading(false);
     }
@@ -100,6 +105,23 @@ export function StudentClassDetail({
                 </div>
                 <span className="px-3 py-1 bg-emerald-200 text-emerald-800 text-xs font-bold rounded-lg shrink-0">
                   PRESENT
+                </span>
+              </div>
+            ) : isMarkedAbsent ? (
+              <div className="bg-rose-50 border border-rose-200 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center text-xl font-bold">
+                    ✕
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-rose-900">Attendance Recorded by Your Professor</h4>
+                    <p className="text-xs text-rose-700 mt-0.5">
+                      You were marked <strong>ABSENT</strong> for this session.
+                    </p>
+                  </div>
+                </div>
+                <span className="px-3 py-1 bg-rose-200 text-rose-800 text-xs font-bold rounded-lg shrink-0">
+                  ABSENT
                 </span>
               </div>
             ) : !isEnrolled ? (

@@ -153,6 +153,8 @@ export function StudentPortal() {
       }
     } catch (err) {
       showToast("error", err.message);
+      // Refresh so the row shows the professor's decision instead of the button
+      if (err.code === "ATTENDANCE_OVERRIDDEN") await refreshAll(true);
     }
   };
 

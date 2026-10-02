@@ -26,6 +26,16 @@ export async function checkIn(studentId, sessionId, livenessResult) {
     throw httpError(409, "You are not enrolled in this class");
   }
   
+  // A professor's manual override is final for this session, so don't scan at all
+  const existingRecord = await attendanceRepository.findRecord(sessionId, studentId);
+  if (existingRecord?.source === "MANUAL_OVERRIDE") {
+    throw httpError(
+      409,
+      "Your professor has already recorded your attendance for this session.",
+      "ATTENDANCE_OVERRIDDEN",
+    );
+  }
+
   const enrollment = await biometricEnrollmentsRepository.findActiveByStudent(studentId);
   if (!enrollment) {
     throw httpError(409, "No active biometric enrollment — enroll your face first");

@@ -14,13 +14,17 @@ export async function checkIn(req, res) {
     if (!result.present) {
       return res.status(200).json({ present: false, message: "Face not recognized" });
     }
-    return res.status(200).json({
-      present: true,
-      overrideProtected: result.overrideProtected,
-    });
+    // Override saved between the pre-check and the save: nothing was recorded
+    if (result.overrideProtected) {
+      return res.status(409).json({
+        error: "Your professor has already recorded your attendance for this session.",
+        code: "ATTENDANCE_OVERRIDDEN",
+      });
+    }
+    return res.status(200).json({ present: true });
   } catch (error) {
     if (error.status) {
-      return res.status(error.status).json({ error: error.message });
+      return res.status(error.status).json({ error: error.message, code: error.code });
     }
     console.error("Check-in error:", error);
     res.status(500).json({ error: "Failed to check in" });

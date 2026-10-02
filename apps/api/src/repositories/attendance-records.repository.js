@@ -18,6 +18,15 @@ export async function upsertPresent({ sessionId, studentId, checkInAttemptId, re
   return result.rows[0];
 }
 
+export async function findRecord(sessionId, studentId) {
+  const result = await pool.query(
+    `SELECT id, status, source FROM attendance_records
+     WHERE session_id = $1 AND student_id = $2`,
+    [sessionId, studentId],
+  );
+  return result.rows[0];
+}
+
 export async function findForSession(classId, sessionId) {
   const result = await pool.query(
     `SELECT u.id AS student_id, u.full_name, u.email,

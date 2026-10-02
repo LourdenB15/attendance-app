@@ -40,6 +40,9 @@ export function EnrolledClassesTable({
               classes.map((c) => {
                 const hasActive = Boolean(c.active_session_id);
                 const isPresent = c.my_attendance_status === "PRESENT";
+                // Professor marked them absent for this session: no more check-ins
+                const isMarkedAbsent =
+                  c.my_attendance_source === "MANUAL_OVERRIDE" && !isPresent;
 
                 return (
                   <tr
@@ -72,6 +75,10 @@ export function EnrolledClassesTable({
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
                             ✓ Present
                           </span>
+                        ) : isMarkedAbsent ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800">
+                            ✕ Marked Absent
+                          </span>
                         ) : (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-700 animate-pulse">
                             <span className="w-2 h-2 rounded-full bg-indigo-600"></span>
@@ -85,7 +92,7 @@ export function EnrolledClassesTable({
                       )}
                     </td>
                     <td className="px-5 py-3.5 text-right">
-                      {hasActive && !isPresent ? (
+                      {hasActive && !isPresent && !isMarkedAbsent ? (
                         <button
                           type="button"
                           onClick={(e) => {

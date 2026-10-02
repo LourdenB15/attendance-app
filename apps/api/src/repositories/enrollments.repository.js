@@ -36,7 +36,8 @@ export async function findClassesByStudent(studentId) {
     `SELECT c.id AS class_id, c.name, c.semester, c.section, c.join_code, e.enrolled_at,
             u.full_name AS professor_name,
             s.id AS active_session_id, s.label AS active_session_label, s.expires_at AS active_session_expires_at,
-            att.status AS my_attendance_status, att.recorded_at AS my_checked_in_at
+            att.status AS my_attendance_status, att.source AS my_attendance_source,
+            att.recorded_at AS my_checked_in_at
      FROM enrollments e
      JOIN classes c ON c.id = e.class_id
      LEFT JOIN users u ON u.id = c.professor_id
