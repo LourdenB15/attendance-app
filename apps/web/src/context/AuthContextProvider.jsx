@@ -51,7 +51,8 @@ export function AuthProvider({ children }) {
       showToast("success", `Welcome back, ${user.full_name}!`);
       return user;
     } catch (err) {
-      showToast("error", err.message);
+      // Unverified students are sent to the code screen instead (see LoginForm), so no error toast
+      if (err.code !== "EMAIL_NOT_VERIFIED") showToast("error", err.message);
       throw err;
     }
   };
