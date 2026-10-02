@@ -210,6 +210,9 @@ export async function getCurrentUser(userId) {
   if (!user) {
     throw httpError(404, "User not found");
   }
+  if (!user.is_active) {
+    throw httpError(403, "This account has been deactivated", "ACCOUNT_DEACTIVATED");
+  }
   return toSafeUser(user);
 }
 

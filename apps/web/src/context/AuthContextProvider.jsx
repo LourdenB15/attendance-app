@@ -1,6 +1,6 @@
 // apps/web/src/context/AuthContextProvider.jsx
-import { useState, useEffect, useCallback } from "react";
-import { authApi } from "../api";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { authApi, setAccountDeactivatedHandler } from "../api";
 import { useToast } from "./useToast";
 import { AuthContext } from "./AuthContext";
 
@@ -8,6 +8,23 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
   const { showToast } = useToast();
+
+  // Sign out as soon as any request says this account was deactivated by an admin.
+  // The ref makes sure several failing requests only produce one sign-out and one toast.
+  const currentUserRef = useRef(currentUser);
+  useEffect(() => {
+    currentUserRef.current = currentUser;
+  }, [currentUser]);
+
+  useEffect(() => {
+    setAccountDeactivatedHandler((message) => {
+      if (!currentUserRef.current) return;
+      currentUserRef.current = null;
+      setCurrentUser(null);
+      showToast("error", `${message}. Please contact your administrator.`);
+    });
+    return () => setAccountDeactivatedHandler(null);
+  }, [showToast]);
 
   useEffect(() => {
     let ignore = false;

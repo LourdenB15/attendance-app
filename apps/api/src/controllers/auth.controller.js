@@ -164,8 +164,15 @@ export async function me(req, res) {
     const user = await authService.getCurrentUser(req.user.sub);
     res.status(200).json({ ...user });
   } catch (error) {
+    if (error.code === "ACCOUNT_DEACTIVATED") {
+      res.clearCookie("token", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      });
+    }
     if (error.status) {
-      return res.status(error.status).json({ error: error.message });
+      return res.status(error.status).json({ error: error.message, code: error.code });
     }
     console.error("Get current user error:", error);
     res.status(500).json({ error: "Failed to load user" });

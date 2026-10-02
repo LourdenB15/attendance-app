@@ -1,6 +1,8 @@
 // apps/web/src/components/layout/AppLayout.jsx
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../context/useToast";
+import { PasswordInput } from "../ui/PasswordInput";
 import { Header } from "./Header";
 import { MustChangePasswordBanner } from "../auth/MustChangePasswordBanner";
 import { AdminPortal } from "../admin/AdminPortal";
@@ -11,15 +13,22 @@ export function AppLayout() {
   const { currentUser, changePassword } = useAuth();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      showToast("error", "New passwords do not match. Please re-enter.");
+      return;
+    }
     setLoading(true);
     try {
       await changePassword({ currentPassword, newPassword });
       setCurrentPassword("");
       setNewPassword("");
+      setConfirmPassword("");
     } catch {
       // toast in context
     } finally {
@@ -52,35 +61,44 @@ export function AppLayout() {
               <summary className="cursor-pointer text-xs font-bold text-slate-500 uppercase tracking-wider hover:text-slate-800 list-none flex items-center gap-1.5">
                 <span className="group-open:rotate-90 transition-transform inline-block">▸</span> Account Settings / Change Password
               </summary>
-              <form onSubmit={handleChangePassword} className="mt-4 flex flex-wrap gap-3 items-end max-w-xl">
+              <form onSubmit={handleChangePassword} className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl">
                 <div>
                   <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
                     Current Password
                   </label>
-                  <input
-                    type="password"
+                  <PasswordInput
                     required
+                    autoComplete="current-password"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
                   <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
                     New Password
                   </label>
-                  <input
-                    type="password"
+                  <PasswordInput
                     required
+                    autoComplete="new-password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
+                    Confirm New Password
+                  </label>
+                  <PasswordInput
+                    required
+                    autoComplete="new-password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-4 py-1.5 bg-slate-800 hover:bg-slate-900 disabled:opacity-50 text-white text-xs font-semibold rounded-lg transition"
+                  className="sm:col-span-3 justify-self-start px-4 py-2 bg-slate-800 hover:bg-slate-900 disabled:opacity-50 text-white text-xs font-semibold rounded-lg transition"
                 >
                   {loading ? "Saving..." : "Update Password"}
                 </button>

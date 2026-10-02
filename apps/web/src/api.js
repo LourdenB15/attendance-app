@@ -4,6 +4,12 @@ const API_BASE = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/api`
   : "/api";
 
+// Set by AuthProvider: signs the user out when any request reports a deactivated account
+let accountDeactivatedHandler = null;
+export function setAccountDeactivatedHandler(handler) {
+  accountDeactivatedHandler = handler;
+}
+
 async function request(path, options = {}) {
   const url = `${API_BASE}${path}`;
   const config = {
@@ -41,6 +47,9 @@ async function request(path, options = {}) {
     const error = new Error(message);
     error.status = response.status;
     error.code = data?.code; // e.g. "EMAIL_NOT_VERIFIED"
+    if (error.code === "ACCOUNT_DEACTIVATED" && accountDeactivatedHandler) {
+      accountDeactivatedHandler(message);
+    }
     throw error;
   }
 
