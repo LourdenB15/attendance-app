@@ -127,27 +127,12 @@ export function AdminPortal() {
 
       {adminTab === "users" && (
         <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase text-slate-500">Filter Role:</span>
-            {["ALL", "STUDENT", "PROFESSOR", "ADMIN"].map((r) => (
-              <button
-                key={r}
-                type="button"
-                onClick={() => setRoleFilter(r)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition ${
-                  roleFilter === r
-                    ? "bg-indigo-600 text-white shadow-xs"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                }`}
-              >
-                {r}
-              </button>
-            ))}
-          </div>
-
           <UserDirectoryTable
             currentUserId={currentUser?.id}
             users={userList}
+            roleFilter={roleFilter}
+            onRoleFilterChange={setRoleFilter}
+            onRefresh={() => loadUsers(roleFilter)}
             onUpdateRole={handleUpdateRole}
             onDeactivate={handleDeactivate}
             onReactivate={handleReactivate}
