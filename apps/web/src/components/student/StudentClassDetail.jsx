@@ -20,9 +20,8 @@ export function StudentClassDetail({
 
   const isEnrolled = Boolean(currentUser?.has_biometric_enrolled);
 
-  const classRecords = attendanceRecords.filter(
-    (r) => r.class_id === classItem.class_id || r.class_name === classItem.name,
-  );
+  // Match by id, not name: two sections can share a class name
+  const classRecords = attendanceRecords.filter((r) => r.class_id === classItem.class_id);
 
   const hasActiveSession = Boolean(classItem.active_session_id);
   const isAlreadyPresent = classItem.my_attendance_status === "PRESENT";
@@ -228,12 +227,12 @@ export function StudentClassDetail({
                 </tr>
               ) : (
                 classRecords.map((r, i) => (
-                  <tr key={r.id || i} className="hover:bg-slate-50/80 transition">
+                  <tr key={r.session_id || i} className="hover:bg-slate-50/80 transition">
                     <td className="px-5 py-3 font-semibold text-slate-800">
                       {r.session_label || "Standard Class Session"}
                     </td>
                     <td className="px-5 py-3 text-xs text-slate-500">
-                      {r.checked_in_at ? new Date(r.checked_in_at).toLocaleString() : "—"}
+                      {r.recorded_at ? new Date(r.recorded_at).toLocaleString() : "—"}
                     </td>
                     <td className="px-5 py-3">
                       <span
