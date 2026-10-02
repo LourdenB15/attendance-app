@@ -25,9 +25,16 @@ export function ClassesTable({ classes, onSelectClass, onRefresh }) {
     setEditSection(cls.section);
   };
 
+  // Save stays disabled until a field actually differs from the saved class
+  const hasEditChanges =
+    editingClass !== null &&
+    (editName.trim() !== editingClass.name ||
+      editSemester.trim() !== editingClass.semester ||
+      editSection.trim() !== editingClass.section);
+
   const handleUpdate = async (e) => {
     e.preventDefault();
-    if (!editingClass) return;
+    if (!editingClass || !hasEditChanges) return;
     try {
       await classesApi.updateClass(editingClass.id, {
         name: editName,
@@ -104,7 +111,9 @@ export function ClassesTable({ classes, onSelectClass, onRefresh }) {
             <div className="flex items-end gap-2">
               <button
                 type="submit"
-                className="flex-1 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-xl text-sm transition"
+                disabled={!hasEditChanges}
+                title={hasEditChanges ? undefined : "No changes to save"}
+                className="flex-1 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl text-sm transition"
               >
                 Save
               </button>
