@@ -24,7 +24,7 @@ export function SessionController({
         durationMinutes: Number(durationMinutes) || 60,
         label: label || undefined,
       });
-      showToast("success", `Session opened! Session ID: ${session.id}`);
+      showToast("success", "Attendance session opened.");
       setLabel("");
       if (onSessionOpened) onSessionOpened(session);
     } catch (err) {
