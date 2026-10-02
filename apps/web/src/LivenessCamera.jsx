@@ -83,7 +83,8 @@ export function LivenessCamera({
         // ignore
       }
 
-      if (isAttendance && onComplete) {
+      // Hand the result over automatically (brief pause so the success screen is seen)
+      if (onComplete) {
         setTimeout(() => {
           if (isMounted) {
             onComplete(livenessResult);
@@ -168,12 +169,6 @@ export function LivenessCamera({
       console.error("Camera start error:", err);
       setUiState(UI_STATE.CAMERA_ERROR);
       setInstruction(err.message || "Could not start camera.");
-    }
-  };
-
-  const handleDone = () => {
-    if (resultData && onComplete) {
-      onComplete(resultData);
     }
   };
 
@@ -278,13 +273,6 @@ export function LivenessCamera({
                 Anti-Spoofing Passed
               </p>
             )}
-            <button
-              type="button"
-              onClick={handleDone}
-              className="mt-6 rounded-full bg-white px-8 py-2.5 text-xs font-bold text-slate-900 shadow-md hover:bg-slate-100 transition"
-            >
-              Proceed with Result
-            </button>
           </div>
         )}
       </div>

@@ -8,6 +8,7 @@ import { LivenessCamera } from "../liveness/LivenessCamera";
 export function BiometricEnrollmentCard({ onEnrollmentComplete }) {
   const { currentUser, setBiometricEnrolled } = useAuth();
   const [showCamera, setShowCamera] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [isEnrolled, setIsEnrolled] = useState(Boolean(currentUser?.has_biometric_enrolled));
   const { showToast } = useToast();
 
@@ -32,14 +33,17 @@ export function BiometricEnrollmentCard({ onEnrollmentComplete }) {
 
   const handleEnrollSuccess = async (livenessResult) => {
     setShowCamera(false);
+    setSaving(true);
     try {
       await livenessApi.enrollBiometric(livenessResult);
       setIsEnrolled(true);
-      setBiometricEnrolled(true);
+      setBiometricEnrolled(true); // the hub opens automatically once this is set
       showToast("success", "Biometric face profile registered successfully!");
       if (onEnrollmentComplete) onEnrollmentComplete();
     } catch (err) {
       showToast("error", err.message);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -61,7 +65,12 @@ export function BiometricEnrollmentCard({ onEnrollmentComplete }) {
         </div>
       )}
 
-      {showCamera ? (
+      {saving ? (
+        <div className="flex flex-col items-center gap-3 py-8">
+          <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-sm font-semibold text-slate-700">Saving your face profile...</p>
+        </div>
+      ) : showCamera ? (
         <LivenessCamera
           mode="enrollment"
           title="Face Enrollment & Anti-Spoofing Scan"
