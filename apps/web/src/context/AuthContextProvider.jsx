@@ -123,7 +123,9 @@ export function AuthProvider({ children }) {
     try {
       await authApi.changePassword({ currentPassword, newPassword });
       showToast("success", "Password updated successfully!");
-      setCurrentUser((prev) => (prev ? { ...prev, must_change_password: false } : null));
+      setCurrentUser((prev) =>
+        prev ? { ...prev, must_change_password: false, has_password: true } : null,
+      );
     } catch (err) {
       showToast("error", err.message);
       throw err;

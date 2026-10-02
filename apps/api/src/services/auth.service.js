@@ -25,6 +25,9 @@ function issueToken(user) {
 
 async function toSafeUser(user) {
   const { password_hash, ...safeUser } = user;
+  // Google-only accounts have no password; the client offers "Set a password" for them.
+  // Full rows carry password_hash; some update queries return has_password instead.
+  safeUser.has_password = user.has_password ?? Boolean(password_hash);
   if (safeUser.role === "STUDENT") {
     const biometric = await biometricEnrollmentsRepository.findActiveByStudent(safeUser.id);
     safeUser.has_biometric_enrolled = Boolean(biometric);
@@ -154,7 +157,11 @@ export async function changePassword(userId, currentPassword, newPassword) {
     throw httpError(404, "User not found");
   }
 
+  // Accounts without a password (Google sign-ups) set one without a current password
   if (user.password_hash) {
+    if (!currentPassword) {
+      throw httpError(400, "Current password is required");
+    }
     const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
     if (!isMatch) {
       throw httpError(401, "Current password is incorrect");

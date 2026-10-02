@@ -16,6 +16,8 @@ export function AppLayout() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
+  // Google sign-ups have no password yet: they set one without a current password
+  const hasPassword = currentUser.has_password !== false;
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
@@ -25,7 +27,10 @@ export function AppLayout() {
     }
     setLoading(true);
     try {
-      await changePassword({ currentPassword, newPassword });
+      await changePassword({
+        currentPassword: hasPassword ? currentPassword : undefined,
+        newPassword,
+      });
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
@@ -59,20 +64,31 @@ export function AppLayout() {
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <details className="group">
               <summary className="cursor-pointer text-xs font-bold text-slate-500 uppercase tracking-wider hover:text-slate-800 list-none flex items-center gap-1.5">
-                <span className="group-open:rotate-90 transition-transform inline-block">▸</span> Account Settings / Change Password
+                <span className="group-open:rotate-90 transition-transform inline-block">▸</span>{" "}
+                {hasPassword ? "Account Settings / Change Password" : "Account Settings / Set a Password"}
               </summary>
-              <form onSubmit={handleChangePassword} className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-3xl">
-                <div>
-                  <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
-                    Current Password
-                  </label>
-                  <PasswordInput
-                    required
-                    autoComplete="current-password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                  />
-                </div>
+              {!hasPassword && (
+                <p className="mt-3 text-xs text-slate-500 max-w-3xl">
+                  You signed up with Google. Set a password to also sign in with your email and password.
+                </p>
+              )}
+              <form
+                onSubmit={handleChangePassword}
+                className={`mt-4 grid grid-cols-1 gap-3 max-w-3xl ${hasPassword ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}
+              >
+                {hasPassword && (
+                  <div>
+                    <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
+                      Current Password
+                    </label>
+                    <PasswordInput
+                      required
+                      autoComplete="current-password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                    />
+                  </div>
+                )}
                 <div>
                   <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
                     New Password
@@ -98,9 +114,9 @@ export function AppLayout() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="sm:col-span-3 justify-self-start px-4 py-2 bg-slate-800 hover:bg-slate-900 disabled:opacity-50 text-white text-xs font-semibold rounded-lg transition"
+                  className="sm:col-span-full justify-self-start px-4 py-2 bg-slate-800 hover:bg-slate-900 disabled:opacity-50 text-white text-xs font-semibold rounded-lg transition"
                 >
-                  {loading ? "Saving..." : "Update Password"}
+                  {loading ? "Saving..." : hasPassword ? "Update Password" : "Set Password"}
                 </button>
               </form>
             </details>

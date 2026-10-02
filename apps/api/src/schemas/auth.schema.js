@@ -21,7 +21,9 @@ export const loginSchema = z.object({
 });
 
 export const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1, "Current password is required"),
+  // Optional: accounts without a password (Google sign-ups) don't have one.
+  // The service still requires it whenever the account has a password.
+  currentPassword: z.string().optional(),
   newPassword: passwordComplexitySchema,
 });
 
