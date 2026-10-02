@@ -75,6 +75,8 @@ export const authApi = {
     request("/auth/change-password", { method: "POST", body }),
   forgotPassword: (email) =>
     request("/auth/forgot-password", { method: "POST", body: { email } }),
+  validateResetToken: (token) =>
+    request("/auth/reset-password/validate", { method: "POST", body: { token } }),
   resetPassword: (body) =>
     request("/auth/reset-password", { method: "POST", body }),
 };

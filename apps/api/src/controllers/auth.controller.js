@@ -135,6 +135,23 @@ export async function forgotPassword(req, res) {
   }
 }
 
+export async function validateResetToken(req, res) {
+  const { token } = req.body;
+  if (!token || typeof token !== "string") {
+    return res.status(400).json({ error: "Invalid or expired reset token" });
+  }
+  try {
+    await authService.validateResetToken(token);
+    res.status(200).json({ valid: true });
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error("Validate reset token error:", error);
+    res.status(500).json({ error: "Failed to check reset link" });
+  }
+}
+
 export async function resetPassword(req, res) {
   const validation = resetPasswordSchema.safeParse(req.body);
   if (!validation.success) {

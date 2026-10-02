@@ -176,11 +176,14 @@ export async function forgotPassword(email) {
   const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
   const expiresAt = new Date(Date.now() + RESET_TOKEN_TTL_MS);
 
+  // Only the newest reset link should work
+  await resetTokensRepository.invalidateUnusedByUser(user.id);
   await resetTokensRepository.addToken(user.id, tokenHash, expiresAt);
   await emailService.sendPasswordResetEmail(user.email, token);
 }
 
-export async function resetPassword(token, newPassword) {
+// Returns the token's record, or throws if it's unknown, already used or expired
+async function findValidResetToken(token) {
   const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
   const record = await resetTokensRepository.findByTokenHash(tokenHash);
 
@@ -189,10 +192,21 @@ export async function resetPassword(token, newPassword) {
   if (invalid) {
     throw httpError(400, "Invalid or expired reset token");
   }
+  return record;
+}
+
+// Lets the reset page check the emailed link before the user types a new password
+export async function validateResetToken(token) {
+  await findValidResetToken(token);
+}
+
+export async function resetPassword(token, newPassword) {
+  const record = await findValidResetToken(token);
 
   const newPasswordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
   await usersRepository.updatePassword(record.user_id, newPasswordHash);
-  await resetTokensRepository.markUsed(record.id);
+  // Uses up this link and any other outstanding links for the user
+  await resetTokensRepository.invalidateUnusedByUser(record.user_id);
 
   let user = await usersRepository.findById(record.user_id);
   if (!user.is_active) {

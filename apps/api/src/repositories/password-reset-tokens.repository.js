@@ -17,6 +17,15 @@ export async function findByTokenHash(tokenHash) {
   return result.rows[0];
 }
 
+// Cancel every still-unused reset link for this user
+export async function invalidateUnusedByUser(userId) {
+  await pool.query(
+    `UPDATE password_reset_tokens SET used_at = now()
+     WHERE user_id = $1 AND used_at IS NULL`,
+    [userId],
+  );
+}
+
 export async function markUsed(id) {
   await pool.query(
     "UPDATE password_reset_tokens SET used_at = now() WHERE id = $1",

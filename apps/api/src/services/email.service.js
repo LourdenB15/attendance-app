@@ -4,7 +4,6 @@ import { Resend } from "resend";
 const APP_URL = process.env.APP_URL || "http://localhost:5173";
 const FROM_ADDRESS = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
 const FROM = `Attendance App <${FROM_ADDRESS}>`;
-const isDev = process.env.NODE_ENV !== "production";
 
 function getClient() {
   if (!process.env.RESEND_API_KEY) return null;
@@ -29,10 +28,6 @@ async function send({ label, to, subject, html }) {
 }
 
 export async function sendVerificationEmail(to, code) {
-  if (isDev) {
-    console.log(`\n📧 [EMAIL VERIFICATION CODE DISPATCH] To: ${to}\n🔢 Verification Code: ${code}\n`);
-  }
-
   await send({
     label: "verification email",
     to,
@@ -55,10 +50,6 @@ export async function sendVerificationEmail(to, code) {
 
 export async function sendPasswordResetEmail(to, token) {
   const resetLink = `${APP_URL}/?token=${token}`;
-  if (isDev) {
-    console.log(`\n📧 [PASSWORD RESET DISPATCH] To: ${to}\n🔗 Reset Link: ${resetLink}\n`);
-  }
-
   await send({
     label: "password reset email",
     to,
@@ -70,10 +61,6 @@ export async function sendPasswordResetEmail(to, token) {
 }
 
 export async function sendTempPasswordEmail(to, tempPassword) {
-  if (isDev) {
-    console.log(`\n📧 [TEMP PASSWORD DISPATCH] To: ${to}\n🔑 Temporary Password: ${tempPassword}\n`);
-  }
-
   await send({
     label: "temp password email",
     to,
