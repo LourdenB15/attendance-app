@@ -13,6 +13,7 @@ router.get("/:classId/students", authenticate, checkAccountStatus, requireRole("
 router.get("/:classId/attendance-history", authenticate, checkAccountStatus, requireRole("PROFESSOR"), attendanceController.getClassAttendanceHistory);
 router.get("/:classId/attendance-summary", authenticate, checkAccountStatus, requireRole("PROFESSOR"), attendanceController.getClassAttendanceSummary);
 router.post("/:classId/students/:studentId/drop", authenticate, checkAccountStatus, requireRole("PROFESSOR"), enrollmentsController.dropStudent);
+router.post("/:classId/students/:studentId/restore", authenticate, checkAccountStatus, requireRole("PROFESSOR"), enrollmentsController.restoreStudent);
 router.patch("/:id", authenticate, checkAccountStatus, requireRole("PROFESSOR"), classesController.updateClass);
 router.post("/:id/archive", authenticate, checkAccountStatus, requireRole("PROFESSOR"), classesController.archiveClass);
 router.post("/:id/unarchive", authenticate, checkAccountStatus, requireRole("PROFESSOR"), classesController.unarchiveClass);

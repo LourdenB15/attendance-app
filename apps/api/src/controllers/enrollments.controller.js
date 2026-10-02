@@ -51,6 +51,23 @@ export async function getMyClasses(req, res) {
   }
 }
 
+export async function restoreStudent(req, res) {
+  try {
+    const restored = await enrollmentsService.restoreStudent(
+      req.user.sub,
+      req.params.classId,
+      req.params.studentId,
+    );
+    res.status(200).json(restored);
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    console.error("Restore student error:", error);
+    res.status(500).json({ error: "Failed to restore student" });
+  }
+}
+
 export async function dropStudent(req, res) {
   try {
     const dropped = await enrollmentsService.dropStudent(

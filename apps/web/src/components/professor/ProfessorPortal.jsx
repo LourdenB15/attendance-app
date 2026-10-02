@@ -222,7 +222,7 @@ export function ProfessorPortal() {
                   : "border-transparent text-slate-500 hover:text-slate-800"
               }`}
             >
-              <span>👥</span> Enrolled Students ({classStudents.length})
+              <span>👥</span> Enrolled Students ({classStudents.filter((s) => s.status === "ACTIVE").length})
             </button>
           </div>
 

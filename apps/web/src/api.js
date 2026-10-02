@@ -100,6 +100,8 @@ export const classesApi = {
     request(`/classes/${classId}/attendance-history`, { method: "GET" }),
   getClassAttendanceSummary: (classId) =>
     request(`/classes/${classId}/attendance-summary`, { method: "GET" }),
+  restoreStudent: (classId, studentId) =>
+    request(`/classes/${classId}/students/${studentId}/restore`, { method: "POST" }),
   dropStudent: (classId, studentId) =>
     request(`/classes/${classId}/students/${studentId}/drop`, {
       method: "POST",

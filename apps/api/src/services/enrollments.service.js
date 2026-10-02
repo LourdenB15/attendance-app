@@ -33,6 +33,14 @@ export async function getStudents(professorId, classId) {
   return enrollmentsRepository.findStudentsByClass(classId);
 }
 
+export async function restoreStudent(professorId, classId, studentId) {
+  const restored = await enrollmentsRepository.restoreEnrollment(classId, studentId, professorId);
+  if (!restored) {
+    throw httpError(404, "Dropped enrollment not found");
+  }
+  return restored;
+}
+
 export async function dropStudent(professorId, classId, studentId) {
   const dropped = await enrollmentsRepository.dropEnrollment(classId, studentId, professorId);
   if (!dropped) {
