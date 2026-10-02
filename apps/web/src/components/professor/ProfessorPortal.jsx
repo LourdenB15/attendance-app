@@ -113,9 +113,13 @@ export function ProfessorPortal() {
       if (document.hidden) return; // don't poll if backgrounded
 
       if (selectedClassRef.current) {
-        if (activeSessionRef.current) {
+        const session = activeSessionRef.current;
+        if (session && new Date(session.expires_at) <= new Date()) {
+          // Time is up: the server closes it and returns no active session
+          loadActiveSession(selectedClassRef.current.id);
+        } else if (session) {
           // Poll attendance roster in real-time
-          loadAttendance(activeSessionRef.current.id, true);
+          loadAttendance(session.id, true);
         } else {
           // Check if session opened
           loadActiveSession(selectedClassRef.current.id);
