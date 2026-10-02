@@ -158,6 +158,26 @@ export function StudentPortal() {
     }
   };
 
+  // Face setup comes first: nothing else in the hub is usable without it
+  if (!isBiometricEnrolled) {
+    return (
+      <div className="space-y-6">
+        <div className="pb-4 border-b border-slate-200">
+          <h2 className="text-xl font-bold text-slate-900">Welcome! Let's set up your face profile</h2>
+          <p className="text-xs text-slate-500 mt-0.5">
+            You need a face profile before you can join classes and check in to attendance.
+          </p>
+        </div>
+        <BiometricEnrollmentCard
+          onEnrollmentComplete={() => {
+            refreshAll(true);
+            setStudentTab("classes");
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Top Header & Stable Static Navigation Tabs */}

@@ -1,8 +1,14 @@
 import * as enrollmentsRepository from "../repositories/enrollments.repository.js";
 import * as classesRepository from "../repositories/classes.repository.js";
+import * as biometricEnrollmentsRepository from "../repositories/biometric-enrollments.repository.js";
 import { httpError } from "../utils/http-error.js";
 
 export async function joinClass(studentId, joinCode) {
+  const faceProfile = await biometricEnrollmentsRepository.findActiveByStudent(studentId);
+  if (!faceProfile) {
+    throw httpError(403, "Set up your face profile before joining a class.", "FACE_SETUP_REQUIRED");
+  }
+
   const code = joinCode.trim().toUpperCase();
 
   const foundClass = await classesRepository.findByJoinCode(code);
