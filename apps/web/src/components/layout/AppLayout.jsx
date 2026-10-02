@@ -34,9 +34,14 @@ export function AppLayout() {
       <main className="max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 flex-1">
         <MustChangePasswordBanner />
 
-        {currentUser.role === "ADMIN" && <AdminPortal />}
-        {currentUser.role === "PROFESSOR" && <ProfessorPortal />}
-        {currentUser.role === "STUDENT" && <StudentPortal />}
+        {/* Portals load data the API refuses until the password is changed, so hide them until then */}
+        {!currentUser.must_change_password && (
+          <>
+            {currentUser.role === "ADMIN" && <AdminPortal />}
+            {currentUser.role === "PROFESSOR" && <ProfessorPortal />}
+            {currentUser.role === "STUDENT" && <StudentPortal />}
+          </>
+        )}
       </main>
 
       {/* Account Settings / Password Change Footer */}
