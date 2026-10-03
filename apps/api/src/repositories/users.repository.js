@@ -21,6 +21,15 @@ export async function findById(id) {
   return result.rows[0];
 }
 
+export async function setPasswordRequiringChange(id, passwordHash) {
+  await pool.query(
+    `UPDATE users
+     SET password_hash = $1, must_change_password = true, updated_at = now()
+     WHERE id = $2`,
+    [passwordHash, id],
+  );
+}
+
 export async function updatePassword(id, passwordHash) {
   await pool.query(
     `UPDATE users

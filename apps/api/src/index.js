@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import routes from "./routes/index.js";
 import cors from "cors";
 import { apiLimiter } from "./middleware/rate-limit.js";
+import { ensureAdminAccount } from "./services/admin.service.js";
 
 const PORT = process.env.PORT;
 const app = express();
@@ -29,6 +30,13 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/api", apiLimiter, routes);
+
+// Make sure the admin from .env can sign in; a failure here shouldn't stop the API
+try {
+  await ensureAdminAccount();
+} catch (error) {
+  console.error("Admin setup failed:", error);
+}
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}!`);
