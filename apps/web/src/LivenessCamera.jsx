@@ -196,56 +196,62 @@ export function LivenessCamera({
   };
 
   return (
-    <div className="w-full max-w-xl mx-auto my-4 bg-white rounded-2xl shadow-lg border border-[#dadce0] overflow-hidden">
-      {/* Top Header */}
-      <div className="px-5 py-4 border-b border-[#e8eaed] flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-[#e8f0fe] text-[#1a73e8] flex items-center justify-center shrink-0">
-            <IconCamera className="w-5 h-5" />
+    <div
+      className="fixed inset-0 z-50 bg-[#202124]/75 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 overflow-y-auto"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="liveness-camera-title"
+    >
+      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-[#dadce0] overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-200">
+        {/* Top Header */}
+        <div className="px-4 sm:px-5 py-3 sm:py-3.5 border-b border-[#e8eaed] flex items-center justify-between">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#e8f0fe] text-[#1a73e8] flex items-center justify-center shrink-0">
+              <IconCamera className="w-4 h-4 sm:w-5 sm:h-5" />
+            </div>
+            <div className="min-w-0">
+              <h3 id="liveness-camera-title" className="text-sm font-bold text-[#202124] leading-tight truncate">
+                {title}
+              </h3>
+              <span className="text-[11px] text-[#5f6368] font-normal leading-tight block truncate">
+                Attendance Live • Biometric Verification
+              </span>
+            </div>
           </div>
-          <div>
-            <h3 className="text-sm font-semibold text-[#202124] leading-tight">
-              {title}
-            </h3>
-            <span className="text-[11px] text-[#5f6368] font-normal leading-tight">
-              Attendance Live • Liveness Cloud Identity Verification
-            </span>
-          </div>
+
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-[#5f6368] hover:bg-[#f1f3f4] hover:text-[#202124] transition-colors shrink-0 ml-2"
+              aria-label="Close scanner"
+            >
+              <IconClose className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
-        {onCancel && (
-          <button
-            type="button"
-            onClick={onCancel}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-[#5f6368] hover:bg-[#f1f3f4] hover:text-[#202124] transition-colors"
-            aria-label="Close scanner"
-          >
-            <IconClose className="w-5 h-5" />
-          </button>
-        )}
-      </div>
+        {/* Video Viewport Container */}
+        <div className="p-3 sm:p-4">
+          <div className="relative aspect-[3/4] sm:aspect-4/3 max-h-[60vh] sm:max-h-[68vh] w-full overflow-hidden rounded-xl bg-slate-950 shadow-inner border border-slate-800">
+            <video
+              ref={videoRef}
+              playsInline
+              muted
+              autoPlay
+              className="absolute inset-0 h-full w-full scale-x-[-1] object-cover"
+            />
+            <canvas
+              ref={canvasRef}
+              className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+            />
 
-      {/* Video Viewport Container */}
-      <div className="p-4 sm:p-5">
-        <div className="relative aspect-4/3 w-full overflow-hidden rounded-xl bg-slate-950 shadow-inner border border-slate-800">
-          <video
-            ref={videoRef}
-            playsInline
-            muted
-            autoPlay
-            className="absolute inset-0 h-full w-full scale-x-[-1] object-cover"
-          />
-          <canvas
-            ref={canvasRef}
-            className="pointer-events-none absolute inset-0 h-full w-full object-cover"
-          />
-
-          {/* Oval Face Guide Overlay during active checking */}
-          {uiState === UI_STATE.CHECKING && (
-            <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-              <div className="w-56 h-72 sm:w-64 sm:h-80 rounded-[50%] border-2 border-dashed border-white/60 animate-pulse transition-all shadow-sm" />
-            </div>
-          )}
+            {/* Oval Face Guide Overlay during active checking */}
+            {uiState === UI_STATE.CHECKING && (
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <div className="w-44 h-60 sm:w-56 sm:h-72 rounded-[50%] border-2 border-dashed border-white/70 animate-pulse transition-all shadow-sm" />
+              </div>
+            )}
 
           {/* Top Real-time Instruction Banner */}
           <div className="absolute top-4 inset-x-0 z-10 flex justify-center px-4 pointer-events-none">
@@ -377,5 +383,6 @@ export function LivenessCamera({
         </div>
       </div>
     </div>
+  </div>
   );
 }
