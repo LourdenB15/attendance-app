@@ -35,6 +35,14 @@ export function LivenessCamera({
   const [progress, setProgress] = useState(0);
   const selectedChallenges = defaultChallenges ?? (isAttendance ? ["WAITING"] : null);
   const [resultData, setResultData] = useState(null);
+  const [isPortraitMode, setIsPortraitMode] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return (
+      window.matchMedia?.("(orientation: portrait)").matches ||
+      window.innerHeight > window.innerWidth ||
+      /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+    );
+  });
 
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
@@ -42,6 +50,23 @@ export function LivenessCamera({
   const isModelLoadedRef = useRef(false);
   const onCompleteRef = useRef(onComplete);
   const isAttendanceRef = useRef(isAttendance);
+
+  useEffect(() => {
+    const updateOrientation = () => {
+      const portrait =
+        window.matchMedia?.("(orientation: portrait)").matches ||
+        window.innerHeight > window.innerWidth ||
+        /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      setIsPortraitMode(portrait);
+    };
+
+    window.addEventListener("resize", updateOrientation);
+    window.addEventListener("orientationchange", updateOrientation);
+    return () => {
+      window.removeEventListener("resize", updateOrientation);
+      window.removeEventListener("orientationchange", updateOrientation);
+    };
+  }, []);
 
   useEffect(() => {
     onCompleteRef.current = onComplete;
@@ -146,6 +171,14 @@ export function LivenessCamera({
     const currentVideo = videoRef.current;
     return () => {
       isMounted = false;
+      if (currentVideo?.srcObject) {
+        try {
+          currentVideo.srcObject.getTracks().forEach((track) => track.stop());
+          currentVideo.srcObject = null;
+        } catch {
+          // ignore
+        }
+      }
       if (sdkRef.current) {
         try {
           sdkRef.current.stop(currentVideo);
@@ -155,6 +188,25 @@ export function LivenessCamera({
       }
     };
   }, []);
+
+  const handleClose = () => {
+    if (videoRef.current?.srcObject) {
+      try {
+        videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
+        videoRef.current.srcObject = null;
+      } catch {
+        // ignore
+      }
+    }
+    if (sdkRef.current) {
+      try {
+        sdkRef.current.stop(videoRef.current);
+      } catch {
+        // ignore
+      }
+    }
+    if (onCancel) onCancel();
+  };
 
   const handleStartClick = async () => {
     if (!videoRef.current || !canvasRef.current || !sdkRef.current) return;
@@ -175,6 +227,16 @@ export function LivenessCamera({
       }
     }
 
+    // Stop any existing stream before opening a fresh one
+    if (videoRef.current.srcObject) {
+      try {
+        videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
+        videoRef.current.srcObject = null;
+      } catch {
+        // ignore
+      }
+    }
+
     setProgress(0);
     setCurrentChallenge(null);
     setUiState(UI_STATE.CHECKING);
@@ -187,6 +249,84 @@ export function LivenessCamera({
     });
 
     try {
+      // Determine orientation dynamically: phones or portrait viewports get native portrait stream
+      const isPortrait =
+        typeof window !== "undefined" && (
+          window.matchMedia?.("(orientation: portrait)").matches ||
+          window.innerHeight > window.innerWidth ||
+          /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+        );
+
+      let stream = null;
+      if (isPortrait) {
+        // Phone/Portrait: Request portrait height > width so camera sensor opens in true portrait mode
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: "user",
+              width: { ideal: 720, max: 1080 },
+              height: { ideal: 1280, max: 1920 },
+              aspectRatio: { ideal: 9 / 16 },
+            },
+            audio: false,
+          });
+        } catch {
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({
+              video: {
+                facingMode: "user",
+                width: { ideal: 720 },
+                height: { ideal: 1280 },
+              },
+              audio: false,
+            });
+          } catch {
+            // will fallback below
+          }
+        }
+      } else {
+        // Desktop/Landscape: Standard landscape webcam constraints
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: "user",
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+              aspectRatio: { ideal: 16 / 9 },
+            },
+            audio: false,
+          });
+        } catch {
+          // will fallback below
+        }
+      }
+
+      // Universal fallback if strict resolution constraints were rejected
+      if (!stream) {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "user" },
+          audio: false,
+        });
+      }
+
+      const videoEl = videoRef.current;
+      videoEl.srcObject = stream;
+
+      // Await video metadata and play so dimensions are initialized before passing to SDK
+      await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => reject(new Error("Camera initialization timed out.")), 10000);
+        if (videoEl.readyState >= 2) {
+          clearTimeout(timeout);
+          videoEl.play().then(resolve).catch(reject);
+        } else {
+          videoEl.onloadedmetadata = () => {
+            clearTimeout(timeout);
+            videoEl.play().then(resolve).catch(reject);
+          };
+        }
+      });
+
+      // Start the SDK with our pre-configured portrait/landscape stream
       await sdkRef.current.start(videoRef.current, canvasRef.current);
     } catch (err) {
       console.error("Camera start error:", err);
@@ -222,7 +362,7 @@ export function LivenessCamera({
           {onCancel && (
             <button
               type="button"
-              onClick={onCancel}
+              onClick={handleClose}
               className="w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center text-[#5f6368] hover:bg-[#f1f3f4] hover:text-[#202124] transition-colors shrink-0 ml-2"
               aria-label="Close scanner"
             >
@@ -233,7 +373,13 @@ export function LivenessCamera({
 
         {/* Video Viewport Container */}
         <div className="p-3 sm:p-4">
-          <div className="relative aspect-[3/4] sm:aspect-4/3 max-h-[60vh] sm:max-h-[68vh] w-full overflow-hidden rounded-xl bg-slate-950 shadow-inner border border-slate-800">
+          <div
+            className={`relative w-full overflow-hidden rounded-xl bg-slate-950 shadow-inner border border-slate-800 transition-all duration-200 ${
+              isPortraitMode
+                ? "aspect-[3/4] max-h-[62vh]"
+                : "aspect-[4/3] max-h-[68vh]"
+            }`}
+          >
             <video
               ref={videoRef}
               playsInline
@@ -249,7 +395,11 @@ export function LivenessCamera({
             {/* Oval Face Guide Overlay during active checking */}
             {uiState === UI_STATE.CHECKING && (
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                <div className="w-44 h-60 sm:w-56 sm:h-72 rounded-[50%] border-2 border-dashed border-white/70 animate-pulse transition-all shadow-sm" />
+                <div
+                  className={`rounded-[50%] border-2 border-dashed border-white/70 animate-pulse transition-all shadow-sm ${
+                    isPortraitMode ? "w-44 h-64" : "w-56 h-72"
+                  }`}
+                />
               </div>
             )}
 
@@ -374,7 +524,7 @@ export function LivenessCamera({
           {onCancel && (
             <button
               type="button"
-              onClick={onCancel}
+              onClick={handleClose}
               className="text-[#5f6368] hover:text-[#202124] underline font-medium"
             >
               Cancel
