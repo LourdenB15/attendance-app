@@ -1,5 +1,72 @@
 @import "tailwindcss";
 
-button:not(:disabled) {
-  cursor: pointer;
+@layer base {
+  :root {
+    --font-sans: 'Google Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --google-blue: #1a73e8;
+    --google-blue-hover: #1557b0;
+    --google-blue-surface: #e8f0fe;
+    --google-green: #137333;
+    --google-green-hover: #0d5324;
+    --google-green-surface: #e6f4ea;
+    --google-yellow: #f9ab00;
+    --google-yellow-surface: #fef7e0;
+    --google-red: #d93025;
+    --google-red-hover: #b3261e;
+    --google-red-surface: #fce8e6;
+    --google-gray-bg: #f8f9fa;
+    --google-gray-surface: #ffffff;
+    --google-gray-border: #dadce0;
+    --google-gray-hover: #f1f3f4;
+    --google-text-primary: #202124;
+    --google-text-secondary: #5f6368;
+    --google-text-tertiary: #80868b;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #f8f9fa;
+    color: #202124;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+
+  /* Custom subtle scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #dadce0;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #bdc1c6;
+  }
+}
+
+/* Google Classroom Card Elevations */
+.gc-card {
+  background-color: #ffffff;
+  border: 1px solid #dadce0;
+  border-radius: 0.75rem;
+  transition: box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gc-card:hover {
+  box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
+}
+
+.gc-card-static {
+  background-color: #ffffff;
+  border: 1px solid #dadce0;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.1), 0 1px 3px 1px rgba(60, 64, 67, 0.05);
 }

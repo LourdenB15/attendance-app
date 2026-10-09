@@ -6,6 +6,7 @@ import { useToast } from "../../context/useToast";
 import { useConfirm } from "../../context/useConfirm";
 import { CreateProfessorCard } from "./CreateProfessorCard";
 import { UserDirectoryTable } from "./UserDirectoryTable";
+import { IconUsers, IconPlus } from "../ui/Icons";
 
 export function AdminPortal() {
   const { currentUser } = useAuth();
@@ -70,9 +71,9 @@ export function AdminPortal() {
   const handleDeactivate = async (userId) => {
     const user = userList.find((u) => u.id === userId);
     const confirmed = await confirm({
-      title: "Deactivate this user?",
-      message: `${user?.full_name || "This user"} won't be able to sign in until you reactivate them.`,
-      confirmLabel: "Deactivate",
+      title: "Deactivate this user account?",
+      message: `${user?.full_name || "This user"} will be prevented from logging in until reactivated by an admin.`,
+      confirmLabel: "Deactivate Account",
       danger: true,
     });
     if (!confirmed) return;
@@ -97,47 +98,61 @@ export function AdminPortal() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#dadce0]">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">Admin Control Center</h2>
-          <p className="text-xs text-slate-500 mt-0.5">Manage user accounts, roles, and professor invitations</p>
+          <div className="flex items-center gap-2.5">
+            <h2 className="text-xl font-bold text-[#202124]">
+              Admin Control Center
+            </h2>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#f3e8fd] text-[#7627bb] border border-[#e9d2fd]">
+              Administrator View
+            </span>
+          </div>
+          <p className="text-xs text-[#5f6368] mt-0.5">
+            Manage user accounts, roles, faculty invitations, and access permissions.
+          </p>
         </div>
 
-        <div className="flex bg-slate-200 p-1 rounded-xl text-xs font-semibold">
+        <div className="flex bg-[#f1f3f4] p-1 rounded-xl text-xs font-semibold shrink-0">
           <button
             type="button"
             onClick={() => setAdminTab("users")}
-            className={`px-3 py-1.5 rounded-lg transition ${
-              adminTab === "users" ? "bg-white text-indigo-600 shadow-xs font-bold" : "text-slate-600 hover:text-slate-900"
+            className={`px-3.5 py-1.5 rounded-lg transition-all inline-flex items-center gap-1.5 ${
+              adminTab === "users"
+                ? "bg-white text-[#1a73e8] shadow-xs font-bold"
+                : "text-[#5f6368] hover:text-[#202124]"
             }`}
           >
-            User Directory
+            <IconUsers className="w-3.5 h-3.5" />
+            <span>User Directory</span>
           </button>
           <button
             type="button"
             onClick={() => setAdminTab("create-prof")}
-            className={`px-3 py-1.5 rounded-lg transition ${
-              adminTab === "create-prof" ? "bg-white text-indigo-600 shadow-xs font-bold" : "text-slate-600 hover:text-slate-900"
+            className={`px-3.5 py-1.5 rounded-lg transition-all inline-flex items-center gap-1.5 ${
+              adminTab === "create-prof"
+                ? "bg-white text-[#1a73e8] shadow-xs font-bold"
+                : "text-[#5f6368] hover:text-[#202124]"
             }`}
           >
-            + Add Professor
+            <IconPlus className="w-3.5 h-3.5" />
+            <span>Add Professor</span>
           </button>
         </div>
       </div>
 
       {adminTab === "users" && (
-        <div className="space-y-4">
-          <UserDirectoryTable
-            currentUserId={currentUser?.id}
-            users={userList}
-            roleFilter={roleFilter}
-            onRoleFilterChange={setRoleFilter}
-            onRefresh={() => loadUsers(roleFilter)}
-            onUpdateRole={handleUpdateRole}
-            onDeactivate={handleDeactivate}
-            onReactivate={handleReactivate}
-          />
-        </div>
+        <UserDirectoryTable
+          currentUserId={currentUser?.id}
+          users={userList}
+          roleFilter={roleFilter}
+          onRoleFilterChange={setRoleFilter}
+          onRefresh={() => loadUsers(roleFilter)}
+          onUpdateRole={handleUpdateRole}
+          onDeactivate={handleDeactivate}
+          onReactivate={handleReactivate}
+        />
       )}
 
       {adminTab === "create-prof" && (

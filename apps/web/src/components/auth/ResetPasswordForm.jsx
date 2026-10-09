@@ -4,6 +4,7 @@ import { authApi } from "../../api";
 import { useAuth } from "../../context/useAuth";
 import { useToast } from "../../context/useToast";
 import { PasswordInput } from "../ui/PasswordInput";
+import { IconChevronLeft } from "../ui/Icons";
 
 export function ResetPasswordForm({ onBackToLogin, onRequestNewLink }) {
   const { resetPassword } = useAuth();
@@ -62,32 +63,33 @@ export function ResetPasswordForm({ onBackToLogin, onRequestNewLink }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-bold text-slate-900">Set New Password</h3>
+        <h3 className="text-sm font-semibold text-[#202124]">Set New Password</h3>
         {onBackToLogin && (
           <button
             type="button"
             onClick={() => leaveInvalidLink(onBackToLogin)}
-            className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold"
+            className="text-xs text-[#1a73e8] hover:text-[#1557b0] font-medium flex items-center gap-1"
           >
-            ← Back to Login
+            <IconChevronLeft className="w-3.5 h-3.5" />
+            <span>Back to Login</span>
           </button>
         )}
       </div>
 
       {linkStatus === "checking" && (
         <div className="flex flex-col items-center gap-3 py-8">
-          <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-xs text-slate-500">Checking your reset link...</p>
+          <div className="w-8 h-8 border-3 border-[#1a73e8] border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-xs text-[#5f6368]">Validating your security reset link...</p>
         </div>
       )}
 
       {linkStatus === "invalid" && (
-        <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 text-center space-y-3">
-          <h4 className="text-sm font-bold text-rose-900">This reset link is invalid or has expired</h4>
+        <div className="bg-[#fce8e6] border border-[#fad2cf] rounded-xl p-4 text-center space-y-3">
+          <h4 className="text-sm font-semibold text-[#c5221f]">This reset link is invalid or has expired</h4>
           <button
             type="button"
             onClick={() => leaveInvalidLink(onRequestNewLink)}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg transition"
+            className="px-4 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-semibold rounded-lg transition"
           >
             Request a new link
           </button>
@@ -96,13 +98,13 @@ export function ResetPasswordForm({ onBackToLogin, onRequestNewLink }) {
 
       {linkStatus === "valid" && (
         <>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-[#5f6368] leading-relaxed">
             Enter and confirm your new secure password below to complete the reset.
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#5f6368] mb-1.5">
                 New Password
               </label>
               <PasswordInput
@@ -114,7 +116,7 @@ export function ResetPasswordForm({ onBackToLogin, onRequestNewLink }) {
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#5f6368] mb-1.5">
                 Confirm New Password
               </label>
               <PasswordInput
@@ -128,7 +130,7 @@ export function ResetPasswordForm({ onBackToLogin, onRequestNewLink }) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-xl shadow-xs text-sm transition"
+              className="w-full py-2.5 bg-[#1a73e8] hover:bg-[#1557b0] disabled:opacity-50 text-white font-semibold rounded-lg shadow-xs text-sm transition"
             >
               {loading ? "Updating password..." : "Update Password & Sign In"}
             </button>

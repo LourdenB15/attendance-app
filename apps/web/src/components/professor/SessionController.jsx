@@ -1,7 +1,13 @@
 // apps/web/src/components/professor/SessionController.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { sessionsApi } from "../../api";
 import { useToast } from "../../context/useToast";
+import {
+  IconClock,
+  IconRefresh,
+  IconClose,
+  IconCamera,
+} from "../ui/Icons";
 
 export function SessionController({
   classId,
@@ -13,7 +19,34 @@ export function SessionController({
   const [durationMinutes, setDurationMinutes] = useState(60);
   const [label, setLabel] = useState("");
   const [loading, setLoading] = useState(false);
+  const [timeLeft, setTimeLeft] = useState("");
   const { showToast } = useToast();
+
+  const DURATION_PRESETS = [15, 30, 45, 60, 90];
+
+  // Countdown timer for active session
+  useEffect(() => {
+    if (!activeSession?.expires_at) return;
+
+    const updateTimer = () => {
+      const now = new Date().getTime();
+      const expiry = new Date(activeSession.expires_at).getTime();
+      const diff = expiry - now;
+
+      if (diff <= 0) {
+        setTimeLeft("Session expired");
+        return;
+      }
+
+      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const secs = Math.floor((diff % (1000 * 60)) / 1000);
+      setTimeLeft(`${mins}m ${secs < 10 ? "0" : ""}${secs}s remaining`);
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, [activeSession]);
 
   const handleOpen = async (e) => {
     e.preventDefault();
@@ -24,7 +57,7 @@ export function SessionController({
         durationMinutes: Number(durationMinutes) || 60,
         label: label || undefined,
       });
-      showToast("success", "Attendance session opened.");
+      showToast("success", "Attendance session opened successfully.");
       setLabel("");
       if (onSessionOpened) onSessionOpened(session);
     } catch (err) {
@@ -49,87 +82,160 @@ export function SessionController({
   };
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-      <h4 className="text-base font-bold text-slate-900 mb-1">Attendance Session Controller</h4>
-      <p className="text-xs text-slate-500 mb-4">
-        Launch a verification window for students to verify identity via webcam liveness detection.
-      </p>
+    <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-xs border border-[#dadce0]">
+      <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#e8eaed]">
+        <div className="flex items-center gap-3">
+          <div
+            className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+              activeSession
+                ? "bg-[#e6f4ea] text-[#137333]"
+                : "bg-[#e8f0fe] text-[#1a73e8]"
+            }`}
+          >
+            <IconCamera className="w-5 h-5" />
+          </div>
+          <div>
+            <h4 className="text-sm font-semibold text-[#202124]">
+              {activeSession ? "Active Attendance Window" : "Launch Attendance Session"}
+            </h4>
+            <p className="text-xs text-[#5f6368] mt-0.5">
+              {activeSession
+                ? "Students are currently able to scan their faces to check in."
+                : "Open a time-limited verification window for biometric face check-in."}
+            </p>
+          </div>
+        </div>
+
+        {activeSession && (
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#e6f4ea] text-[#137333] border border-[#ceead6]">
+            <span className="w-2 h-2 rounded-full bg-[#1e8e3e] animate-ping" />
+            <span>SESSION RUNNING</span>
+          </span>
+        )}
+      </div>
 
       {activeSession ? (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2 text-emerald-800 font-bold">
-              <span className="w-3 h-3 rounded-full bg-emerald-500 animate-ping"></span>
-              Active Session Running
+        <div className="bg-[#f8f9fa] border border-[#dadce0] rounded-xl p-4 sm:p-5 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="bg-white p-3 rounded-lg border border-[#dadce0]/70">
+              <span className="block text-[10px] font-bold uppercase tracking-wider text-[#5f6368]">
+                Session Topic / Label
+              </span>
+              <span className="text-xs font-semibold text-[#202124] block mt-0.5">
+                {activeSession.label || "Regular Class Session"}
+              </span>
             </div>
+
+            <div className="bg-white p-3 rounded-lg border border-[#dadce0]/70">
+              <span className="block text-[10px] font-bold uppercase tracking-wider text-[#5f6368]">
+                Time Remaining
+              </span>
+              <span className="text-xs font-mono font-bold text-[#137333] flex items-center gap-1.5 mt-0.5">
+                <IconClock className="w-3.5 h-3.5 text-[#137333]" />
+                <span>{timeLeft || "Calculating..."}</span>
+              </span>
+            </div>
+
+            <div className="bg-white p-3 rounded-lg border border-[#dadce0]/70">
+              <span className="block text-[10px] font-bold uppercase tracking-wider text-[#5f6368]">
+                Expires At
+              </span>
+              <span className="text-xs text-[#202124] font-medium block mt-0.5">
+                {new Date(activeSession.expires_at).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onRefreshAttendance}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-[#f1f3f4] text-[#3c4043] border border-[#dadce0] rounded-lg text-xs font-semibold transition shadow-2xs"
+            >
+              <IconRefresh className="w-3.5 h-3.5 text-[#5f6368]" />
+              <span>Refresh Attendance Roster</span>
+            </button>
+
             <button
               type="button"
               disabled={loading}
               onClick={handleClose}
-              className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition"
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#d93025] hover:bg-[#b3261e] disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition shadow-xs"
             >
-              {loading ? "Closing..." : "Close Session Now"}
+              <IconClose className="w-3.5 h-3.5" />
+              <span>{loading ? "Closing..." : "Close Session Now"}</span>
             </button>
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-white/80 p-3 rounded-lg border border-emerald-100 font-medium text-emerald-900 mb-3">
-            <div>
-              <strong>Session ID:</strong>
-              <code className="text-[11px] block mt-0.5 select-all">{activeSession.id}</code>
-            </div>
-            <div>
-              <strong>Label:</strong>
-              <span className="block mt-0.5">{activeSession.label || "Regular Class"}</span>
-            </div>
-            <div>
-              <strong>Expires At:</strong>
-              <span className="block mt-0.5">{new Date(activeSession.expires_at).toLocaleTimeString()}</span>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={onRefreshAttendance}
-            className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition"
-          >
-            🔄 Refresh Live Attendance Roster
-          </button>
         </div>
       ) : (
-        <form onSubmit={handleOpen} className="flex flex-wrap gap-3 items-end">
-          <div>
-            <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
-              Duration (Minutes)
-            </label>
-            <input
-              type="number"
-              min="1"
-              max="1440"
-              required
-              value={durationMinutes}
-              onChange={(e) => setDurationMinutes(e.target.value)}
-              className="w-32 px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500"
-            />
+        <form onSubmit={handleOpen} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#5f6368] mb-1.5">
+                Session Duration
+              </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="number"
+                  min="1"
+                  max="1440"
+                  required
+                  value={durationMinutes}
+                  onChange={(e) => setDurationMinutes(e.target.value)}
+                  className="w-24 px-3 py-2 bg-white border border-[#dadce0] rounded-lg text-sm font-semibold text-[#202124] focus:border-[#1a73e8] focus:outline-none focus:ring-2 focus:ring-[#e8f0fe]"
+                />
+                <span className="text-xs text-[#5f6368] font-medium">Minutes</span>
+              </div>
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[#5f6368] mb-1.5">
+                Topic or Lecture Label (Optional)
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Chapter 4: Divide and Conquer Algorithms"
+                value={label}
+                onChange={(e) => setLabel(e.target.value)}
+                className="w-full px-3.5 py-2 bg-white border border-[#dadce0] rounded-lg text-sm text-[#202124] placeholder-[#80868b] focus:border-[#1a73e8] focus:outline-none focus:ring-2 focus:ring-[#e8f0fe] transition-all"
+              />
+            </div>
           </div>
-          <div className="flex-1 min-w-[200px]">
-            <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
-              Session Label (Optional)
-            </label>
-            <input
-              type="text"
-              placeholder="e.g. Lecture 5 - Dynamic Programming"
-              value={label}
-              onChange={(e) => setLabel(e.target.value)}
-              className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500"
-            />
+
+          {/* Quick Preset Buttons */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[#e8eaed]">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] text-[#70757a] font-medium mr-1">
+                Presets:
+              </span>
+              {DURATION_PRESETS.map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => setDurationMinutes(m)}
+                  className={`px-2.5 py-1 text-xs rounded-md transition font-medium ${
+                    Number(durationMinutes) === m
+                      ? "bg-[#e8f0fe] text-[#1a73e8] border border-[#d2e3fc] font-bold"
+                      : "bg-[#f1f3f4] text-[#5f6368] hover:bg-[#e8eaed]"
+                  }`}
+                >
+                  {m}m
+                </button>
+              ))}
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-5 py-2.5 bg-[#1a73e8] hover:bg-[#1557b0] disabled:opacity-50 text-white font-semibold rounded-lg text-xs shadow-xs transition inline-flex items-center gap-1.5"
+            >
+              <span>{loading ? "Starting..." : "Start Attendance Window"}</span>
+              <span>→</span>
+            </button>
           </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-xl text-sm shadow-xs transition"
-          >
-            {loading ? "Opening..." : "Open Attendance Session"}
-          </button>
         </form>
       )}
     </div>

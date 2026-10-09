@@ -3,6 +3,14 @@ import { useState, useEffect } from "react";
 import { classesApi, sessionsApi } from "../../api";
 import { useToast } from "../../context/useToast";
 import { Badge } from "../ui/Badge";
+import { StatCard } from "../ui/StatCard";
+import { Modal } from "../ui/Modal";
+import { EmptyState } from "../ui/EmptyState";
+import {
+  IconClock,
+  IconUsers,
+  IconCheck,
+} from "../ui/Icons";
 
 export function SectionAttendanceHistory({ classId, className, section }) {
   const [historyTab, setHistoryTab] = useState("sessions"); // "sessions" | "students"
@@ -59,29 +67,29 @@ export function SectionAttendanceHistory({ classId, className, section }) {
   const avgAttendance = totalPossible > 0 ? ((totalCheckIns / totalPossible) * 100).toFixed(1) : 0;
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+    <div className="bg-white rounded-2xl shadow-xs border border-[#dadce0] overflow-hidden">
       {/* Header & Sub-Tabs */}
-      <div className="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="p-5 border-b border-[#dadce0] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 className="font-bold text-slate-900 text-base">
-            Attendance History: {className} ({section})
+          <h3 className="font-bold text-[#202124] text-base">
+            Attendance Analytics: {className} ({section})
           </h3>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Review past session logs, attendance rates, and section student performance.
+          <p className="text-xs text-[#5f6368] mt-0.5">
+            Review past attendance sessions, rate metrics, and student consistency.
           </p>
         </div>
 
-        <div className="flex bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+        <div className="flex bg-[#f1f3f4] p-1 rounded-lg text-xs font-semibold shrink-0">
           <button
             type="button"
             onClick={() => {
               setHistoryTab("sessions");
               setSelectedSession(null);
             }}
-            className={`px-3 py-1.5 rounded-lg transition ${
+            className={`px-3.5 py-1.5 rounded-md transition-all ${
               historyTab === "sessions"
-                ? "bg-white text-indigo-600 shadow-xs font-bold"
-                : "text-slate-600 hover:text-slate-900"
+                ? "bg-white text-[#1a73e8] shadow-xs font-bold"
+                : "text-[#5f6368] hover:text-[#202124]"
             }`}
           >
             Session Logs ({totalSessions})
@@ -92,10 +100,10 @@ export function SectionAttendanceHistory({ classId, className, section }) {
               setHistoryTab("students");
               setSelectedSession(null);
             }}
-            className={`px-3 py-1.5 rounded-lg transition ${
+            className={`px-3.5 py-1.5 rounded-md transition-all ${
               historyTab === "students"
-                ? "bg-white text-indigo-600 shadow-xs font-bold"
-                : "text-slate-600 hover:text-slate-900"
+                ? "bg-white text-[#1a73e8] shadow-xs font-bold"
+                : "text-[#5f6368] hover:text-[#202124]"
             }`}
           >
             Student Summary ({studentSummary.length})
@@ -103,24 +111,33 @@ export function SectionAttendanceHistory({ classId, className, section }) {
         </div>
       </div>
 
-      {/* Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-5 bg-slate-50/50 border-b border-slate-100">
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
-          <p className="text-[11px] font-bold uppercase text-slate-500 tracking-wider">Total Sessions</p>
-          <p className="text-2xl font-black text-slate-900 mt-1">{totalSessions}</p>
-        </div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
-          <p className="text-[11px] font-bold uppercase text-slate-500 tracking-wider">Total Check-Ins</p>
-          <p className="text-2xl font-black text-indigo-600 mt-1">{totalCheckIns}</p>
-        </div>
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs">
-          <p className="text-[11px] font-bold uppercase text-slate-500 tracking-wider">Average Section Attendance</p>
-          <p className="text-2xl font-black text-emerald-600 mt-1">{avgAttendance}%</p>
-        </div>
+      {/* KPI Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-5 bg-[#f8f9fa] border-b border-[#dadce0]">
+        <StatCard
+          icon={<IconClock className="w-6 h-6" />}
+          label="Total Sessions"
+          value={totalSessions}
+          subtitle="Conducted to date"
+          variant="gray"
+        />
+        <StatCard
+          icon={<IconCheck className="w-6 h-6" />}
+          label="Total Check-Ins"
+          value={totalCheckIns}
+          subtitle="Biometric & manual records"
+          variant="blue"
+        />
+        <StatCard
+          icon={<IconUsers className="w-6 h-6" />}
+          label="Average Attendance"
+          value={`${avgAttendance}%`}
+          subtitle="Across all students"
+          variant={Number(avgAttendance) >= 75 ? "green" : "amber"}
+        />
       </div>
 
       {loading ? (
-        <div className="p-12 text-center text-slate-400 text-xs">
+        <div className="p-12 text-center text-[#5f6368] text-xs">
           Loading section attendance records...
         </div>
       ) : (
@@ -129,33 +146,39 @@ export function SectionAttendanceHistory({ classId, className, section }) {
           {historyTab === "sessions" && (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 text-slate-500 uppercase text-[11px] tracking-wider border-b border-slate-200 font-bold">
+                <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[11px] tracking-wider border-b border-[#dadce0] font-semibold">
                   <tr>
                     <th className="px-5 py-3">Session Date & Time</th>
-                    <th className="px-5 py-3">Label</th>
+                    <th className="px-5 py-3">Topic / Label</th>
                     <th className="px-5 py-3 text-center">Status</th>
                     <th className="px-5 py-3 text-center">Present / Total</th>
                     <th className="px-5 py-3">Attendance Rate</th>
-                    <th className="px-5 py-3 text-right">Action</th>
+                    <th className="px-5 py-3 text-right">Roster</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-[#e8eaed]">
                   {sessions.length === 0 ? (
                     <tr>
-                      <td colSpan="6" className="px-5 py-8 text-center text-slate-400 text-xs">
-                        No past attendance sessions recorded for this class yet.
+                      <td colSpan="6" className="p-8 text-center">
+                        <EmptyState
+                          icon={<IconClock className="w-6 h-6" />}
+                          title="No past attendance sessions"
+                          description="When you launch attendance sessions, their history and attendance breakdown will appear here."
+                          className="border-none p-4"
+                        />
                       </td>
                     </tr>
                   ) : (
                     sessions.map((s) => {
-                      const rate = s.total_enrolled > 0
-                        ? Math.round(((s.present_count || 0) / s.total_enrolled) * 100)
-                        : 0;
+                      const rate =
+                        s.total_enrolled > 0
+                          ? Math.round(((s.present_count || 0) / s.total_enrolled) * 100)
+                          : 0;
 
                       return (
-                        <tr key={s.id} className="hover:bg-slate-50/80 transition">
+                        <tr key={s.id} className="hover:bg-[#f8f9fa] transition-colors">
                           <td className="px-5 py-3.5">
-                            <p className="font-semibold text-slate-900">
+                            <p className="font-semibold text-[#202124]">
                               {new Date(s.opened_at).toLocaleDateString(undefined, {
                                 weekday: "short",
                                 year: "numeric",
@@ -163,51 +186,57 @@ export function SectionAttendanceHistory({ classId, className, section }) {
                                 day: "numeric",
                               })}
                             </p>
-                            <span className="text-[11px] text-slate-400">
-                              {new Date(s.opened_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                              {s.closed_at && ` - ${new Date(s.closed_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
+                            <span className="text-[11px] text-[#5f6368]">
+                              {new Date(s.opened_at).toLocaleTimeString([], {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                              {s.closed_at &&
+                                ` – ${new Date(s.closed_at).toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}`}
                             </span>
                           </td>
-                          <td className="px-5 py-3.5 font-medium text-slate-700">
+                          <td className="px-5 py-3.5 font-medium text-[#202124]">
                             {s.label || "Regular Class Session"}
                           </td>
                           <td className="px-5 py-3.5 text-center">
                             {s.status === "OPEN" ? (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 animate-pulse">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                              <Badge variant="success" size="xs" dot>
                                 OPEN
-                              </span>
+                              </Badge>
                             ) : (
-                              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600">
+                              <Badge variant="default" size="xs">
                                 CLOSED
-                              </span>
+                              </Badge>
                             )}
                           </td>
-                          <td className="px-5 py-3.5 text-center font-semibold text-slate-800">
+                          <td className="px-5 py-3.5 text-center font-semibold text-[#202124]">
                             {s.present_count || 0} / {s.total_enrolled || 0}
                           </td>
                           <td className="px-5 py-3.5">
-                            <div className="flex items-center gap-3">
-                              <div className="w-24 bg-slate-100 rounded-full h-2 overflow-hidden">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-24 bg-[#e8eaed] rounded-full h-2 overflow-hidden">
                                 <div
-                                  className={`h-full rounded-full ${
+                                  className={`h-full rounded-full transition-all ${
                                     rate >= 80
-                                      ? "bg-emerald-500"
+                                      ? "bg-[#137333]"
                                       : rate >= 60
-                                        ? "bg-amber-500"
-                                        : "bg-rose-500"
+                                      ? "bg-[#b06000]"
+                                      : "bg-[#c5221f]"
                                   }`}
                                   style={{ width: `${rate}%` }}
-                                ></div>
+                                />
                               </div>
-                              <span className="text-xs font-bold text-slate-700">{rate}%</span>
+                              <span className="text-xs font-bold text-[#202124]">{rate}%</span>
                             </div>
                           </td>
                           <td className="px-5 py-3.5 text-right">
                             <button
                               type="button"
                               onClick={() => handleOpenRoster(s)}
-                              className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold rounded-lg text-xs transition"
+                              className="px-3 py-1.5 bg-[#e8f0fe] hover:bg-[#d2e3fc] text-[#1a73e8] font-semibold rounded-lg text-xs transition"
                             >
                               View Roster →
                             </button>
@@ -225,21 +254,26 @@ export function SectionAttendanceHistory({ classId, className, section }) {
           {historyTab === "students" && (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 text-slate-500 uppercase text-[11px] tracking-wider border-b border-slate-200 font-bold">
+                <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[11px] tracking-wider border-b border-[#dadce0] font-semibold">
                   <tr>
                     <th className="px-5 py-3">Student Name</th>
                     <th className="px-5 py-3">Email</th>
                     <th className="px-5 py-3 text-center">Sessions Present</th>
                     <th className="px-5 py-3 text-center">Sessions Absent</th>
                     <th className="px-5 py-3 text-center">Attendance %</th>
-                    <th className="px-5 py-3 text-right">Standing</th>
+                    <th className="px-5 py-3 text-right">Academic Standing</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-[#e8eaed]">
                   {studentSummary.length === 0 ? (
                     <tr>
-                      <td colSpan="6" className="px-5 py-8 text-center text-slate-400 text-xs">
-                        No enrolled students found for this section.
+                      <td colSpan="6" className="p-8 text-center">
+                        <EmptyState
+                          icon={<IconUsers className="w-6 h-6" />}
+                          title="No students found"
+                          description="Enrolled students will appear here with calculated attendance standings."
+                          className="border-none p-4"
+                        />
                       </td>
                     </tr>
                   ) : (
@@ -249,27 +283,35 @@ export function SectionAttendanceHistory({ classId, className, section }) {
                       const pct = total > 0 ? Math.round((present / total) * 100) : 100;
 
                       return (
-                        <tr key={st.student_id} className="hover:bg-slate-50/80 transition">
-                          <td className="px-5 py-3.5 font-semibold text-slate-900">{st.full_name}</td>
-                          <td className="px-5 py-3.5 text-xs text-slate-500 font-mono">{st.email}</td>
-                          <td className="px-5 py-3.5 text-center font-bold text-emerald-600">{present}</td>
-                          <td className="px-5 py-3.5 text-center font-bold text-rose-600">
+                        <tr key={st.student_id} className="hover:bg-[#f8f9fa] transition-colors">
+                          <td className="px-5 py-3.5 font-semibold text-[#202124]">
+                            {st.full_name}
+                          </td>
+                          <td className="px-5 py-3.5 text-xs text-[#5f6368] font-mono">
+                            {st.email}
+                          </td>
+                          <td className="px-5 py-3.5 text-center font-bold text-[#137333]">
+                            {present}
+                          </td>
+                          <td className="px-5 py-3.5 text-center font-bold text-[#c5221f]">
                             {Math.max(0, total - present)}
                           </td>
-                          <td className="px-5 py-3.5 text-center font-bold text-slate-800">{pct}%</td>
+                          <td className="px-5 py-3.5 text-center font-bold text-[#202124]">
+                            {pct}%
+                          </td>
                           <td className="px-5 py-3.5 text-right">
                             {pct >= 80 ? (
-                              <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold">
+                              <Badge variant="success" size="xs">
                                 Good Standing
-                              </span>
+                              </Badge>
                             ) : pct >= 60 ? (
-                              <span className="px-2.5 py-0.5 bg-amber-100 text-amber-800 rounded-full text-xs font-bold">
+                              <Badge variant="warning" size="xs">
                                 Warning
-                              </span>
+                              </Badge>
                             ) : (
-                              <span className="px-2.5 py-0.5 bg-rose-100 text-rose-800 rounded-full text-xs font-bold">
+                              <Badge variant="danger" size="xs">
                                 At Risk
-                              </span>
+                              </Badge>
                             )}
                           </td>
                         </tr>
@@ -283,96 +325,89 @@ export function SectionAttendanceHistory({ classId, className, section }) {
         </>
       )}
 
-      {/* MODAL: SPECIFIC SESSION ROSTER BREAKDOWN */}
-      {selectedSession && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[85vh]">
-            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-              <div>
-                <h4 className="font-bold text-slate-900 text-base">
-                  {selectedSession.label || "Class Session"} Roster
-                </h4>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  {new Date(selectedSession.opened_at).toLocaleString()} • {selectedSession.present_count || 0} / {selectedSession.total_enrolled || 0} Present
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setSelectedSession(null)}
-                className="text-slate-400 hover:text-slate-700 text-sm font-bold p-1"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="p-4 overflow-y-auto flex-1">
-              {loadingRoster ? (
-                <div className="p-8 text-center text-slate-400 text-xs">
-                  Loading session roster...
-                </div>
-              ) : (
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-50 text-slate-500 uppercase text-[11px] tracking-wider border-b border-slate-200 font-bold">
-                    <tr>
-                      <th className="px-4 py-2.5">Student Name</th>
-                      <th className="px-4 py-2.5">Status</th>
-                      <th className="px-4 py-2.5">Source</th>
-                      <th className="px-4 py-2.5">Time</th>
-                      <th className="px-4 py-2.5">Notes</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {sessionRoster.length === 0 ? (
-                      <tr>
-                        <td colSpan="5" className="px-4 py-6 text-center text-slate-400 text-xs">
-                          No student records found for this session.
-                        </td>
-                      </tr>
-                    ) : (
-                      sessionRoster.map((rec) => (
-                        <tr key={rec.student_id} className="hover:bg-slate-50 transition">
-                          <td className="px-4 py-3">
-                            <p className="font-semibold text-slate-900">{rec.full_name}</p>
-                            <span className="text-[11px] text-slate-400 font-mono">{rec.email}</span>
-                          </td>
-                          <td className="px-4 py-3">
-                            {rec.status === "PRESENT" ? (
-                              <Badge variant="success" size="xs">✓ Present</Badge>
-                            ) : rec.status === "LATE" ? (
-                              <Badge variant="warning" size="xs">Late</Badge>
-                            ) : (
-                              <Badge variant="danger" size="xs">✕ Absent</Badge>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 text-xs text-slate-600">
-                            {rec.source || "—"}
-                          </td>
-                          <td className="px-4 py-3 text-xs text-slate-500">
-                            {rec.recorded_at ? new Date(rec.recorded_at).toLocaleTimeString() : "—"}
-                          </td>
-                          <td className="px-4 py-3 text-xs text-slate-500 italic">
-                            {rec.override_reason || "—"}
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              )}
-            </div>
-
-            <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setSelectedSession(null)}
-                className="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-xl text-xs transition"
-              >
-                Close Roster
-              </button>
-            </div>
+      {/* SESSION ROSTER MODAL */}
+      <Modal
+        isOpen={Boolean(selectedSession)}
+        onClose={() => setSelectedSession(null)}
+        title={`${selectedSession?.label || "Class Session"} Roster`}
+        subtitle={
+          selectedSession
+            ? `${new Date(selectedSession.opened_at).toLocaleString()} • ${
+                selectedSession.present_count || 0
+              } / ${selectedSession.total_enrolled || 0} Students Present`
+            : ""
+        }
+        maxWidth="max-w-2xl"
+      >
+        {loadingRoster ? (
+          <div className="p-8 text-center text-[#5f6368] text-xs">
+            Loading session roster records...
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[11px] tracking-wider border-b border-[#dadce0] font-semibold">
+                <tr>
+                  <th className="px-4 py-2.5">Student Name</th>
+                  <th className="px-4 py-2.5">Status</th>
+                  <th className="px-4 py-2.5">Source</th>
+                  <th className="px-4 py-2.5">Time</th>
+                  <th className="px-4 py-2.5">Notes</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#e8eaed]">
+                {sessionRoster.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="p-6 text-center text-xs text-[#5f6368]">
+                      No student records found for this session.
+                    </td>
+                  </tr>
+                ) : (
+                  sessionRoster.map((rec) => (
+                    <tr key={rec.student_id} className="hover:bg-[#f8f9fa] transition-colors">
+                      <td className="px-4 py-3">
+                        <p className="font-semibold text-[#202124]">{rec.full_name}</p>
+                        <span className="text-[11px] text-[#5f6368] font-mono">{rec.email}</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        {rec.status === "PRESENT" ? (
+                          <Badge variant="success" size="xs" dot>
+                            Present
+                          </Badge>
+                        ) : rec.status === "LATE" ? (
+                          <Badge variant="warning" size="xs" dot>
+                            Late
+                          </Badge>
+                        ) : (
+                          <Badge variant="danger" size="xs" dot>
+                            Absent
+                          </Badge>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-[#5f6368]">
+                        {rec.source === "BIOMETRIC_LIVENESS"
+                          ? "Face Biometric"
+                          : rec.source || "—"}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-[#5f6368]">
+                        {rec.recorded_at
+                          ? new Date(rec.recorded_at).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })
+                          : "—"}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-[#70757a] italic">
+                        {rec.override_reason || "—"}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

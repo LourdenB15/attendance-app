@@ -9,6 +9,7 @@ import { SessionController } from "./SessionController";
 import { LiveAttendanceGrid } from "./LiveAttendanceGrid";
 import { EnrolledStudentsTable } from "./EnrolledStudentsTable";
 import { SectionAttendanceHistory } from "./SectionAttendanceHistory";
+import { IconChevronLeft, IconUsers, IconClock, IconCamera } from "../ui/Icons";
 
 export function ProfessorPortal() {
   const { showToast } = useToast();
@@ -149,17 +150,22 @@ export function ProfessorPortal() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+      {/* Top Banner & Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#dadce0]">
         <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-slate-900">Professor Portal</h2>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              Live Sync Active
+          <div className="flex items-center gap-2.5">
+            <h2 className="text-xl font-bold text-[#202124]">
+              {selectedClass ? selectedClass.name : "Teaching Hub"}
+            </h2>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#e6f4ea] text-[#137333] border border-[#ceead6]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#1e8e3e] animate-pulse" />
+              Live Sync
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Manage classes, launch attendance sessions, and review rosters
+          <p className="text-xs text-[#5f6368] mt-0.5">
+            {selectedClass
+              ? `${selectedClass.section} • ${selectedClass.semester}`
+              : "Manage course sections, launch biometric attendance, and view student rosters."}
           </p>
         </div>
 
@@ -167,9 +173,10 @@ export function ProfessorPortal() {
           <button
             type="button"
             onClick={handleBackToClasses}
-            className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition flex items-center gap-1.5"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-[#f1f3f4] text-[#3c4043] border border-[#dadce0] font-semibold rounded-lg text-xs transition shadow-2xs self-start sm:self-auto"
           >
-            ← Back to Classes List
+            <IconChevronLeft className="w-4 h-4" />
+            <span>Back to All Classes</span>
           </button>
         )}
       </div>
@@ -190,43 +197,50 @@ export function ProfessorPortal() {
             onBack={handleBackToClasses}
           />
 
-          {/* In-Class Navigation Tabs */}
-          <div className="flex border-b border-slate-200 gap-6 text-sm font-semibold">
+          {/* In-Class Navigation Tabs (Google Classroom Style Underline Tabs) */}
+          <div className="flex border-b border-[#dadce0] gap-6 text-sm font-semibold">
             <button
               type="button"
               onClick={() => setClassViewTab("live")}
-              className={`pb-3 transition border-b-2 flex items-center gap-2 ${
+              className={`pb-3.5 transition-all border-b-2 flex items-center gap-2 ${
                 classViewTab === "live"
-                  ? "border-indigo-600 text-indigo-600 font-bold"
-                  : "border-transparent text-slate-500 hover:text-slate-800"
+                  ? "border-[#1a73e8] text-[#1a73e8] font-bold"
+                  : "border-transparent text-[#5f6368] hover:text-[#202124]"
               }`}
             >
-              <span>📡</span> Live Session & Check-In
+              <IconCamera className="w-4 h-4" />
+              <span>Live Attendance Window</span>
               {activeSession && (
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                <span className="w-2 h-2 rounded-full bg-[#1e8e3e] animate-ping" />
               )}
             </button>
+
             <button
               type="button"
               onClick={() => setClassViewTab("history")}
-              className={`pb-3 transition border-b-2 flex items-center gap-2 ${
+              className={`pb-3.5 transition-all border-b-2 flex items-center gap-2 ${
                 classViewTab === "history"
-                  ? "border-indigo-600 text-indigo-600 font-bold"
-                  : "border-transparent text-slate-500 hover:text-slate-800"
+                  ? "border-[#1a73e8] text-[#1a73e8] font-bold"
+                  : "border-transparent text-[#5f6368] hover:text-[#202124]"
               }`}
             >
-              <span>📊</span> Section Attendance History
+              <IconClock className="w-4 h-4" />
+              <span>Attendance History</span>
             </button>
+
             <button
               type="button"
               onClick={() => setClassViewTab("roster")}
-              className={`pb-3 transition border-b-2 flex items-center gap-2 ${
+              className={`pb-3.5 transition-all border-b-2 flex items-center gap-2 ${
                 classViewTab === "roster"
-                  ? "border-indigo-600 text-indigo-600 font-bold"
-                  : "border-transparent text-slate-500 hover:text-slate-800"
+                  ? "border-[#1a73e8] text-[#1a73e8] font-bold"
+                  : "border-transparent text-[#5f6368] hover:text-[#202124]"
               }`}
             >
-              <span>👥</span> Enrolled Students ({classStudents.filter((s) => s.status === "ACTIVE").length})
+              <IconUsers className="w-4 h-4" />
+              <span>
+                Class Roster ({classStudents.filter((s) => s.status === "ACTIVE").length})
+              </span>
             </button>
           </div>
 

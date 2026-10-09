@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { studentApi } from "../../api";
 import { useToast } from "../../context/ToastContext";
+import { IconPlus } from "../ui/Icons";
 
 export function JoinClassCard({ onJoined }) {
   const [joinCode, setJoinCode] = useState("");
@@ -25,25 +26,33 @@ export function JoinClassCard({ onJoined }) {
   };
 
   return (
-    <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 max-w-md">
-      <h3 className="text-sm font-bold text-slate-900 mb-1">Join a New Class</h3>
-      <p className="text-xs text-slate-500 mb-3">
-        Enter the 6-character unique code provided by your professor.
-      </p>
-      <form onSubmit={handleSubmit} className="flex gap-2">
+    <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-xs border border-[#dadce0] max-w-lg">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="w-9 h-9 rounded-xl bg-[#e8f0fe] text-[#1a73e8] flex items-center justify-center shrink-0">
+          <IconPlus className="w-5 h-5" />
+        </div>
+        <div>
+          <h3 className="text-sm font-semibold text-[#202124]">Join a Class</h3>
+          <p className="text-xs text-[#5f6368] mt-0.5">
+            Ask your teacher for the class code, then enter it here.
+          </p>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2.5">
         <input
           type="text"
           maxLength={12}
           required
-          placeholder="e.g. ABC123"
+          placeholder="Class code (e.g. ABC123)"
           value={joinCode}
           onChange={(e) => setJoinCode(e.target.value)}
-          className="flex-1 px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm uppercase font-mono tracking-wider focus:bg-white focus:ring-2 focus:ring-indigo-500"
+          className="flex-1 px-3.5 py-2.5 bg-[#f8f9fa] border border-[#dadce0] rounded-lg text-sm uppercase font-mono tracking-wider text-[#202124] placeholder-[#80868b] focus:bg-white focus:border-[#1a73e8] focus:outline-none focus:ring-2 focus:ring-[#e8f0fe] transition-all"
         />
         <button
           type="submit"
-          disabled={loading}
-          className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-xl text-sm shadow-xs transition"
+          disabled={loading || !joinCode.trim()}
+          className="px-5 py-2.5 bg-[#1a73e8] hover:bg-[#1557b0] disabled:opacity-50 text-white font-semibold rounded-lg text-xs shadow-xs transition shrink-0"
         >
           {loading ? "Joining..." : "Join Class"}
         </button>

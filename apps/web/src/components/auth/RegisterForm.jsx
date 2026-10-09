@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useAuth } from "../../context/useAuth";
 import { PasswordInput } from "../ui/PasswordInput";
+import { IconCheck } from "../ui/Icons";
 
 export function RegisterForm({ onRegistered }) {
   const { register } = useAuth();
@@ -28,12 +29,12 @@ export function RegisterForm({ onRegistered }) {
   if (registeredEmail) {
     return (
       <div className="text-center py-4 space-y-4">
-        <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl mx-auto">
-          ✉️
+        <div className="w-12 h-12 rounded-full bg-[#e6f4ea] text-[#137333] flex items-center justify-center mx-auto">
+          <IconCheck className="w-6 h-6" />
         </div>
-        <h3 className="text-base font-bold text-slate-900">Check Your Inbox</h3>
-        <p className="text-xs text-slate-600 max-w-xs mx-auto">
-          We sent a 6-digit verification code to <strong className="font-mono text-slate-900">{registeredEmail}</strong>. Please enter the code to activate your account.
+        <h3 className="text-base font-bold text-[#202124]">Check Your Inbox</h3>
+        <p className="text-xs text-[#5f6368] max-w-xs mx-auto leading-relaxed">
+          We sent a 6-digit verification code to <strong className="font-mono text-[#202124]">{registeredEmail}</strong>. Please enter the code to activate your student account.
         </p>
         <button
           type="button"
@@ -43,7 +44,7 @@ export function RegisterForm({ onRegistered }) {
             setEmail("");
             setPassword("");
           }}
-          className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold underline"
+          className="text-xs text-[#1a73e8] hover:text-[#1557b0] font-medium underline"
         >
           ← Back to Register Form
         </button>
@@ -54,7 +55,7 @@ export function RegisterForm({ onRegistered }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-[#5f6368] mb-1.5">
           Full Name
         </label>
         <input
@@ -63,11 +64,11 @@ export function RegisterForm({ onRegistered }) {
           placeholder="e.g. Marie Curie"
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
-          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+          className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-lg text-sm text-[#202124] placeholder-[#80868b] focus:border-[#1a73e8] focus:outline-none focus:ring-3 focus:ring-[#e8f0fe] transition-all"
         />
       </div>
       <div>
-        <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-[#5f6368] mb-1.5">
           Email Address
         </label>
         <input
@@ -76,12 +77,12 @@ export function RegisterForm({ onRegistered }) {
           placeholder="student@school.edu"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+          className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-lg text-sm text-[#202124] placeholder-[#80868b] focus:border-[#1a73e8] focus:outline-none focus:ring-3 focus:ring-[#e8f0fe] transition-all"
         />
       </div>
       <div>
-        <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
-          Password
+        <label className="block text-xs font-semibold uppercase tracking-wider text-[#5f6368] mb-1.5">
+          Create Password
         </label>
         <PasswordInput
           required
@@ -93,7 +94,7 @@ export function RegisterForm({ onRegistered }) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-xl shadow-xs text-sm transition"
+        className="w-full py-2.5 bg-[#1a73e8] hover:bg-[#1557b0] disabled:opacity-50 text-white font-semibold rounded-lg shadow-xs text-sm transition"
       >
         {loading ? "Creating account..." : "Register Student Account"}
       </button>

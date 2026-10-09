@@ -10,6 +10,7 @@ import { BiometricEnrollmentCard } from "./BiometricEnrollmentCard";
 import { AttendanceHistoryTable } from "./AttendanceHistoryTable";
 import { LivenessCamera } from "../liveness/LivenessCamera";
 import { LoadingOverlay } from "../ui/LoadingOverlay";
+import { IconBook, IconClock } from "../ui/Icons";
 
 export function StudentPortal() {
   const { currentUser, setBiometricEnrolled } = useAuth();
@@ -23,7 +24,7 @@ export function StudentPortal() {
 
   const isBiometricEnrolled = Boolean(currentUser?.has_biometric_enrolled);
 
-  // Face Setup is hidden once enrolled, so fall back to My Classes if it was open
+  // Face Setup is hidden from default view once enrolled, but can still be selected
   const activeTab = studentTab === "enroll-face" && isBiometricEnrolled ? "classes" : studentTab;
 
   const studentTabRef = useRef(activeTab);
@@ -92,8 +93,7 @@ export function StudentPortal() {
     };
   }, [refreshAll, showToast, setBiometricEnrolled]);
 
-  // Poll My Classes every 30 seconds to pick up newly opened sessions.
-  // History is not polled: it reloads on tab open, window focus, and the Refresh button.
+  // Poll My Classes every 30 seconds to pick up newly opened sessions
   useEffect(() => {
     const timer = setInterval(() => {
       if (document.hidden) return; // don't poll if backgrounded
@@ -149,28 +149,29 @@ export function StudentPortal() {
     try {
       const res = await livenessApi.checkIn(cls.active_session_id, livenessResult);
       if (res.present) {
-        await refreshAll(true); // show the updated row before the overlay goes away
+        await refreshAll(true);
         showToast("success", `Attendance recorded as PRESENT for ${cls.name}!`);
       } else {
         showToast("error", res.message || "Face not recognized. Attendance not recorded.");
       }
     } catch (err) {
       showToast("error", err.message);
-      // Refresh so the row shows the professor's decision instead of the button
       if (err.code === "ATTENDANCE_OVERRIDDEN") await refreshAll(true);
     } finally {
       setVerifying(false);
     }
   };
 
-  // Face setup comes first: nothing else in the hub is usable without it
+  // If student hasn't registered face biometrics yet, show welcoming setup
   if (!isBiometricEnrolled) {
     return (
       <div className="space-y-6">
-        <div className="pb-4 border-b border-slate-200">
-          <h2 className="text-xl font-bold text-slate-900">Welcome! Let's set up your face profile</h2>
-          <p className="text-xs text-slate-500 mt-0.5">
-            You need a face profile before you can join classes and check in to attendance.
+        <div className="pb-4 border-b border-[#dadce0]">
+          <h2 className="text-xl font-bold text-[#202124]">
+            Welcome! Let's set up your biometric face profile
+          </h2>
+          <p className="text-xs text-[#5f6368] mt-0.5">
+            You need a facial descriptor before you can join classes and check into live attendance.
           </p>
         </div>
         <BiometricEnrollmentCard
@@ -185,103 +186,69 @@ export function StudentPortal() {
 
   return (
     <div className="space-y-6">
-      {/* Top Header & Stable Static Navigation Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
+      {/* Top Header & Google Classroom Style Navigation Tabs */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#dadce0]">
         <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-slate-900">Student Hub</h2>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              Live Sync Active
+          <div className="flex items-center gap-2.5">
+            <h2 className="text-xl font-bold text-[#202124]">Student Classroom Hub</h2>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#e6f4ea] text-[#137333] border border-[#ceead6]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#1e8e3e] animate-pulse" />
+              Live Sync
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
-            View enrolled classes, open live attendance sessions, and register biometrics
+          <p className="text-xs text-[#5f6368] mt-0.5">
+            View enrolled classes, open live attendance sessions, and review personal records.
           </p>
         </div>
 
-        <div className="flex bg-slate-200 p-1 rounded-xl text-xs font-semibold shrink-0">
+        {/* Tab Toggle */}
+        <div className="flex bg-[#f1f3f4] p-1 rounded-xl text-xs font-semibold shrink-0">
           <button
             type="button"
             onClick={() => {
               setStudentTab("classes");
             }}
-            className={`px-3.5 py-1.5 rounded-lg transition ${
+            className={`px-3.5 py-1.5 rounded-lg transition-all inline-flex items-center gap-1.5 ${
               activeTab === "classes"
-                ? "bg-white text-indigo-600 shadow-xs font-bold"
-                : "text-slate-600 hover:text-slate-900"
+                ? "bg-white text-[#1a73e8] shadow-xs font-bold"
+                : "text-[#5f6368] hover:text-[#202124]"
             }`}
           >
-            My Classes
+            <IconBook className="w-3.5 h-3.5" />
+            <span>My Classes</span>
           </button>
-          {!isBiometricEnrolled && (
-            <button
-              type="button"
-              onClick={() => setStudentTab("enroll-face")}
-              className={`px-3.5 py-1.5 rounded-lg transition relative ${
-                activeTab === "enroll-face"
-                  ? "bg-white text-indigo-600 shadow-xs font-bold"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              Face Setup
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-amber-500 ring-2 ring-white"></span>
-            </button>
-          )}
+
           <button
             type="button"
             onClick={() => {
               setStudentTab("history");
               loadAttendance();
             }}
-            className={`px-3.5 py-1.5 rounded-lg transition ${
+            className={`px-3.5 py-1.5 rounded-lg transition-all inline-flex items-center gap-1.5 ${
               activeTab === "history"
-                ? "bg-white text-indigo-600 shadow-xs font-bold"
-                : "text-slate-600 hover:text-slate-900"
+                ? "bg-white text-[#1a73e8] shadow-xs font-bold"
+                : "text-[#5f6368] hover:text-[#202124]"
             }`}
           >
-            History
+            <IconClock className="w-3.5 h-3.5" />
+            <span>Attendance History</span>
           </button>
         </div>
       </div>
 
-      {/* Enrollment Reminder Banner if unenrolled */}
-      {activeTab === "classes" && !isBiometricEnrolled && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-lg font-bold shrink-0">
-              👤
-            </div>
-            <div>
-              <h4 className="text-xs font-bold text-amber-950">
-                Action Required: Register Your Face Profile
-              </h4>
-              <p className="text-[11px] text-amber-800 mt-0.5">
-                You must complete biometric face enrollment before you can check into live classes.
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => setStudentTab("enroll-face")}
-            className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl text-xs shadow-xs transition shrink-0"
-          >
-            Set Up Face Now →
-          </button>
-        </div>
-      )}
+      {verifying && <LoadingOverlay message="Recording your attendance..." />}
 
-      {verifying && <LoadingOverlay message="Verifying your identity..." />}
-
+      {/* Embedded Scanner Modal when directly checking into a class */}
       {activeScanningClass && (
         <LivenessCamera
           mode="attendance"
-          title={`Take Attendance: ${activeScanningClass.name}`}
+          title={`Check-In: ${activeScanningClass.name}`}
           onComplete={handleDirectScanSuccess}
           onCancel={() => setActiveScanningClassId(null)}
         />
       )}
 
+      {/* TAB 1: CLASSES VIEW */}
       {activeTab === "classes" && (
         selectedClass ? (
           <StudentClassDetail
@@ -304,6 +271,7 @@ export function StudentPortal() {
         )
       )}
 
+      {/* TAB 2: ENROLL FACE (If accessed directly) */}
       {activeTab === "enroll-face" && (
         <BiometricEnrollmentCard
           onEnrollmentComplete={() => {
@@ -313,8 +281,12 @@ export function StudentPortal() {
         />
       )}
 
+      {/* TAB 3: ATTENDANCE HISTORY */}
       {activeTab === "history" && (
-        <AttendanceHistoryTable records={attendance} onRefresh={() => loadAttendance(false)} />
+        <AttendanceHistoryTable
+          records={attendance}
+          onRefresh={() => loadAttendance(false)}
+        />
       )}
     </div>
   );

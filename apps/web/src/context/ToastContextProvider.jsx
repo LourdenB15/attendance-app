@@ -1,6 +1,7 @@
 // apps/web/src/context/ToastContextProvider.jsx
 import { useState, useCallback, useRef, useMemo } from "react";
 import { ToastContext } from "./ToastContext";
+import { IconCheck, IconAlert, IconClose } from "../components/ui/Icons";
 
 const FADE_MS = 300;
 const AUTO_HIDE_MS = 4000;
@@ -44,30 +45,45 @@ export function ToastProvider({ children }) {
     <ToastContext.Provider value={value}>
       {children}
       {toasts.length > 0 && (
-        <div className="fixed bottom-5 left-4 right-4 sm:left-auto sm:right-5 sm:max-w-md z-50 flex flex-col gap-2">
-          {toasts.map((toast) => (
-            <div
-              key={toast.id}
-              className={`p-4 rounded-xl border shadow-lg flex items-start justify-between gap-3 text-sm transition-opacity duration-300 ${
-                toast.visible ? "opacity-100" : "opacity-0"
-              } ${
-                toast.type === "error"
-                  ? "bg-rose-50 border-rose-200 text-rose-800"
-                  : toast.type === "success"
-                  ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-                  : "bg-sky-50 border-sky-200 text-sky-800"
-              }`}
-            >
-              <div className="whitespace-pre-line">{toast.text}</div>
-              <button
-                type="button"
-                onClick={() => dismiss(toast.id)}
-                className="text-slate-400 hover:text-slate-600 text-base leading-none font-bold ml-2"
+        <div className="fixed bottom-5 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-md z-50 flex flex-col gap-2.5 pointer-events-none">
+          {toasts.map((toast) => {
+            const isError = toast.type === "error";
+            const isSuccess = toast.type === "success";
+
+            return (
+              <div
+                key={toast.id}
+                className={`pointer-events-auto px-4 py-3 rounded-xl border shadow-lg flex items-center justify-between gap-3 text-sm transition-all duration-300 transform ${
+                  toast.visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+                } ${
+                  isError
+                    ? "bg-[#fce8e6] border-[#fad2cf] text-[#c5221f]"
+                    : isSuccess
+                    ? "bg-[#e6f4ea] border-[#ceead6] text-[#137333]"
+                    : "bg-[#e8f0fe] border-[#d2e3fc] text-[#1a73e8]"
+                }`}
               >
-                ✕
-              </button>
-            </div>
-          ))}
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="shrink-0">
+                    {isSuccess && <IconCheck className="w-4 h-4 text-[#137333]" />}
+                    {isError && <IconAlert className="w-4 h-4 text-[#c5221f]" />}
+                    {!isSuccess && !isError && <IconAlert className="w-4 h-4 text-[#1a73e8]" />}
+                  </span>
+                  <div className="whitespace-pre-line font-medium text-xs sm:text-sm leading-snug">
+                    {toast.text}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => dismiss(toast.id)}
+                  className="w-6 h-6 rounded-full flex items-center justify-center opacity-70 hover:opacity-100 hover:bg-black/5 transition shrink-0 ml-1"
+                  aria-label="Dismiss notification"
+                >
+                  <IconClose className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            );
+          })}
         </div>
       )}
     </ToastContext.Provider>

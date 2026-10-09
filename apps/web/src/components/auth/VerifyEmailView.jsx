@@ -1,6 +1,7 @@
 // apps/web/src/components/auth/VerifyEmailView.jsx
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useAuth } from "../../context/useAuth";
+import { IconCheck, IconChevronLeft } from "../ui/Icons";
 
 export function VerifyEmailView({ onSuccess, onBackToLogin, initialEmail = "" }) {
   const { verifyEmail, resendVerification } = useAuth();
@@ -127,12 +128,12 @@ export function VerifyEmailView({ onSuccess, onBackToLogin, initialEmail = "" })
   if (verifiedSuccess) {
     return (
       <div className="text-center py-6 space-y-4">
-        <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-2xl mx-auto">
-          ✓
+        <div className="w-12 h-12 rounded-full bg-[#e6f4ea] text-[#137333] flex items-center justify-center mx-auto shadow-xs">
+          <IconCheck className="w-6 h-6" />
         </div>
-        <h3 className="text-base font-bold text-slate-900">Email Verified!</h3>
-        <p className="text-xs text-slate-500">
-          Your account is activated. Redirecting you to your dashboard...
+        <h3 className="text-base font-bold text-[#202124]">Email Verified!</h3>
+        <p className="text-xs text-[#5f6368]">
+          Your account is activated. Redirecting you to your classroom dashboard...
         </p>
       </div>
     );
@@ -141,33 +142,31 @@ export function VerifyEmailView({ onSuccess, onBackToLogin, initialEmail = "" })
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-bold text-slate-900">Enter Verification Code</h3>
+        <h3 className="text-sm font-semibold text-[#202124]">Enter Verification Code</h3>
         {onBackToLogin && (
           <button
             type="button"
             onClick={onBackToLogin}
-            className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold"
+            className="text-xs text-[#1a73e8] hover:text-[#1557b0] font-medium flex items-center gap-1"
           >
-            ← Back to Login
+            <IconChevronLeft className="w-3.5 h-3.5" />
+            <span>Back to Login</span>
           </button>
         )}
       </div>
 
-      <div className="text-center">
-        <div className="w-10 h-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl mx-auto mb-2">
-          🔢
-        </div>
-        <p className="text-xs text-slate-600">
+      <div className="text-center bg-[#f8f9fa] border border-[#dadce0] rounded-xl p-3.5">
+        <p className="text-xs text-[#5f6368]">
           We sent a 6-digit verification code to
         </p>
-        <p className="text-xs font-semibold text-slate-900 font-mono mt-0.5">
+        <p className="text-xs font-semibold text-[#202124] font-mono mt-0.5">
           {email || "your registered email"}
         </p>
       </div>
 
       <form onSubmit={handleManualSubmit} className="space-y-5">
         {/* 6-Digit Boxes */}
-        <div className="flex justify-center gap-2 sm:gap-3" onPaste={handlePaste}>
+        <div className="flex justify-center gap-2 sm:gap-2.5" onPaste={handlePaste}>
           {digits.map((digit, idx) => (
             <input
               key={idx}
@@ -178,7 +177,7 @@ export function VerifyEmailView({ onSuccess, onBackToLogin, initialEmail = "" })
               value={digit}
               onChange={(e) => handleDigitChange(idx, e.target.value)}
               onKeyDown={(e) => handleKeyDown(idx, e.key)}
-              className="w-11 h-13 sm:w-12 sm:h-14 text-center text-xl font-mono font-bold bg-slate-50 border-2 border-slate-200 rounded-xl focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 focus:outline-none transition shadow-2xs"
+              className="w-11 h-13 sm:w-12 sm:h-14 text-center text-xl font-mono font-bold bg-white border-2 border-[#dadce0] rounded-xl text-[#202124] focus:border-[#1a73e8] focus:ring-3 focus:ring-[#e8f0fe] focus:outline-none transition-all shadow-xs"
             />
           ))}
         </div>
@@ -186,22 +185,22 @@ export function VerifyEmailView({ onSuccess, onBackToLogin, initialEmail = "" })
         <button
           type="submit"
           disabled={loading || digits.join("").length !== 6}
-          className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-xl shadow-xs text-sm transition"
+          className="w-full py-2.5 bg-[#1a73e8] hover:bg-[#1557b0] disabled:opacity-50 text-white font-semibold rounded-lg shadow-xs text-sm transition"
         >
           {loading ? "Verifying code..." : "Verify Code & Sign In"}
         </button>
       </form>
 
       {/* Resend Code Section */}
-      <div className="border-t border-slate-100 pt-4 text-center space-y-2">
-        <p className="text-xs text-slate-500">
+      <div className="border-t border-[#dadce0] pt-4 text-center space-y-2">
+        <p className="text-xs text-[#70757a]">
           Didn't receive the code?
         </p>
         <button
           type="button"
           disabled={resending || !email}
           onClick={handleResend}
-          className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 disabled:opacity-50"
+          className="text-xs font-medium text-[#1a73e8] hover:text-[#1557b0] disabled:opacity-50"
         >
           {resending ? "Sending new code..." : "Resend 6-digit Code"}
         </button>
@@ -213,7 +212,7 @@ export function VerifyEmailView({ onSuccess, onBackToLogin, initialEmail = "" })
               placeholder="Enter email to resend code..."
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 bg-white border border-[#dadce0] rounded-lg text-xs text-[#202124] focus:border-[#1a73e8] focus:outline-none focus:ring-2 focus:ring-[#e8f0fe]"
             />
           </div>
         )}

@@ -29,28 +29,28 @@ export function LoginForm({ onForgotPassword, onNeedsVerification }) {
     <div className="space-y-5">
       <form onSubmit={handleStandardLogin} className="space-y-4">
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-[#5f6368] mb-1.5">
             Email Address
           </label>
           <input
             type="email"
             required
-            placeholder="name@school.edu"
+            placeholder="student@school.edu"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-lg text-sm text-[#202124] placeholder-[#80868b] focus:border-[#1a73e8] focus:outline-none focus:ring-3 focus:ring-[#e8f0fe] transition-all"
           />
         </div>
         <div>
-          <div className="flex items-center justify-between mb-1">
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600">
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-[#5f6368]">
               Password
             </label>
             {onForgotPassword && (
               <button
                 type="button"
                 onClick={onForgotPassword}
-                className="text-xs text-indigo-600 hover:text-indigo-800 font-semibold transition"
+                className="text-xs text-[#1a73e8] hover:text-[#1557b0] font-medium transition"
               >
                 Forgot password?
               </button>
@@ -66,7 +66,7 @@ export function LoginForm({ onForgotPassword, onNeedsVerification }) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold rounded-xl shadow-xs text-sm transition"
+          className="w-full py-2.5 bg-[#1a73e8] hover:bg-[#1557b0] disabled:opacity-50 text-white font-semibold rounded-lg shadow-xs text-sm transition"
         >
           {loading ? "Signing in..." : "Log In"}
         </button>
@@ -76,9 +76,9 @@ export function LoginForm({ onForgotPassword, onNeedsVerification }) {
         <>
           <div className="relative my-4 text-center">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200"></div>
+              <div className="w-full border-t border-[#dadce0]"></div>
             </div>
-            <span className="relative px-3 bg-white text-[11px] text-slate-400 font-bold uppercase">
+            <span className="relative px-3 bg-white text-[11px] text-[#70757a] font-medium uppercase tracking-wider">
               or continue with
             </span>
           </div>
