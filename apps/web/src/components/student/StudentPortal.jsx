@@ -10,12 +10,12 @@ import { BiometricEnrollmentCard } from "./BiometricEnrollmentCard";
 import { AttendanceHistoryTable } from "./AttendanceHistoryTable";
 import { LivenessCamera } from "../liveness/LivenessCamera";
 import { LoadingOverlay } from "../ui/LoadingOverlay";
-import { IconBook, IconClock } from "../ui/Icons";
+import { IconBook, IconClock, IconCamera } from "../ui/Icons";
 
-export function StudentPortal() {
+export function StudentPortal({ activeNav = "classes", navKey = 0, onNavSelect }) {
   const { currentUser, setBiometricEnrolled } = useAuth();
   const { showToast } = useToast();
-  const [studentTab, setStudentTab] = useState("classes"); // "classes" | "enroll-face" | "history"
+  const [studentTab, setStudentTab] = useState(activeNav || "classes");
   const [classes, setClasses] = useState([]);
   const [attendance, setAttendance] = useState([]);
   const [selectedClassId, setSelectedClassId] = useState(null);
@@ -24,13 +24,35 @@ export function StudentPortal() {
 
   const isBiometricEnrolled = Boolean(currentUser?.has_biometric_enrolled);
 
-  // Face Setup is hidden from default view once enrolled, but can still be selected
-  const activeTab = studentTab === "enroll-face" && isBiometricEnrolled ? "classes" : studentTab;
+  // Synchronize state when navigation triggers arrive from sidebar without cascading effect renders
+  const [prevNavKey, setPrevNavKey] = useState(navKey);
+  if (navKey !== prevNavKey) {
+    setPrevNavKey(navKey);
+    setStudentTab(activeNav);
+    if (activeNav === "classes") {
+      setSelectedClassId(null);
+    }
+  }
+
+  const activeTab = studentTab;
 
   const studentTabRef = useRef(activeTab);
   useEffect(() => {
     studentTabRef.current = activeTab;
   }, [activeTab]);
+
+  const handleTabChange = useCallback(
+    (tab) => {
+      setStudentTab(tab);
+      if (tab === "classes") {
+        setSelectedClassId(null);
+      }
+      if (onNavSelect) {
+        onNavSelect(tab);
+      }
+    },
+    [onNavSelect],
+  );
 
   const loadClasses = useCallback(async (silent = false) => {
     try {
@@ -123,12 +145,13 @@ export function StudentPortal() {
   const handleBackToClasses = () => {
     setSelectedClassId(null);
     loadClasses(true);
+    if (onNavSelect) onNavSelect("classes");
   };
 
   const handleDirectTakeAttendance = (classId) => {
     if (!isBiometricEnrolled) {
       showToast("error", "Please enroll your face first in the Face Setup tab.");
-      setStudentTab("enroll-face");
+      handleTabChange("enroll-face");
       return;
     }
 
@@ -162,35 +185,13 @@ export function StudentPortal() {
     }
   };
 
-  // If student hasn't registered face biometrics yet, show welcoming setup
-  if (!isBiometricEnrolled) {
-    return (
-      <div className="space-y-6">
-        <div className="pb-4 border-b border-[#dadce0]">
-          <h2 className="text-xl font-bold text-[#202124]">
-            Welcome! Let's set up your biometric face profile
-          </h2>
-          <p className="text-xs text-[#5f6368] mt-0.5">
-            You need a facial descriptor before you can join classes and check into live attendance.
-          </p>
-        </div>
-        <BiometricEnrollmentCard
-          onEnrollmentComplete={() => {
-            refreshAll(true);
-            setStudentTab("classes");
-          }}
-        />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
-      {/* Top Header & Google Classroom Style Navigation Tabs */}
+      {/* Top Header & Navigation Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#dadce0]">
         <div>
           <div className="flex items-center gap-2.5">
-            <h2 className="text-xl font-bold text-[#202124]">Student Classroom Hub</h2>
+            <h2 className="text-xl font-bold text-[#202124]">Student Attendance Hub</h2>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#e6f4ea] text-[#137333] border border-[#ceead6]">
               <span className="w-1.5 h-1.5 rounded-full bg-[#1e8e3e] animate-pulse" />
               Live Sync
@@ -205,9 +206,7 @@ export function StudentPortal() {
         <div className="flex bg-[#f1f3f4] p-1 rounded-xl text-xs font-semibold shrink-0">
           <button
             type="button"
-            onClick={() => {
-              setStudentTab("classes");
-            }}
+            onClick={() => handleTabChange("classes")}
             className={`px-3.5 py-1.5 rounded-lg transition-all inline-flex items-center gap-1.5 ${
               activeTab === "classes"
                 ? "bg-white text-[#1a73e8] shadow-xs font-bold"
@@ -220,8 +219,26 @@ export function StudentPortal() {
 
           <button
             type="button"
+            onClick={() => handleTabChange("enroll-face")}
+            className={`px-3.5 py-1.5 rounded-lg transition-all inline-flex items-center gap-1.5 ${
+              activeTab === "enroll-face"
+                ? "bg-white text-[#1a73e8] shadow-xs font-bold"
+                : "text-[#5f6368] hover:text-[#202124]"
+            }`}
+          >
+            <IconCamera className="w-3.5 h-3.5" />
+            <span>Face Setup</span>
+            {!isBiometricEnrolled ? (
+              <span className="w-2 h-2 rounded-full bg-[#d93025]" title="Face setup required" />
+            ) : (
+              <span className="w-2 h-2 rounded-full bg-[#137333]" title="Face verified" />
+            )}
+          </button>
+
+          <button
+            type="button"
             onClick={() => {
-              setStudentTab("history");
+              handleTabChange("history");
               loadAttendance();
             }}
             className={`px-3.5 py-1.5 rounded-lg transition-all inline-flex items-center gap-1.5 ${
@@ -255,11 +272,35 @@ export function StudentPortal() {
             classItem={selectedClass}
             onBack={handleBackToClasses}
             onAttendanceMarked={() => refreshAll(true)}
-            onGoToEnroll={() => setStudentTab("enroll-face")}
+            onGoToEnroll={() => handleTabChange("enroll-face")}
             attendanceRecords={attendance}
           />
         ) : (
           <div className="space-y-6">
+            {!isBiometricEnrolled && (
+              <div className="bg-[#fef7e0] border border-[#fce8b2] rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-[#b06000] text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <IconCamera className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-[#202124]">
+                      Biometric Face Profile Required
+                    </h3>
+                    <p className="text-xs text-[#5f6368] mt-0.5 max-w-xl leading-relaxed">
+                      Before checking into live attendance sessions, please register your face profile. It only takes a few seconds and works across all your classes!
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleTabChange("enroll-face")}
+                  className="px-4 py-2.5 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-bold rounded-xl shadow-xs transition shrink-0 self-start sm:self-auto"
+                >
+                  Set Up Face Now
+                </button>
+              </div>
+            )}
             <JoinClassCard onJoined={() => loadClasses(false)} />
             <EnrolledClassesTable
               classes={classes}
@@ -271,14 +312,16 @@ export function StudentPortal() {
         )
       )}
 
-      {/* TAB 2: ENROLL FACE (If accessed directly) */}
+      {/* TAB 2: ENROLL FACE */}
       {activeTab === "enroll-face" && (
-        <BiometricEnrollmentCard
-          onEnrollmentComplete={() => {
-            refreshAll(true);
-            setStudentTab("classes");
-          }}
-        />
+        <div className="space-y-4">
+          <BiometricEnrollmentCard
+            onEnrollmentComplete={() => {
+              refreshAll(true);
+              handleTabChange("classes");
+            }}
+          />
+        </div>
       )}
 
       {/* TAB 3: ATTENDANCE HISTORY */}

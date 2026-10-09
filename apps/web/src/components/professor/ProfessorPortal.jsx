@@ -11,7 +11,7 @@ import { EnrolledStudentsTable } from "./EnrolledStudentsTable";
 import { SectionAttendanceHistory } from "./SectionAttendanceHistory";
 import { IconChevronLeft, IconUsers, IconClock, IconCamera } from "../ui/Icons";
 
-export function ProfessorPortal() {
+export function ProfessorPortal({ activeNav, navKey = 0, onNavSelect }) {
   const { showToast } = useToast();
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null);
@@ -30,6 +30,23 @@ export function ProfessorPortal() {
   useEffect(() => {
     activeSessionRef.current = activeSession;
   }, [activeSession]);
+
+  // Synchronize state when navigation triggers arrive from sidebar without cascading effect renders
+  const [prevNavKey, setPrevNavKey] = useState(navKey);
+  if (navKey !== prevNavKey) {
+    setPrevNavKey(navKey);
+    if (activeNav === "classes" || activeNav === "create-class") {
+      setSelectedClass(null);
+    }
+  }
+
+  // Scroll to create class card when triggered
+  useEffect(() => {
+    if (activeNav === "create-class") {
+      const el = document.getElementById("create-class-card");
+      if (el) el.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [navKey, activeNav]);
 
   const loadClasses = useCallback(async (silent = false) => {
     try {
@@ -145,7 +162,8 @@ export function ProfessorPortal() {
     setSelectedClass(null);
     setActiveSession(null);
     setSessionAttendance([]);
-    loadClasses();
+    loadClasses(true);
+    if (onNavSelect) onNavSelect("classes");
   };
 
   return (
@@ -183,7 +201,9 @@ export function ProfessorPortal() {
 
       {!selectedClass ? (
         <div className="space-y-6">
-          <CreateClassCard onCreated={loadClasses} />
+          <div id="create-class-card">
+            <CreateClassCard onCreated={loadClasses} />
+          </div>
           <ClassesTable
             classes={classes}
             onSelectClass={handleSelectClass}
@@ -197,7 +217,7 @@ export function ProfessorPortal() {
             onBack={handleBackToClasses}
           />
 
-          {/* In-Class Navigation Tabs (Google Classroom Style Underline Tabs) */}
+          {/* In-Class Navigation Tabs */}
           <div className="flex border-b border-[#dadce0] gap-6 text-sm font-semibold">
             <button
               type="button"

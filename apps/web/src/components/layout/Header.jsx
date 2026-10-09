@@ -2,9 +2,9 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Badge } from "../ui/Badge";
+import { AppLogo } from "../ui/AppLogo";
 import {
   IconMenu,
-  IconGraduationCap,
   IconLogOut,
   IconSettings,
   IconChevronDown,
@@ -54,20 +54,18 @@ export function Header({ onToggleSidebar, onOpenSettings }) {
           </button>
 
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#137333] flex items-center justify-center text-white shadow-xs">
-              <IconGraduationCap className="w-5 h-5" />
-            </div>
+            <AppLogo className="w-9 h-9" />
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-base font-semibold text-[#202124] tracking-tight leading-none">
-                  Google Classroom
+                <span className="text-base font-bold text-[#202124] tracking-tight leading-none">
+                  Attendance Live
                 </span>
                 <span className="hidden sm:inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#e8f0fe] text-[#1a73e8] border border-[#d2e3fc]">
-                  Attendance
+                  Classroom
                 </span>
               </div>
               <span className="text-[11px] text-[#5f6368] font-normal leading-tight hidden xs:block mt-0.5">
-                Active Liveness Verification
+                Biometric Liveness Verification
               </span>
             </div>
           </div>

@@ -5,7 +5,7 @@ import { RegisterForm } from "./RegisterForm";
 import { ForgotPasswordForm } from "./ForgotPasswordForm";
 import { ResetPasswordForm } from "./ResetPasswordForm";
 import { VerifyEmailView } from "./VerifyEmailView";
-import { IconGraduationCap } from "../ui/Icons";
+import { AppLogo } from "../ui/AppLogo";
 
 export function AuthView() {
   const [authTab, setAuthTab] = useState(() => {
@@ -21,16 +21,16 @@ export function AuthView() {
   return (
     <div className="min-h-screen bg-[#f8f9fa] flex flex-col justify-center items-center p-4 sm:p-6 font-sans">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-[#dadce0] overflow-hidden">
-        {/* Google Classroom Header Banner */}
+        {/* Header Banner */}
         <div className="p-6 text-center border-b border-[#f1f3f4]">
-          <div className="w-12 h-12 rounded-2xl bg-[#137333] text-white flex items-center justify-center mx-auto mb-3 shadow-xs">
-            <IconGraduationCap className="w-7 h-7" />
+          <div className="flex justify-center mb-3">
+            <AppLogo className="w-14 h-14" />
           </div>
           <h1 className="text-xl font-bold text-[#202124] tracking-tight">
-            Google Classroom
+            Attendance Live
           </h1>
           <p className="text-xs text-[#5f6368] mt-1 font-medium">
-            Attendance Tracker & Biometric Verification
+            Smart Classroom Attendance & Biometric Verification
           </p>
         </div>
 

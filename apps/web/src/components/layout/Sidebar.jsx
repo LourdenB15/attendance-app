@@ -8,10 +8,10 @@ import {
   IconPlus,
   IconSettings,
   IconClose,
-  IconGraduationCap,
   IconShieldCheck,
 } from "../ui/Icons";
 import { Badge } from "../ui/Badge";
+import { AppLogo } from "../ui/AppLogo";
 
 export function Sidebar({
   isOpen,
@@ -118,15 +118,13 @@ export function Sidebar({
         {/* Drawer Header */}
         <div className="h-16 px-5 border-b border-[#dadce0] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#137333] flex items-center justify-center text-white shadow-xs">
-              <IconGraduationCap className="w-5 h-5" />
-            </div>
+            <AppLogo className="w-9 h-9" />
             <div>
-              <span className="font-semibold text-sm text-[#202124] leading-tight block">
-                Google Classroom
+              <span className="font-bold text-sm text-[#202124] leading-tight block">
+                Attendance Live
               </span>
               <span className="text-[11px] text-[#5f6368] font-medium block">
-                Attendance Tracker
+                Biometric Attendance
               </span>
             </div>
           </div>

@@ -15,6 +15,23 @@ export function AppLayout() {
   const { currentUser, changePassword } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+
+  // Synchronized navigation state between Sidebar and Portals
+  const defaultNav =
+    currentUser.role === "ADMIN"
+      ? "users"
+      : currentUser.role === "STUDENT" && !currentUser.has_biometric_enrolled
+      ? "enroll-face"
+      : "classes";
+
+  const [activeNav, setActiveNav] = useState(defaultNav);
+  const [navKey, setNavKey] = useState(0);
+
+  const handleNavSelect = (navId) => {
+    setActiveNav(navId);
+    setNavKey((k) => k + 1);
+  };
+
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -49,17 +66,19 @@ export function AppLayout() {
 
   return (
     <div className="min-h-screen bg-[#f8f9fa] text-[#202124] flex flex-col font-sans">
-      {/* Google Classroom Header */}
+      {/* App Header */}
       <Header
         onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
         onOpenSettings={() => setSettingsOpen(true)}
       />
 
-      {/* Google Classroom Collapsible Sidebar Drawer */}
+      {/* Collapsible Navigation Drawer */}
       <Sidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         currentUser={currentUser}
+        activeNav={activeNav}
+        onNavSelect={handleNavSelect}
         onOpenSettings={() => setSettingsOpen(true)}
       />
 
@@ -70,9 +89,27 @@ export function AppLayout() {
         {/* Portals load data the API refuses until the password is changed */}
         {!currentUser.must_change_password && (
           <>
-            {currentUser.role === "ADMIN" && <AdminPortal />}
-            {currentUser.role === "PROFESSOR" && <ProfessorPortal />}
-            {currentUser.role === "STUDENT" && <StudentPortal />}
+            {currentUser.role === "ADMIN" && (
+              <AdminPortal
+                activeNav={activeNav}
+                navKey={navKey}
+                onNavSelect={handleNavSelect}
+              />
+            )}
+            {currentUser.role === "PROFESSOR" && (
+              <ProfessorPortal
+                activeNav={activeNav}
+                navKey={navKey}
+                onNavSelect={handleNavSelect}
+              />
+            )}
+            {currentUser.role === "STUDENT" && (
+              <StudentPortal
+                activeNav={activeNav}
+                navKey={navKey}
+                onNavSelect={handleNavSelect}
+              />
+            )}
           </>
         )}
       </main>
@@ -151,17 +188,11 @@ export function AppLayout() {
         </form>
       </Modal>
 
-      {/* Subtle Educational Footer */}
+      {/* Educational Footer */}
       <footer className="bg-white border-t border-[#dadce0] py-4 text-center text-xs text-[#70757a]">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>Google Classroom Attendance Tracker • Biometric Liveness Verification</span>
-          <button
-            type="button"
-            onClick={() => setSettingsOpen(true)}
-            className="text-[#1a73e8] hover:underline font-medium"
-          >
-            {hasPassword ? "Change Password" : "Set Password"}
-          </button>
+          <span>Attendance Live • AI-Powered Biometric Liveness Verification</span>
+          <span>© {new Date().getFullYear()} Attendance Live. All rights reserved.</span>
         </div>
       </footer>
     </div>

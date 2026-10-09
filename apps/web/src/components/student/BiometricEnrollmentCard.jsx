@@ -63,7 +63,7 @@ export function BiometricEnrollmentCard({ onEnrollmentComplete }) {
           Facial Biometric Enrollment
         </h3>
         <p className="text-xs sm:text-sm text-[#5f6368] max-w-md mx-auto mt-1 leading-relaxed">
-          Google Classroom uses AI liveness detection to ensure accurate, proxy-free attendance. Register your facial descriptor once to enable 1-click check-ins across all your classes.
+          Attendance Live uses AI liveness detection to ensure accurate, proxy-free attendance. Register your facial descriptor once to enable 1-click check-ins across all your classes.
         </p>
       </div>
 

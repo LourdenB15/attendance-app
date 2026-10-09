@@ -8,11 +8,11 @@ import { CreateProfessorCard } from "./CreateProfessorCard";
 import { UserDirectoryTable } from "./UserDirectoryTable";
 import { IconUsers, IconPlus } from "../ui/Icons";
 
-export function AdminPortal() {
+export function AdminPortal({ activeNav, navKey = 0, onNavSelect }) {
   const { currentUser } = useAuth();
   const { showToast } = useToast();
   const confirm = useConfirm();
-  const [adminTab, setAdminTab] = useState("users"); // "users" | "create-prof"
+  const [adminTab, setAdminTab] = useState(activeNav || "users"); // "users" | "create-prof"
   const [userList, setUserList] = useState([]);
   const [roleFilter, setRoleFilter] = useState("ALL");
 
@@ -20,6 +20,20 @@ export function AdminPortal() {
   useEffect(() => {
     roleFilterRef.current = roleFilter;
   }, [roleFilter]);
+
+  // Synchronize state when navigation triggers arrive from sidebar without cascading effect renders
+  const [prevNavKey, setPrevNavKey] = useState(navKey);
+  if (navKey !== prevNavKey) {
+    setPrevNavKey(navKey);
+    if (activeNav === "users" || activeNav === "create-prof") {
+      setAdminTab(activeNav);
+    }
+  }
+
+  const handleTabChange = (tab) => {
+    setAdminTab(tab);
+    if (onNavSelect) onNavSelect(tab);
+  };
 
   const loadUsers = useCallback(async (role, silent = false) => {
     try {
@@ -117,7 +131,7 @@ export function AdminPortal() {
         <div className="flex bg-[#f1f3f4] p-1 rounded-xl text-xs font-semibold shrink-0">
           <button
             type="button"
-            onClick={() => setAdminTab("users")}
+            onClick={() => handleTabChange("users")}
             className={`px-3.5 py-1.5 rounded-lg transition-all inline-flex items-center gap-1.5 ${
               adminTab === "users"
                 ? "bg-white text-[#1a73e8] shadow-xs font-bold"
@@ -129,7 +143,7 @@ export function AdminPortal() {
           </button>
           <button
             type="button"
-            onClick={() => setAdminTab("create-prof")}
+            onClick={() => handleTabChange("create-prof")}
             className={`px-3.5 py-1.5 rounded-lg transition-all inline-flex items-center gap-1.5 ${
               adminTab === "create-prof"
                 ? "bg-white text-[#1a73e8] shadow-xs font-bold"

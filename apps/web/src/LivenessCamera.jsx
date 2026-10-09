@@ -208,7 +208,7 @@ export function LivenessCamera({
               {title}
             </h3>
             <span className="text-[11px] text-[#5f6368] font-normal leading-tight">
-              Google Classroom • Liveness Cloud Identity Verification
+              Attendance Live • Liveness Cloud Identity Verification
             </span>
           </div>
         </div>

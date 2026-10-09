@@ -69,7 +69,7 @@ export function StudentClassDetail({
     <div className="space-y-6">
       {loading && <LoadingOverlay message="Recording your attendance..." />}
 
-      {/* Google Classroom Class Header Banner */}
+      {/* Course Header Banner */}
       <div
         className={`${theme.bannerBg} rounded-2xl p-6 sm:p-8 text-white shadow-sm relative overflow-hidden`}
       >
