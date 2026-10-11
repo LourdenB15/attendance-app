@@ -11,13 +11,7 @@ import {
   IconChevronDown,
 } from "../ui/Icons";
 
-export function Header({
-  onToggleSidebar,
-  onHoverOpen,
-  onHoverClose,
-  isSidebarOpen = false,
-  onOpenSettings,
-}) {
+export function Header({ onToggleSidebar, onOpenSettings }) {
   const { currentUser, logout } = useAuth();
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
@@ -44,36 +38,25 @@ export function Header({
 
   return (
     <header className="bg-white border-b border-[#dadce0] sticky top-0 z-30 shadow-2xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-        {/* Left: Sidebar Toggle & Brand (auto-opens on hover, pins on click) */}
-        <div
-          className="flex items-center gap-2.5 sm:gap-3 select-none"
-          onMouseEnter={onHoverOpen}
-          onMouseLeave={onHoverClose}
-        >
+      <div className="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+        {/* Left: Mobile Burger & Brand */}
+        <div className="flex items-center gap-2.5 sm:gap-3 select-none">
+          {/* Mobile-only Hamburger Menu Button right beside Logo */}
           <button
             type="button"
             onClick={onToggleSidebar}
-            className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-              isSidebarOpen
-                ? "bg-[#e8f0fe] text-[#1a73e8]"
-                : "text-[#5f6368] hover:bg-[#f1f3f4] hover:text-[#202124]"
-            }`}
-            title="Main menu (Hover to auto-open, click to pin)"
+            className="w-10 h-10 rounded-full flex items-center justify-center text-[#5f6368] hover:bg-[#f1f3f4] hover:text-[#202124] transition-colors lg:hidden"
+            title="Open navigation menu"
             aria-label="Toggle navigation menu"
           >
             <IconMenu className="w-5 h-5" />
           </button>
 
-          <div
-            className="flex items-center gap-2.5 cursor-pointer group"
-            onClick={onToggleSidebar}
-            title="Click to toggle navigation menu"
-          >
-            <AppLogo className="w-9 h-9 transition-transform group-hover:scale-105" />
+          <div className="flex items-center gap-2.5">
+            <AppLogo className="w-9 h-9" />
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-base font-bold text-[#202124] tracking-tight leading-none group-hover:text-[#1a73e8] transition-colors">
+                <span className="text-base font-bold text-[#202124] tracking-tight leading-none">
                   Attendance Live
                 </span>
                 <span className="hidden sm:inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#e8f0fe] text-[#1a73e8] border border-[#d2e3fc]">
@@ -168,17 +151,6 @@ export function Header({
               </div>
             )}
           </div>
-
-          {/* Quick Sign Out Button (desktop) */}
-          <button
-            type="button"
-            onClick={logout}
-            className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white hover:bg-[#fce8e6] hover:text-[#c5221f] hover:border-[#fad2cf] text-[#3c4043] text-xs font-semibold rounded-lg border border-[#dadce0] transition shadow-2xs"
-            title="Sign out of account"
-          >
-            <IconLogOut className="w-3.5 h-3.5" />
-            <span>Sign Out</span>
-          </button>
         </div>
       </div>
     </header>

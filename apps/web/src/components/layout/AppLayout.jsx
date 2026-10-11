@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/useToast";
 import { PasswordInput } from "../ui/PasswordInput";
@@ -13,49 +13,6 @@ import { StudentPortal } from "../student/StudentPortal";
 export function AppLayout() {
   const { currentUser, changePassword, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarPinned, setSidebarPinned] = useState(false);
-  const isPinnedRef = useRef(false);
-  useEffect(() => {
-    isPinnedRef.current = sidebarPinned;
-  }, [sidebarPinned]);
-
-  const hoverTimerRef = useRef(null);
-
-  const handleHoverOpen = useCallback(() => {
-    if (hoverTimerRef.current) {
-      clearTimeout(hoverTimerRef.current);
-      hoverTimerRef.current = null;
-    }
-    setSidebarOpen(true);
-  }, []);
-
-  const handleHoverClose = useCallback(() => {
-    if (isPinnedRef.current) return;
-    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
-    hoverTimerRef.current = setTimeout(() => {
-      if (!isPinnedRef.current) {
-        setSidebarOpen(false);
-      }
-    }, 280);
-  }, []);
-
-  const handleToggleSidebar = useCallback(() => {
-    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
-    if (sidebarOpen && sidebarPinned) {
-      setSidebarOpen(false);
-      setSidebarPinned(false);
-    } else {
-      setSidebarOpen(true);
-      setSidebarPinned(true);
-    }
-  }, [sidebarOpen, sidebarPinned]);
-
-  const handleCloseSidebar = useCallback(() => {
-    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
-    setSidebarOpen(false);
-    setSidebarPinned(false);
-  }, []);
-
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   // Synchronized navigation state between Sidebar and Portals
@@ -72,7 +29,6 @@ export function AppLayout() {
   const handleNavSelect = (navId) => {
     setActiveNav(navId);
     setNavKey((k) => k + 1);
-    handleCloseSidebar();
   };
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -111,68 +67,56 @@ export function AppLayout() {
     <div className="min-h-screen bg-[#f8f9fa] text-[#202124] flex flex-col font-sans">
       {/* App Header */}
       <Header
-        onToggleSidebar={handleToggleSidebar}
-        onHoverOpen={handleHoverOpen}
-        onHoverClose={handleHoverClose}
-        isSidebarOpen={sidebarOpen}
+        onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
         onOpenSettings={() => setSettingsOpen(true)}
       />
 
-      {/* Desktop Left-Edge Hover Trigger */}
-      {!sidebarOpen && (
-        <div
-          onMouseEnter={handleHoverOpen}
-          className="fixed top-16 left-0 bottom-0 w-3.5 z-30 hidden lg:block cursor-pointer"
-          title="Hover to open navigation menu"
-          aria-hidden="true"
+      <div className="flex-1 flex flex-col">
+        {/* Navigation Sidebar (open by default on desktop, overlay drawer on mobile) */}
+        <Sidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          currentUser={currentUser}
+          activeNav={activeNav}
+          onNavSelect={handleNavSelect}
+          onOpenSettings={() => setSettingsOpen(true)}
+          onLogout={logout}
         />
-      )}
 
-      {/* Collapsible Navigation Drawer */}
-      <Sidebar
-        isOpen={sidebarOpen}
-        isPinned={sidebarPinned}
-        onClose={handleCloseSidebar}
-        onMouseEnter={handleHoverOpen}
-        onMouseLeave={handleHoverClose}
-        currentUser={currentUser}
-        activeNav={activeNav}
-        onNavSelect={handleNavSelect}
-        onOpenSettings={() => setSettingsOpen(true)}
-        onLogout={logout}
-      />
+        {/* Main Content Area (offset by fixed sidebar on desktop) */}
+        <div className="flex-1 lg:pl-72 flex flex-col min-w-0">
+          <main className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1">
+            <MustChangePasswordBanner />
 
-      {/* Main Content Area */}
-      <main className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1">
-        <MustChangePasswordBanner />
-
-        {/* Portals load data the API refuses until the password is changed */}
-        {!currentUser.must_change_password && (
-          <>
-            {currentUser.role === "ADMIN" && (
-              <AdminPortal
-                activeNav={activeNav}
-                navKey={navKey}
-                onNavSelect={handleNavSelect}
-              />
+            {/* Portals load data the API refuses until the password is changed */}
+            {!currentUser.must_change_password && (
+              <>
+                {currentUser.role === "ADMIN" && (
+                  <AdminPortal
+                    activeNav={activeNav}
+                    navKey={navKey}
+                    onNavSelect={handleNavSelect}
+                  />
+                )}
+                {currentUser.role === "PROFESSOR" && (
+                  <ProfessorPortal
+                    activeNav={activeNav}
+                    navKey={navKey}
+                    onNavSelect={handleNavSelect}
+                  />
+                )}
+                {currentUser.role === "STUDENT" && (
+                  <StudentPortal
+                    activeNav={activeNav}
+                    navKey={navKey}
+                    onNavSelect={handleNavSelect}
+                  />
+                )}
+              </>
             )}
-            {currentUser.role === "PROFESSOR" && (
-              <ProfessorPortal
-                activeNav={activeNav}
-                navKey={navKey}
-                onNavSelect={handleNavSelect}
-              />
-            )}
-            {currentUser.role === "STUDENT" && (
-              <StudentPortal
-                activeNav={activeNav}
-                navKey={navKey}
-                onNavSelect={handleNavSelect}
-              />
-            )}
-          </>
-        )}
-      </main>
+          </main>
+        </div>
+      </div>
 
       {/* Account Settings / Password Change Modal */}
       <Modal
