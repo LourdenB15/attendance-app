@@ -7,6 +7,7 @@ import {
   IconPlus,
   IconSettings,
   IconClose,
+  IconMenu,
   IconShieldCheck,
   IconLogOut,
 } from "../ui/Icons";
@@ -16,7 +17,10 @@ import { UserAvatar } from "../ui/UserAvatar";
 
 export function Sidebar({
   isOpen,
+  isPinned = false,
   onClose,
+  onMouseEnter,
+  onMouseLeave,
   currentUser,
   activeNav,
   onNavSelect,
@@ -94,18 +98,20 @@ export function Sidebar({
     if (onNavSelect) {
       onNavSelect(id);
     }
-    // Close sidebar on mobile
-    if (window.innerWidth < 1024) {
+    // Auto-close on mobile, or on desktop if not pinned (opened via hover)
+    if (!isPinned || window.innerWidth < 1024) {
       onClose();
     }
   };
 
   return (
     <>
-      {/* Mobile Backdrop */}
+      {/* Backdrop (visible on mobile, or on desktop when pinned open) */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-[#202124]/40 backdrop-blur-2xs lg:hidden transition-opacity"
+          className={`fixed inset-0 z-40 bg-[#202124]/30 backdrop-blur-2xs transition-opacity ${
+            isPinned ? "block" : "lg:hidden block"
+          }`}
           onClick={onClose}
           aria-hidden="true"
         />
@@ -113,21 +119,37 @@ export function Sidebar({
 
       {/* Sidebar Drawer */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-40 w-72 bg-white border-r border-[#dadce0] flex flex-col transition-transform duration-200 ease-in-out ${
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        className={`fixed top-0 bottom-0 left-0 z-40 w-72 bg-white border-r border-[#dadce0] flex flex-col shadow-2xl transition-transform duration-200 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        {/* Drawer Header */}
-        <div className="h-16 px-5 border-b border-[#dadce0] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <AppLogo className="w-9 h-9" />
-            <div>
-              <span className="font-bold text-sm text-[#202124] leading-tight block">
-                Attendance Live
-              </span>
-              <span className="text-[11px] text-[#5f6368] font-medium block">
-                Biometric Attendance
-              </span>
+        {/* Drawer Header (anchors logo & menu button in identical position to top bar) */}
+        <div className="h-16 px-4 border-b border-[#dadce0] flex items-center justify-between select-none">
+          <div
+            className="flex items-center gap-2.5 sm:gap-3 cursor-pointer group"
+            onClick={onClose}
+            title="Click to collapse sidebar"
+          >
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-10 h-10 rounded-full flex items-center justify-center text-[#1a73e8] bg-[#e8f0fe] hover:bg-[#d2e3fc] transition-colors"
+              aria-label="Collapse navigation"
+            >
+              <IconMenu className="w-5 h-5" />
+            </button>
+            <div className="flex items-center gap-2.5">
+              <AppLogo className="w-9 h-9 transition-transform group-hover:scale-105" />
+              <div>
+                <span className="font-bold text-sm text-[#202124] leading-tight block group-hover:text-[#1a73e8] transition-colors">
+                  Attendance Live
+                </span>
+                <span className="text-[11px] text-[#5f6368] font-medium block">
+                  Classroom
+                </span>
+              </div>
             </div>
           </div>
           <button

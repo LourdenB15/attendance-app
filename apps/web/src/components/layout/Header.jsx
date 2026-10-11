@@ -11,7 +11,13 @@ import {
   IconChevronDown,
 } from "../ui/Icons";
 
-export function Header({ onToggleSidebar, onOpenSettings }) {
+export function Header({
+  onToggleSidebar,
+  onHoverOpen,
+  onHoverClose,
+  isSidebarOpen = false,
+  onOpenSettings,
+}) {
   const { currentUser, logout } = useAuth();
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
@@ -39,23 +45,35 @@ export function Header({ onToggleSidebar, onOpenSettings }) {
   return (
     <header className="bg-white border-b border-[#dadce0] sticky top-0 z-30 shadow-2xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-        {/* Left: Sidebar Toggle & Brand */}
-        <div className="flex items-center gap-3 sm:gap-4">
+        {/* Left: Sidebar Toggle & Brand (auto-opens on hover, pins on click) */}
+        <div
+          className="flex items-center gap-2.5 sm:gap-3 select-none"
+          onMouseEnter={onHoverOpen}
+          onMouseLeave={onHoverClose}
+        >
           <button
             type="button"
             onClick={onToggleSidebar}
-            className="w-10 h-10 rounded-full flex items-center justify-center text-[#5f6368] hover:bg-[#f1f3f4] hover:text-[#202124] transition-colors"
-            title="Main menu"
+            className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+              isSidebarOpen
+                ? "bg-[#e8f0fe] text-[#1a73e8]"
+                : "text-[#5f6368] hover:bg-[#f1f3f4] hover:text-[#202124]"
+            }`}
+            title="Main menu (Hover to auto-open, click to pin)"
             aria-label="Toggle navigation menu"
           >
             <IconMenu className="w-5 h-5" />
           </button>
 
-          <div className="flex items-center gap-2.5">
-            <AppLogo className="w-9 h-9" />
+          <div
+            className="flex items-center gap-2.5 cursor-pointer group"
+            onClick={onToggleSidebar}
+            title="Click to toggle navigation menu"
+          >
+            <AppLogo className="w-9 h-9 transition-transform group-hover:scale-105" />
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-base font-bold text-[#202124] tracking-tight leading-none">
+                <span className="text-base font-bold text-[#202124] tracking-tight leading-none group-hover:text-[#1a73e8] transition-colors">
                   Attendance Live
                 </span>
                 <span className="hidden sm:inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#e8f0fe] text-[#1a73e8] border border-[#d2e3fc]">

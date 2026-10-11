@@ -1,5 +1,4 @@
-// apps/web/src/components/layout/AppLayout.jsx
-import { useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/useToast";
 import { PasswordInput } from "../ui/PasswordInput";
@@ -14,6 +13,49 @@ import { StudentPortal } from "../student/StudentPortal";
 export function AppLayout() {
   const { currentUser, changePassword, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarPinned, setSidebarPinned] = useState(false);
+  const isPinnedRef = useRef(false);
+  useEffect(() => {
+    isPinnedRef.current = sidebarPinned;
+  }, [sidebarPinned]);
+
+  const hoverTimerRef = useRef(null);
+
+  const handleHoverOpen = useCallback(() => {
+    if (hoverTimerRef.current) {
+      clearTimeout(hoverTimerRef.current);
+      hoverTimerRef.current = null;
+    }
+    setSidebarOpen(true);
+  }, []);
+
+  const handleHoverClose = useCallback(() => {
+    if (isPinnedRef.current) return;
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    hoverTimerRef.current = setTimeout(() => {
+      if (!isPinnedRef.current) {
+        setSidebarOpen(false);
+      }
+    }, 280);
+  }, []);
+
+  const handleToggleSidebar = useCallback(() => {
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    if (sidebarOpen && sidebarPinned) {
+      setSidebarOpen(false);
+      setSidebarPinned(false);
+    } else {
+      setSidebarOpen(true);
+      setSidebarPinned(true);
+    }
+  }, [sidebarOpen, sidebarPinned]);
+
+  const handleCloseSidebar = useCallback(() => {
+    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+    setSidebarOpen(false);
+    setSidebarPinned(false);
+  }, []);
+
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   // Synchronized navigation state between Sidebar and Portals
@@ -30,6 +72,7 @@ export function AppLayout() {
   const handleNavSelect = (navId) => {
     setActiveNav(navId);
     setNavKey((k) => k + 1);
+    handleCloseSidebar();
   };
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -68,14 +111,30 @@ export function AppLayout() {
     <div className="min-h-screen bg-[#f8f9fa] text-[#202124] flex flex-col font-sans">
       {/* App Header */}
       <Header
-        onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+        onToggleSidebar={handleToggleSidebar}
+        onHoverOpen={handleHoverOpen}
+        onHoverClose={handleHoverClose}
+        isSidebarOpen={sidebarOpen}
         onOpenSettings={() => setSettingsOpen(true)}
       />
+
+      {/* Desktop Left-Edge Hover Trigger */}
+      {!sidebarOpen && (
+        <div
+          onMouseEnter={handleHoverOpen}
+          className="fixed top-16 left-0 bottom-0 w-3.5 z-30 hidden lg:block cursor-pointer"
+          title="Hover to open navigation menu"
+          aria-hidden="true"
+        />
+      )}
 
       {/* Collapsible Navigation Drawer */}
       <Sidebar
         isOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
+        isPinned={sidebarPinned}
+        onClose={handleCloseSidebar}
+        onMouseEnter={handleHoverOpen}
+        onMouseLeave={handleHoverClose}
         currentUser={currentUser}
         activeNav={activeNav}
         onNavSelect={handleNavSelect}
