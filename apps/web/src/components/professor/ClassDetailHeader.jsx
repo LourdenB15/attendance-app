@@ -21,24 +21,24 @@ export function ClassDetailHeader({ selectedClass, onBack }) {
 
   return (
     <div
-      className={`${theme.bannerBg} rounded-2xl p-6 sm:p-8 text-white shadow-sm relative overflow-hidden`}
+      className={`${theme.bannerBg} rounded-2xl p-5 sm:p-8 text-white shadow-sm relative overflow-hidden`}
     >
       {/* Subtle decorative circles */}
       <div className="absolute -right-8 -bottom-12 w-48 h-48 rounded-full bg-white/10 pointer-events-none" />
       <div className="absolute right-32 -top-10 w-28 h-28 rounded-full bg-white/5 pointer-events-none" />
 
-      <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6">
         <div>
           <button
             type="button"
             onClick={onBack}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg bg-black/15 hover:bg-black/25 text-white backdrop-blur-xs transition mb-3"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-black/20 hover:bg-black/30 text-white backdrop-blur-xs transition mb-3"
           >
-            <IconChevronLeft className="w-3.5 h-3.5" />
+            <IconChevronLeft className="w-4 h-4" />
             <span>All Classes</span>
           </button>
 
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white leading-tight">
+          <h2 className="text-xl sm:text-3xl font-bold tracking-tight text-white leading-tight">
             {selectedClass.name}
           </h2>
           <p className={`text-sm ${theme.subText} font-medium mt-1`}>
@@ -47,7 +47,7 @@ export function ClassDetailHeader({ selectedClass, onBack }) {
         </div>
 
         {/* Join Code Display Tile */}
-        <div className="bg-white/15 backdrop-blur-md border border-white/25 rounded-2xl p-4 self-start md:self-auto min-w-[200px]">
+        <div className="bg-white/15 backdrop-blur-md border border-white/25 rounded-2xl p-3.5 sm:p-4 self-stretch sm:self-start md:self-auto min-w-[200px]">
           <span className="block text-[10px] font-bold uppercase tracking-wider text-white/80 mb-1">
             Student Class Code
           </span>

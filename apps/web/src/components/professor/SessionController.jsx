@@ -82,11 +82,11 @@ export function SessionController({
   };
 
   return (
-    <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-xs border border-[#dadce0]">
-      <div className="flex items-center justify-between pb-3 mb-4 border-b border-[#e8eaed]">
+    <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-xs border border-[#dadce0]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 mb-4 border-b border-[#e8eaed] gap-3">
         <div className="flex items-center gap-3">
           <div
-            className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+            className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
               activeSession
                 ? "bg-[#e6f4ea] text-[#137333]"
                 : "bg-[#e8f0fe] text-[#1a73e8]"
@@ -95,7 +95,7 @@ export function SessionController({
             <IconCamera className="w-5 h-5" />
           </div>
           <div>
-            <h4 className="text-sm font-semibold text-[#202124]">
+            <h4 className="text-sm font-bold text-[#202124]">
               {activeSession ? "Active Attendance Window" : "Launch Attendance Session"}
             </h4>
             <p className="text-xs text-[#5f6368] mt-0.5">
@@ -107,7 +107,7 @@ export function SessionController({
         </div>
 
         {activeSession && (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#e6f4ea] text-[#137333] border border-[#ceead6]">
+          <span className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#e6f4ea] text-[#137333] border border-[#ceead6]">
             <span className="w-2 h-2 rounded-full bg-[#1e8e3e] animate-ping" />
             <span>SESSION RUNNING</span>
           </span>
@@ -116,17 +116,17 @@ export function SessionController({
 
       {activeSession ? (
         <div className="bg-[#f8f9fa] border border-[#dadce0] rounded-xl p-4 sm:p-5 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-white p-3 rounded-lg border border-[#dadce0]/70">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            <div className="bg-white p-3.5 rounded-xl border border-[#dadce0]/70 shadow-2xs">
               <span className="block text-[10px] font-bold uppercase tracking-wider text-[#5f6368]">
                 Session Topic / Label
               </span>
-              <span className="text-xs font-semibold text-[#202124] block mt-0.5">
+              <span className="text-xs font-semibold text-[#202124] block mt-0.5 truncate">
                 {activeSession.label || "Regular Class Session"}
               </span>
             </div>
 
-            <div className="bg-white p-3 rounded-lg border border-[#dadce0]/70">
+            <div className="bg-white p-3.5 rounded-xl border border-[#dadce0]/70 shadow-2xs">
               <span className="block text-[10px] font-bold uppercase tracking-wider text-[#5f6368]">
                 Time Remaining
               </span>
@@ -136,7 +136,7 @@ export function SessionController({
               </span>
             </div>
 
-            <div className="bg-white p-3 rounded-lg border border-[#dadce0]/70">
+            <div className="bg-white p-3.5 rounded-xl border border-[#dadce0]/70 shadow-2xs">
               <span className="block text-[10px] font-bold uppercase tracking-wider text-[#5f6368]">
                 Expires At
               </span>
@@ -149,13 +149,13 @@ export function SessionController({
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
             <button
               type="button"
               onClick={onRefreshAttendance}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-[#f1f3f4] text-[#3c4043] border border-[#dadce0] rounded-lg text-xs font-semibold transition shadow-2xs"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-white hover:bg-[#f1f3f4] text-[#3c4043] border border-[#dadce0] rounded-xl text-xs font-semibold transition shadow-2xs min-h-[40px]"
             >
-              <IconRefresh className="w-3.5 h-3.5 text-[#5f6368]" />
+              <IconRefresh className="w-4 h-4 text-[#5f6368]" />
               <span>Refresh Attendance Roster</span>
             </button>
 
@@ -163,16 +163,16 @@ export function SessionController({
               type="button"
               disabled={loading}
               onClick={handleClose}
-              className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#d93025] hover:bg-[#b3261e] disabled:opacity-50 text-white rounded-lg text-xs font-semibold transition shadow-xs"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#d93025] hover:bg-[#b3261e] disabled:opacity-50 text-white rounded-xl text-xs font-semibold transition shadow-xs min-h-[40px]"
             >
-              <IconClose className="w-3.5 h-3.5" />
+              <IconClose className="w-4 h-4" />
               <span>{loading ? "Closing..." : "Close Session Now"}</span>
             </button>
           </div>
         </div>
       ) : (
         <form onSubmit={handleOpen} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 items-start">
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-[#5f6368] mb-1.5">
                 Session Duration
@@ -185,7 +185,7 @@ export function SessionController({
                   required
                   value={durationMinutes}
                   onChange={(e) => setDurationMinutes(e.target.value)}
-                  className="w-24 px-3 py-2 bg-white border border-[#dadce0] rounded-lg text-sm font-semibold text-[#202124] focus:border-[#1a73e8] focus:outline-none focus:ring-2 focus:ring-[#e8f0fe]"
+                  className="w-28 px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-xl text-sm font-semibold text-[#202124] focus:border-[#1a73e8] focus:outline-none focus:ring-2 focus:ring-[#e8f0fe]"
                 />
                 <span className="text-xs text-[#5f6368] font-medium">Minutes</span>
               </div>
@@ -200,15 +200,15 @@ export function SessionController({
                 placeholder="e.g. Chapter 4: Divide and Conquer Algorithms"
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
-                className="w-full px-3.5 py-2 bg-white border border-[#dadce0] rounded-lg text-sm text-[#202124] placeholder-[#80868b] focus:border-[#1a73e8] focus:outline-none focus:ring-2 focus:ring-[#e8f0fe] transition-all"
+                className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-xl text-sm text-[#202124] placeholder-[#80868b] focus:border-[#1a73e8] focus:outline-none focus:ring-2 focus:ring-[#e8f0fe] transition-all"
               />
             </div>
           </div>
 
           {/* Quick Preset Buttons */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[#e8eaed]">
-            <div className="flex items-center gap-1.5">
-              <span className="text-[11px] text-[#70757a] font-medium mr-1">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-[#e8eaed]">
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1 sm:pb-0">
+              <span className="text-[11px] text-[#70757a] font-semibold uppercase tracking-wider mr-1 shrink-0">
                 Presets:
               </span>
               {DURATION_PRESETS.map((m) => (
@@ -216,9 +216,9 @@ export function SessionController({
                   key={m}
                   type="button"
                   onClick={() => setDurationMinutes(m)}
-                  className={`px-2.5 py-1 text-xs rounded-md transition font-medium ${
+                  className={`px-3 py-1.5 text-xs rounded-lg transition font-semibold shrink-0 min-h-[36px] min-w-[42px] ${
                     Number(durationMinutes) === m
-                      ? "bg-[#e8f0fe] text-[#1a73e8] border border-[#d2e3fc] font-bold"
+                      ? "bg-[#e8f0fe] text-[#1a73e8] border border-[#d2e3fc] font-bold shadow-2xs"
                       : "bg-[#f1f3f4] text-[#5f6368] hover:bg-[#e8eaed]"
                   }`}
                 >
@@ -230,7 +230,7 @@ export function SessionController({
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-2.5 bg-[#1a73e8] hover:bg-[#1557b0] disabled:opacity-50 text-white font-semibold rounded-lg text-xs shadow-xs transition inline-flex items-center gap-1.5"
+              className="w-full sm:w-auto px-5 py-2.5 bg-[#1a73e8] hover:bg-[#1557b0] disabled:opacity-50 text-white font-semibold rounded-xl text-xs shadow-xs transition inline-flex items-center justify-center gap-1.5 min-h-[42px]"
             >
               <span>{loading ? "Starting..." : "Start Attendance Window"}</span>
               <span>→</span>

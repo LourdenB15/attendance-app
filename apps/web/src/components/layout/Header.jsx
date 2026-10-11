@@ -6,12 +6,14 @@ import { AppLogo } from "../ui/AppLogo";
 import { UserAvatar } from "../ui/UserAvatar";
 import {
   IconMenu,
+  IconPlus,
+  IconAppsGrid,
   IconLogOut,
   IconSettings,
   IconChevronDown,
 } from "../ui/Icons";
 
-export function Header({ onToggleSidebar, onOpenSettings }) {
+export function Header({ onToggleSidebar, onOpenSettings, onActionPlus }) {
   const { currentUser, logout } = useAuth();
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
@@ -35,18 +37,17 @@ export function Header({ onToggleSidebar, onOpenSettings }) {
       ? "primary"
       : "success";
 
-
   return (
     <header className="bg-white border-b border-[#dadce0] sticky top-0 z-30 shadow-2xs">
-      <div className="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-        {/* Left: Mobile Burger & Brand */}
-        <div className="flex items-center gap-2.5 sm:gap-3 select-none">
-          {/* Mobile-only Hamburger Menu Button right beside Logo */}
+      <div className="w-full px-3 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
+        {/* Left: Hamburger & Brand */}
+        <div className="flex items-center gap-2 sm:gap-3 select-none">
+          {/* Hamburger Menu Button */}
           <button
             type="button"
             onClick={onToggleSidebar}
-            className="w-10 h-10 rounded-full flex items-center justify-center text-[#5f6368] hover:bg-[#f1f3f4] hover:text-[#202124] transition-colors lg:hidden"
-            title="Open navigation menu"
+            className="w-10 h-10 rounded-full flex items-center justify-center text-[#5f6368] hover:bg-[#f1f3f4] hover:text-[#202124] transition-colors cursor-pointer"
+            title="Main menu"
             aria-label="Toggle navigation menu"
           >
             <IconMenu className="w-5 h-5" />
@@ -54,30 +55,52 @@ export function Header({ onToggleSidebar, onOpenSettings }) {
 
           <div className="flex items-center gap-2.5">
             <AppLogo className="w-9 h-9" />
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-base font-bold text-[#202124] tracking-tight leading-none">
-                  Attendance Live
-                </span>
-                <span className="hidden sm:inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#e8f0fe] text-[#1a73e8] border border-[#d2e3fc]">
-                  Classroom
-                </span>
-              </div>
-              <span className="text-[11px] text-[#5f6368] font-normal leading-tight hidden xs:block mt-0.5">
-                Biometric Liveness Verification
+            <div className="flex items-center gap-2">
+              <span className="text-base sm:text-lg font-bold text-[#202124] tracking-tight leading-none">
+                Attendance Live
+              </span>
+              <span className="hidden sm:inline-block px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#e8f0fe] text-[#1a73e8] border border-[#d2e3fc]">
+                Classroom
               </span>
             </div>
           </div>
         </div>
 
-        {/* Right: User Profile & Actions */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        {/* Right: Plus, Apps Grid & User Profile */}
+        <div className="flex items-center gap-1 sm:gap-2">
+          {onActionPlus && (
+            <button
+              type="button"
+              onClick={onActionPlus}
+              className="w-10 h-10 rounded-full flex items-center justify-center text-[#5f6368] hover:bg-[#f1f3f4] hover:text-[#202124] transition-colors cursor-pointer"
+              title={
+                currentUser.role === "STUDENT"
+                  ? "Join class"
+                  : currentUser.role === "PROFESSOR"
+                  ? "Create class"
+                  : "Invite professor"
+              }
+              aria-label="Action"
+            >
+              <IconPlus className="w-5 h-5" />
+            </button>
+          )}
+
+          <button
+            type="button"
+            className="w-10 h-10 rounded-full hidden sm:flex items-center justify-center text-[#5f6368] hover:bg-[#f1f3f4] hover:text-[#202124] transition-colors"
+            title="Google apps"
+            aria-label="Google apps"
+          >
+            <IconAppsGrid className="w-5 h-5" />
+          </button>
+
           {/* User Profile Dropdown */}
-          <div className="relative" ref={profileRef}>
+          <div className="relative ml-1" ref={profileRef}>
             <button
               type="button"
               onClick={() => setProfileOpen((prev) => !prev)}
-              className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full hover:bg-[#f1f3f4] border border-transparent hover:border-[#dadce0] transition-all"
+              className="flex items-center gap-2 pl-2 pr-2 sm:pr-3 py-1.5 rounded-full hover:bg-[#f1f3f4] border border-transparent hover:border-[#dadce0] transition-all cursor-pointer"
               aria-expanded={profileOpen}
               aria-haspopup="true"
             >
@@ -129,7 +152,7 @@ export function Header({ onToggleSidebar, onOpenSettings }) {
                         setProfileOpen(false);
                         onOpenSettings();
                       }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-[#3c4043] hover:bg-[#f1f3f4] transition-colors"
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-[#3c4043] hover:bg-[#f1f3f4] transition-colors cursor-pointer"
                     >
                       <IconSettings className="w-4 h-4 text-[#5f6368]" />
                       <span>Account Settings & Password</span>
@@ -142,7 +165,7 @@ export function Header({ onToggleSidebar, onOpenSettings }) {
                       setProfileOpen(false);
                       logout();
                     }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-[#c5221f] hover:bg-[#fce8e6] transition-colors"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-[#c5221f] hover:bg-[#fce8e6] transition-colors cursor-pointer"
                   >
                     <IconLogOut className="w-4 h-4" />
                     <span>Sign Out</span>

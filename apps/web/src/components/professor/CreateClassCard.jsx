@@ -51,7 +51,7 @@ export function CreateClassCard({ onCreated }) {
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-semibold rounded-lg shadow-xs transition"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-semibold rounded-xl shadow-xs transition w-full sm:w-auto min-h-[40px]"
         >
           <IconPlus className="w-4 h-4" />
           <span>New Class</span>
@@ -72,7 +72,7 @@ export function CreateClassCard({ onCreated }) {
         <button
           type="button"
           onClick={() => setIsOpen(false)}
-          className="text-xs font-medium text-[#5f6368] hover:text-[#202124] transition-colors"
+          className="text-xs font-medium text-[#5f6368] hover:text-[#202124] transition-colors p-1"
         >
           Cancel
         </button>
@@ -118,18 +118,18 @@ export function CreateClassCard({ onCreated }) {
             className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-lg text-sm text-[#202124] placeholder-[#80868b] focus:border-[#1a73e8] focus:outline-none focus:ring-3 focus:ring-[#e8f0fe] transition-all"
           />
         </div>
-        <div className="sm:col-span-3 flex justify-end items-center gap-2.5 pt-2 border-t border-[#e8eaed]">
+        <div className="sm:col-span-3 flex flex-col-reverse sm:flex-row justify-end items-stretch sm:items-center gap-2.5 pt-2 border-t border-[#e8eaed]">
           <button
             type="button"
             onClick={() => setIsOpen(false)}
-            className="px-4 py-2 text-xs font-semibold text-[#5f6368] hover:bg-[#f1f3f4] rounded-lg transition"
+            className="px-4 py-2.5 text-xs font-semibold text-[#5f6368] hover:bg-[#f1f3f4] rounded-xl transition text-center min-h-[40px]"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="px-5 py-2 bg-[#1a73e8] hover:bg-[#1557b0] disabled:opacity-50 text-white font-semibold rounded-lg text-xs shadow-xs transition"
+            className="px-5 py-2.5 bg-[#1a73e8] hover:bg-[#1557b0] disabled:opacity-50 text-white font-semibold rounded-xl text-xs shadow-xs transition text-center min-h-[40px]"
           >
             {loading ? "Creating..." : "Create Class"}
           </button>

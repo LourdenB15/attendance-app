@@ -11,7 +11,7 @@ import { EnrolledStudentsTable } from "./EnrolledStudentsTable";
 import { SectionAttendanceHistory } from "./SectionAttendanceHistory";
 import { IconChevronLeft, IconUsers, IconClock, IconCamera } from "../ui/Icons";
 
-export function ProfessorPortal({ activeNav, navKey = 0, onNavSelect }) {
+export function ProfessorPortal({ activeNav, navKey = 0, onNavSelect, targetClassId }) {
   const { showToast } = useToast();
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null);
@@ -31,12 +31,25 @@ export function ProfessorPortal({ activeNav, navKey = 0, onNavSelect }) {
     activeSessionRef.current = activeSession;
   }, [activeSession]);
 
+  // Handle external selection from sidebar drawer
+  const [prevTargetClassId, setPrevTargetClassId] = useState(targetClassId);
+  if (targetClassId !== prevTargetClassId) {
+    setPrevTargetClassId(targetClassId);
+    if (targetClassId && classes.length > 0) {
+      const found = classes.find((c) => c.id === targetClassId);
+      if (found) {
+        setSelectedClass(found);
+        setClassViewTab("live");
+      }
+    }
+  }
+
   // Synchronize state when navigation triggers arrive from sidebar without cascading effect renders
   const [prevNavKey, setPrevNavKey] = useState(navKey);
   if (navKey !== prevNavKey) {
     setPrevNavKey(navKey);
     if (activeNav === "classes" || activeNav === "create-class") {
-      setSelectedClass(null);
+      if (!targetClassId) setSelectedClass(null);
     }
   }
 
@@ -97,7 +110,16 @@ export function ProfessorPortal({ activeNav, navKey = 0, onNavSelect }) {
     async function fetchInitial() {
       try {
         const list = await classesApi.getClasses();
-        if (!ignore) setClasses(list);
+        if (!ignore) {
+          setClasses(list);
+          if (targetClassId) {
+            const found = list.find((c) => c.id === targetClassId);
+            if (found) {
+              setSelectedClass(found);
+              setClassViewTab("live");
+            }
+          }
+        }
       } catch (err) {
         if (!ignore) showToast("error", err.message);
       }
@@ -123,7 +145,7 @@ export function ProfessorPortal({ activeNav, navKey = 0, onNavSelect }) {
       window.removeEventListener("focus", handleFocus);
       document.removeEventListener("visibilitychange", handleFocus);
     };
-  }, [loadClasses, loadStudents, loadActiveSession, showToast]);
+  }, [loadClasses, loadStudents, loadActiveSession, showToast, targetClassId]);
 
   // Live polling interval
   useEffect(() => {
@@ -218,11 +240,11 @@ export function ProfessorPortal({ activeNav, navKey = 0, onNavSelect }) {
           />
 
           {/* In-Class Navigation Tabs */}
-          <div className="flex border-b border-[#dadce0] gap-6 text-sm font-semibold">
+          <div className="flex border-b border-[#dadce0] gap-4 sm:gap-6 text-xs sm:text-sm font-semibold overflow-x-auto scrollbar-none whitespace-nowrap">
             <button
               type="button"
               onClick={() => setClassViewTab("live")}
-              className={`pb-3.5 transition-all border-b-2 flex items-center gap-2 ${
+              className={`pb-3.5 transition-all border-b-2 flex items-center gap-2 shrink-0 ${
                 classViewTab === "live"
                   ? "border-[#1a73e8] text-[#1a73e8] font-bold"
                   : "border-transparent text-[#5f6368] hover:text-[#202124]"
@@ -238,7 +260,7 @@ export function ProfessorPortal({ activeNav, navKey = 0, onNavSelect }) {
             <button
               type="button"
               onClick={() => setClassViewTab("history")}
-              className={`pb-3.5 transition-all border-b-2 flex items-center gap-2 ${
+              className={`pb-3.5 transition-all border-b-2 flex items-center gap-2 shrink-0 ${
                 classViewTab === "history"
                   ? "border-[#1a73e8] text-[#1a73e8] font-bold"
                   : "border-transparent text-[#5f6368] hover:text-[#202124]"
@@ -251,7 +273,7 @@ export function ProfessorPortal({ activeNav, navKey = 0, onNavSelect }) {
             <button
               type="button"
               onClick={() => setClassViewTab("roster")}
-              className={`pb-3.5 transition-all border-b-2 flex items-center gap-2 ${
+              className={`pb-3.5 transition-all border-b-2 flex items-center gap-2 shrink-0 ${
                 classViewTab === "roster"
                   ? "border-[#1a73e8] text-[#1a73e8] font-bold"
                   : "border-transparent text-[#5f6368] hover:text-[#202124]"

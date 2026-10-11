@@ -13,7 +13,14 @@ import { LoadingOverlay } from "../ui/LoadingOverlay";
 import { Modal } from "../ui/Modal";
 import { IconCamera, IconPlus, IconRefresh } from "../ui/Icons";
 
-export function StudentPortal({ activeNav = "classes", navKey = 0, onNavSelect }) {
+export function StudentPortal({
+  activeNav = "classes",
+  navKey = 0,
+  onNavSelect,
+  targetClassId,
+  joinModalOpen = false,
+  onCloseJoinModal,
+}) {
   const { currentUser, setBiometricEnrolled } = useAuth();
   const { showToast } = useToast();
   const [studentTab, setStudentTab] = useState(activeNav || "classes");
@@ -26,13 +33,32 @@ export function StudentPortal({ activeNav = "classes", navKey = 0, onNavSelect }
 
   const isBiometricEnrolled = Boolean(currentUser?.has_biometric_enrolled);
 
+  // Sync external join modal trigger from header
+  const [prevJoinModalOpen, setPrevJoinModalOpen] = useState(joinModalOpen);
+  if (joinModalOpen !== prevJoinModalOpen) {
+    setPrevJoinModalOpen(joinModalOpen);
+    if (joinModalOpen) {
+      setShowJoinModal(true);
+    }
+  }
+
+  // Handle external selection from sidebar drawer
+  const [prevTargetClassId, setPrevTargetClassId] = useState(targetClassId);
+  if (targetClassId !== prevTargetClassId) {
+    setPrevTargetClassId(targetClassId);
+    if (targetClassId) {
+      setSelectedClassId(targetClassId);
+      setStudentTab("classes");
+    }
+  }
+
   // Synchronize state when navigation triggers arrive from sidebar without cascading effect renders
   const [prevNavKey, setPrevNavKey] = useState(navKey);
   if (navKey !== prevNavKey) {
     setPrevNavKey(navKey);
     setStudentTab(activeNav);
     if (activeNav === "classes") {
-      setSelectedClassId(null);
+      if (!targetClassId) setSelectedClassId(null);
     }
   }
 
@@ -242,7 +268,10 @@ export function StudentPortal({ activeNav = "classes", navKey = 0, onNavSelect }
       {/* Join Class Modal */}
       <Modal
         isOpen={showJoinModal}
-        onClose={() => setShowJoinModal(false)}
+        onClose={() => {
+          setShowJoinModal(false);
+          if (onCloseJoinModal) onCloseJoinModal();
+        }}
         title="Join Class"
       >
         <JoinClassCard
@@ -250,9 +279,13 @@ export function StudentPortal({ activeNav = "classes", navKey = 0, onNavSelect }
           currentUser={currentUser}
           onJoined={() => {
             setShowJoinModal(false);
+            if (onCloseJoinModal) onCloseJoinModal();
             loadClasses(false);
           }}
-          onCancel={() => setShowJoinModal(false)}
+          onCancel={() => {
+            setShowJoinModal(false);
+            if (onCloseJoinModal) onCloseJoinModal();
+          }}
         />
       </Modal>
 

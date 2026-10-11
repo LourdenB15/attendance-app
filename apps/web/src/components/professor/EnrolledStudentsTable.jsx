@@ -2,9 +2,10 @@
 import { useState } from "react";
 import { Badge } from "../ui/Badge";
 import { classesApi } from "../../api";
-import { useToast } from "../../context/ToastContext";
+import { useToast } from "../../context/useToast";
 import { useConfirm } from "../../context/useConfirm";
 import { EmptyState } from "../ui/EmptyState";
+import { UserAvatar } from "../ui/UserAvatar";
 import {
   IconUsers,
   IconSearch,
@@ -74,7 +75,7 @@ export function EnrolledStudentsTable({
   return (
     <div className="bg-white rounded-2xl shadow-xs border border-[#dadce0] overflow-hidden">
       {/* Top Banner: Invite & Join Code */}
-      <div className="p-5 border-b border-[#dadce0] bg-[#f8f9fa] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="p-4 sm:p-5 border-b border-[#dadce0] bg-[#f8f9fa] flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
           <h4 className="text-base font-bold text-[#202124]">Class Roster</h4>
           <p className="text-xs text-[#5f6368] mt-0.5">
@@ -82,7 +83,7 @@ export function EnrolledStudentsTable({
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 bg-white border border-[#dadce0] rounded-xl px-4 py-2 shadow-2xs">
+        <div className="flex items-center justify-between sm:justify-end gap-2.5 bg-white border border-[#dadce0] rounded-xl px-4 py-2.5 shadow-2xs w-full sm:w-auto">
           <span className="text-xs font-semibold text-[#5f6368]">Invite Code:</span>
           <code className="text-sm font-mono font-bold text-[#1a73e8] tracking-wider select-all">
             {joinCode}
@@ -90,7 +91,7 @@ export function EnrolledStudentsTable({
           <button
             type="button"
             onClick={handleCopyCode}
-            className="p-1 rounded-md text-[#5f6368] hover:text-[#1a73e8] transition"
+            className="p-1.5 rounded-lg text-[#5f6368] hover:text-[#1a73e8] hover:bg-[#f1f3f4] transition"
             title="Copy join code"
             aria-label="Copy join code"
           >
@@ -105,11 +106,11 @@ export function EnrolledStudentsTable({
 
       {/* Tabs & Search Filter */}
       <div className="p-4 border-b border-[#dadce0] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="flex bg-[#f1f3f4] p-1 rounded-lg text-xs font-semibold">
+        <div className="flex bg-[#f1f3f4] p-1 rounded-lg text-xs font-semibold overflow-x-auto scrollbar-none shrink-0">
           <button
             type="button"
             onClick={() => setListTab("active")}
-            className={`px-3.5 py-1.5 rounded-md transition-all ${
+            className={`px-3.5 py-1.5 rounded-md transition-all whitespace-nowrap ${
               listTab === "active"
                 ? "bg-white text-[#1a73e8] shadow-xs font-bold"
                 : "text-[#5f6368] hover:text-[#202124]"
@@ -120,7 +121,7 @@ export function EnrolledStudentsTable({
           <button
             type="button"
             onClick={() => setListTab("dropped")}
-            className={`px-3.5 py-1.5 rounded-md transition-all ${
+            className={`px-3.5 py-1.5 rounded-md transition-all whitespace-nowrap ${
               listTab === "dropped"
                 ? "bg-white text-[#1a73e8] shadow-xs font-bold"
                 : "text-[#5f6368] hover:text-[#202124]"
@@ -130,20 +131,113 @@ export function EnrolledStudentsTable({
           </button>
         </div>
 
-        <div className="relative sm:w-64">
+        <div className="relative w-full sm:w-64">
           <IconSearch className="w-4 h-4 text-[#5f6368] absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search students..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3.5 py-1.5 bg-[#f8f9fa] border border-[#dadce0] rounded-lg text-xs text-[#202124] placeholder-[#80868b] focus:bg-white focus:border-[#1a73e8] focus:outline-none focus:ring-2 focus:ring-[#e8f0fe] transition-all"
+            className="w-full pl-9 pr-3.5 py-2 sm:py-1.5 bg-[#f8f9fa] border border-[#dadce0] rounded-lg text-xs text-[#202124] placeholder-[#80868b] focus:bg-white focus:border-[#1a73e8] focus:outline-none focus:ring-2 focus:ring-[#e8f0fe] transition-all"
           />
         </div>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto">
+      {/* Mobile Card List (< md) */}
+      <div className="md:hidden divide-y divide-[#e8eaed]">
+        {visibleStudents.length === 0 ? (
+          <div className="p-8 text-center">
+            <EmptyState
+              icon={<IconUsers className="w-6 h-6" />}
+              title={
+                searchQuery
+                  ? "No students match your query"
+                  : listTab === "dropped"
+                  ? "No dropped students"
+                  : "No students enrolled yet"
+              }
+              description={
+                searchQuery
+                  ? "Try clearing your search term."
+                  : listTab === "dropped"
+                  ? "Students removed from class will appear here."
+                  : `Share the code "${joinCode}" with your students so they can enroll.`
+              }
+              className="border-none p-4"
+            />
+          </div>
+        ) : (
+          visibleStudents.map((s) => (
+            <div
+              key={s.student_id}
+              className="p-4 space-y-3 hover:bg-[#f8f9fa] transition-colors"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <UserAvatar
+                    user={{ full_name: s.full_name, email: s.email }}
+                    className="w-10 h-10"
+                    textClassName="text-sm font-bold"
+                  />
+                  <div className="min-w-0">
+                    <p className="font-semibold text-sm text-[#202124] truncate">
+                      {s.full_name}
+                    </p>
+                    <span className="text-xs text-[#5f6368] font-mono block truncate mt-0.5">
+                      {s.email}
+                    </span>
+                  </div>
+                </div>
+
+                <Badge
+                  variant={s.status === "ACTIVE" ? "success" : "default"}
+                  size="xs"
+                  dot
+                >
+                  {s.status}
+                </Badge>
+              </div>
+
+              <div className="flex items-center justify-between text-xs text-[#5f6368] pt-1">
+                <span className="px-2 py-0.5 rounded-md bg-[#f1f3f4] text-[#3c4043] font-medium text-[11px]">
+                  Enrolled via {s.enrolled_via || "Join Code"}
+                </span>
+                <span className="text-[11px] text-[#70757a]">
+                  Joined{" "}
+                  {new Date(s.enrolled_at).toLocaleDateString(undefined, {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </span>
+              </div>
+
+              <div className="pt-2 border-t border-[#f1f3f4] flex justify-end">
+                {s.status === "ACTIVE" ? (
+                  <button
+                    type="button"
+                    onClick={() => handleDrop(s)}
+                    className="w-full py-2 text-xs font-semibold text-[#c5221f] bg-[#fce8e6] hover:bg-[#fad2cf] border border-[#fad2cf] rounded-xl transition min-h-[38px]"
+                  >
+                    Drop Student from Section
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleRestore(s)}
+                    className="w-full py-2 text-xs font-semibold text-[#1a73e8] bg-[#e8f0fe] hover:bg-[#d2e3fc] border border-[#d2e3fc] rounded-xl transition min-h-[38px]"
+                  >
+                    Restore Student to Section
+                  </button>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table (>= md) */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[11px] tracking-wider border-b border-[#dadce0] font-semibold">
             <tr>
@@ -182,8 +276,15 @@ export function EnrolledStudentsTable({
             ) : (
               visibleStudents.map((s) => (
                 <tr key={s.student_id} className="hover:bg-[#f8f9fa] transition-colors">
-                  <td className="px-5 py-3.5 font-semibold text-[#202124]">
-                    {s.full_name}
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center gap-3">
+                      <UserAvatar
+                        user={{ full_name: s.full_name, email: s.email }}
+                        className="w-8 h-8"
+                        textClassName="text-xs font-bold"
+                      />
+                      <span className="font-semibold text-[#202124]">{s.full_name}</span>
+                    </div>
                   </td>
                   <td className="px-5 py-3.5 text-xs text-[#5f6368] font-mono">
                     {s.email}

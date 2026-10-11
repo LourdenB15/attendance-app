@@ -6,6 +6,7 @@ import { useToast } from "../../context/useToast";
 import { useConfirm } from "../../context/useConfirm";
 import { CreateProfessorCard } from "./CreateProfessorCard";
 import { UserDirectoryTable } from "./UserDirectoryTable";
+import { Modal } from "../ui/Modal";
 import { IconUsers, IconPlus } from "../ui/Icons";
 
 export function AdminPortal({ activeNav, navKey = 0, onNavSelect }) {
@@ -13,6 +14,7 @@ export function AdminPortal({ activeNav, navKey = 0, onNavSelect }) {
   const { showToast } = useToast();
   const confirm = useConfirm();
   const [adminTab, setAdminTab] = useState(activeNav || "users"); // "users" | "create-prof"
+  const [showAddProfModal, setShowAddProfModal] = useState(false);
   const [userList, setUserList] = useState([]);
   const [roleFilter, setRoleFilter] = useState("ALL");
 
@@ -115,7 +117,7 @@ export function AdminPortal({ activeNav, navKey = 0, onNavSelect }) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#dadce0]">
         <div>
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 flex-wrap">
             <h2 className="text-xl font-bold text-[#202124]">
               Admin Control Center
             </h2>
@@ -128,30 +130,41 @@ export function AdminPortal({ activeNav, navKey = 0, onNavSelect }) {
           </p>
         </div>
 
-        <div className="flex bg-[#f1f3f4] p-1 rounded-xl text-xs font-semibold shrink-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex bg-[#f1f3f4] p-1 rounded-xl text-xs font-semibold shrink-0">
+            <button
+              type="button"
+              onClick={() => handleTabChange("users")}
+              className={`px-3.5 py-1.5 rounded-lg transition-all inline-flex items-center gap-1.5 ${
+                adminTab === "users"
+                  ? "bg-white text-[#1a73e8] shadow-xs font-bold"
+                  : "text-[#5f6368] hover:text-[#202124]"
+              }`}
+            >
+              <IconUsers className="w-3.5 h-3.5" />
+              <span>User Directory</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleTabChange("create-prof")}
+              className={`px-3.5 py-1.5 rounded-lg transition-all inline-flex items-center gap-1.5 ${
+                adminTab === "create-prof"
+                  ? "bg-white text-[#1a73e8] shadow-xs font-bold"
+                  : "text-[#5f6368] hover:text-[#202124]"
+              }`}
+            >
+              <IconPlus className="w-3.5 h-3.5" />
+              <span>Add Professor</span>
+            </button>
+          </div>
+
           <button
             type="button"
-            onClick={() => handleTabChange("users")}
-            className={`px-3.5 py-1.5 rounded-lg transition-all inline-flex items-center gap-1.5 ${
-              adminTab === "users"
-                ? "bg-white text-[#1a73e8] shadow-xs font-bold"
-                : "text-[#5f6368] hover:text-[#202124]"
-            }`}
-          >
-            <IconUsers className="w-3.5 h-3.5" />
-            <span>User Directory</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTabChange("create-prof")}
-            className={`px-3.5 py-1.5 rounded-lg transition-all inline-flex items-center gap-1.5 ${
-              adminTab === "create-prof"
-                ? "bg-white text-[#1a73e8] shadow-xs font-bold"
-                : "text-[#5f6368] hover:text-[#202124]"
-            }`}
+            onClick={() => setShowAddProfModal(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white rounded-xl text-xs font-semibold shadow-xs transition"
           >
             <IconPlus className="w-3.5 h-3.5" />
-            <span>Add Professor</span>
+            <span>Invite Professor</span>
           </button>
         </div>
       </div>
@@ -177,6 +190,24 @@ export function AdminPortal({ activeNav, navKey = 0, onNavSelect }) {
           }}
         />
       )}
+
+      {/* Modal Quick Flow for Inviting Professor */}
+      <Modal
+        isOpen={showAddProfModal}
+        onClose={() => setShowAddProfModal(false)}
+        title="Invite New Professor"
+        subtitle="Provision faculty account with role and temporary credentials"
+        maxWidth="max-w-xl"
+      >
+        <CreateProfessorCard
+          isModal={true}
+          onCancel={() => setShowAddProfModal(false)}
+          onCreated={() => {
+            setShowAddProfModal(false);
+            loadUsers(roleFilter);
+          }}
+        />
+      </Modal>
     </div>
   );
 }

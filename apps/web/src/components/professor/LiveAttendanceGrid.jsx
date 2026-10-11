@@ -5,6 +5,7 @@ import { sessionsApi } from "../../api";
 import { useToast } from "../../context/useToast";
 import { Modal } from "../ui/Modal";
 import { EmptyState } from "../ui/EmptyState";
+import { UserAvatar } from "../ui/UserAvatar";
 import {
   IconSearch,
   IconUsers,
@@ -77,7 +78,7 @@ export function LiveAttendanceGrid({
   return (
     <div className="bg-white rounded-2xl shadow-xs border border-[#dadce0] overflow-hidden">
       {/* Header & KPI Summary Bar */}
-      <div className="p-5 border-b border-[#dadce0] space-y-4">
+      <div className="p-4 sm:p-5 border-b border-[#dadce0] space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h4 className="text-base font-bold text-[#202124]">
@@ -88,16 +89,16 @@ export function LiveAttendanceGrid({
             </p>
           </div>
 
-          <div className="flex items-center gap-3 bg-[#f8f9fa] border border-[#dadce0] px-4 py-2 rounded-xl shrink-0">
-            <div className="text-right">
+          <div className="flex items-center justify-between sm:justify-end gap-3 bg-[#f8f9fa] border border-[#dadce0] px-4 py-2.5 rounded-xl shrink-0 w-full sm:w-auto">
+            <div>
               <span className="block text-[10px] font-bold uppercase tracking-wider text-[#5f6368]">
                 Attendance Rate
               </span>
-              <span className="text-base font-black text-[#137333]">
+              <span className="text-sm sm:text-base font-black text-[#137333]">
                 {presentCount} / {totalCount} ({rate}%)
               </span>
             </div>
-            <div className="w-16 h-2 bg-[#e8eaed] rounded-full overflow-hidden shrink-0">
+            <div className="w-24 sm:w-16 h-2 bg-[#e8eaed] rounded-full overflow-hidden shrink-0">
               <div
                 className="h-full bg-[#137333] rounded-full transition-all duration-300"
                 style={{ width: `${rate}%` }}
@@ -108,7 +109,7 @@ export function LiveAttendanceGrid({
 
         {/* Search & Status Filter Controls */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
-          <div className="flex bg-[#f1f3f4] p-1 rounded-lg text-xs font-semibold">
+          <div className="flex bg-[#f1f3f4] p-1 rounded-lg text-xs font-semibold overflow-x-auto scrollbar-none shrink-0">
             {[
               { id: "ALL", label: `All (${totalCount})` },
               { id: "PRESENT", label: `Present (${presentCount})` },
@@ -118,7 +119,7 @@ export function LiveAttendanceGrid({
                 key={tab.id}
                 type="button"
                 onClick={() => setStatusFilter(tab.id)}
-                className={`px-3 py-1 rounded-md transition-all ${
+                className={`px-3 py-1.5 rounded-md transition-all whitespace-nowrap ${
                   statusFilter === tab.id
                     ? "bg-white text-[#1a73e8] shadow-xs font-bold"
                     : "text-[#5f6368] hover:text-[#202124]"
@@ -129,21 +130,146 @@ export function LiveAttendanceGrid({
             ))}
           </div>
 
-          <div className="relative sm:w-64">
+          <div className="relative w-full sm:w-64">
             <IconSearch className="w-4 h-4 text-[#5f6368] absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Search by student name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3.5 py-1.5 bg-[#f8f9fa] border border-[#dadce0] rounded-lg text-xs text-[#202124] placeholder-[#80868b] focus:bg-white focus:border-[#1a73e8] focus:outline-none focus:ring-2 focus:ring-[#e8f0fe] transition-all"
+              className="w-full pl-9 pr-3.5 py-2 sm:py-1.5 bg-[#f8f9fa] border border-[#dadce0] rounded-lg text-xs text-[#202124] placeholder-[#80868b] focus:bg-white focus:border-[#1a73e8] focus:outline-none focus:ring-2 focus:ring-[#e8f0fe] transition-all"
             />
           </div>
         </div>
       </div>
 
-      {/* Roster Table */}
-      <div className="overflow-x-auto">
+      {/* Mobile Card List (< md) */}
+      <div className="md:hidden divide-y divide-[#e8eaed]">
+        {filteredAttendance.length === 0 ? (
+          <div className="p-8 text-center">
+            <EmptyState
+              icon={<IconUsers className="w-6 h-6" />}
+              title={
+                searchQuery
+                  ? "No students match your filter"
+                  : "No students in this class roster"
+              }
+              description={
+                searchQuery
+                  ? "Try clearing your search term to see all students."
+                  : "Share the class join code with your students to enroll them."
+              }
+              className="border-none p-4"
+            />
+          </div>
+        ) : (
+          filteredAttendance.map((rec) => {
+            const isPresent = rec.status === "PRESENT";
+            const isMarkedAbsent = !isPresent && Boolean(rec.source);
+
+            return (
+              <div
+                key={rec.student_id}
+                className="p-4 space-y-3 hover:bg-[#f8f9fa] transition-colors"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <UserAvatar
+                      user={{ full_name: rec.full_name, email: rec.email }}
+                      className="w-10 h-10"
+                      textClassName="text-sm font-bold"
+                    />
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm text-[#202124] truncate">
+                        {rec.full_name}
+                      </p>
+                      <span className="text-xs text-[#5f6368] font-mono block truncate mt-0.5">
+                        {rec.email}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="shrink-0">
+                    {isPresent ? (
+                      <Badge variant="success" size="xs" dot>
+                        ✓ Present
+                      </Badge>
+                    ) : (
+                      <Badge variant="danger" size="xs" dot>
+                        ✕ Absent
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Details Meta */}
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#5f6368] bg-[#f8f9fa] p-2.5 rounded-xl border border-[#dadce0]/60">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] uppercase font-bold text-[#80868b]">Source:</span>
+                    {rec.source === "BIOMETRIC_LIVENESS" ? (
+                      <span className="font-medium text-[#137333]">Face Biometric</span>
+                    ) : rec.source === "MANUAL_OVERRIDE" ? (
+                      <span className="font-medium text-[#b06000]">Manual Override</span>
+                    ) : (
+                      <span>{rec.source || "—"}</span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] uppercase font-bold text-[#80868b]">Time:</span>
+                    <span>
+                      {rec.recorded_at
+                        ? new Date(rec.recorded_at).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                          })
+                        : "—"}
+                    </span>
+                  </div>
+                </div>
+
+                {rec.override_reason && (
+                  <p className="text-xs text-[#70757a] italic bg-[#fff8e1] px-2.5 py-1.5 rounded-lg border border-[#ffe082]/60">
+                    Note: {rec.override_reason}
+                  </p>
+                )}
+
+                {/* Touch Action Buttons */}
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <button
+                    type="button"
+                    disabled={isPresent}
+                    onClick={() => openDialog(rec, "PRESENT")}
+                    className={`py-2 text-xs font-bold rounded-xl transition flex items-center justify-center min-h-[38px] ${
+                      isPresent
+                        ? "bg-[#e6f4ea] text-[#137333] border border-[#ceead6] cursor-default opacity-80"
+                        : "bg-white text-[#3c4043] hover:bg-[#e6f4ea] hover:text-[#137333] border border-[#dadce0] shadow-2xs"
+                    }`}
+                  >
+                    {isPresent ? "✓ Is Present" : "Mark Present"}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isMarkedAbsent}
+                    onClick={() => openDialog(rec, "ABSENT")}
+                    className={`py-2 text-xs font-bold rounded-xl transition flex items-center justify-center min-h-[38px] ${
+                      isMarkedAbsent
+                        ? "bg-[#fce8e6] text-[#c5221f] border border-[#fad2cf] cursor-default opacity-80"
+                        : "bg-white text-[#3c4043] hover:bg-[#fce8e6] hover:text-[#c5221f] border border-[#dadce0] shadow-2xs"
+                    }`}
+                  >
+                    {isMarkedAbsent ? "✕ Is Absent" : "Mark Absent"}
+                  </button>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Desktop Roster Table (>= md) */}
+      <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left text-sm">
           <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[11px] tracking-wider border-b border-[#dadce0] font-semibold">
             <tr>
@@ -186,10 +312,19 @@ export function LiveAttendanceGrid({
                     className="hover:bg-[#f8f9fa] transition-colors"
                   >
                     <td className="px-5 py-3.5">
-                      <p className="font-semibold text-[#202124]">{rec.full_name}</p>
-                      <span className="text-[11px] text-[#5f6368] font-mono">
-                        {rec.email}
-                      </span>
+                      <div className="flex items-center gap-3">
+                        <UserAvatar
+                          user={{ full_name: rec.full_name, email: rec.email }}
+                          className="w-8 h-8"
+                          textClassName="text-xs font-bold"
+                        />
+                        <div className="min-w-0">
+                          <p className="font-semibold text-[#202124] truncate">{rec.full_name}</p>
+                          <span className="text-[11px] text-[#5f6368] font-mono block truncate">
+                            {rec.email}
+                          </span>
+                        </div>
+                      </div>
                     </td>
                     <td className="px-5 py-3.5">
                       {isPresent ? (

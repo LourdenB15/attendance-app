@@ -14,6 +14,8 @@ export function AppLayout() {
   const { currentUser, changePassword, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [targetClassId, setTargetClassId] = useState(null);
+  const [joinClassModalOpen, setJoinClassModalOpen] = useState(false);
 
   // Synchronized navigation state between Sidebar and Portals
   const defaultNav =
@@ -27,8 +29,27 @@ export function AppLayout() {
   const [navKey, setNavKey] = useState(0);
 
   const handleNavSelect = (navId) => {
+    if (navId === "classes") {
+      setTargetClassId(null);
+    }
     setActiveNav(navId);
     setNavKey((k) => k + 1);
+  };
+
+  const handleSelectClass = (cls) => {
+    setTargetClassId(cls.id);
+    setActiveNav("classes");
+    setNavKey((k) => k + 1);
+  };
+
+  const handleActionPlus = () => {
+    if (currentUser.role === "STUDENT") {
+      setJoinClassModalOpen(true);
+    } else if (currentUser.role === "PROFESSOR") {
+      handleNavSelect("create-class");
+    } else if (currentUser.role === "ADMIN") {
+      handleNavSelect("create-prof");
+    }
   };
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -69,22 +90,24 @@ export function AppLayout() {
       <Header
         onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
         onOpenSettings={() => setSettingsOpen(true)}
+        onActionPlus={handleActionPlus}
       />
 
       <div className="flex-1 flex flex-col">
-        {/* Navigation Sidebar (open by default on desktop, overlay drawer on mobile) */}
+        {/* Navigation Sidebar (Mini rail on desktop, expanded overlay drawer on toggle) */}
         <Sidebar
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
           currentUser={currentUser}
           activeNav={activeNav}
           onNavSelect={handleNavSelect}
+          onSelectClass={handleSelectClass}
           onOpenSettings={() => setSettingsOpen(true)}
           onLogout={logout}
         />
 
-        {/* Main Content Area (offset by fixed sidebar on desktop) */}
-        <div className="flex-1 lg:pl-72 flex flex-col min-w-0">
+        {/* Main Content Area (offset by fixed 72px mini-rail on desktop) */}
+        <div className="flex-1 lg:pl-[72px] flex flex-col min-w-0 transition-all duration-200">
           <main className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1">
             <MustChangePasswordBanner />
 
@@ -103,6 +126,7 @@ export function AppLayout() {
                     activeNav={activeNav}
                     navKey={navKey}
                     onNavSelect={handleNavSelect}
+                    targetClassId={targetClassId}
                   />
                 )}
                 {currentUser.role === "STUDENT" && (
@@ -110,6 +134,9 @@ export function AppLayout() {
                     activeNav={activeNav}
                     navKey={navKey}
                     onNavSelect={handleNavSelect}
+                    targetClassId={targetClassId}
+                    joinModalOpen={joinClassModalOpen}
+                    onCloseJoinModal={() => setJoinClassModalOpen(false)}
                   />
                 )}
               </>

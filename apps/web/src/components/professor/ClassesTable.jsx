@@ -112,11 +112,11 @@ export function ClassesTable({ classes = [], onSelectClass, onRefresh }) {
       {/* Top Filter & View Controls */}
       <div className="bg-white border border-[#dadce0] rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shadow-xs">
         {/* Segmented Tab Toggle: Active vs Archived */}
-        <div className="flex bg-[#f1f3f4] p-1 rounded-lg text-xs font-semibold self-start sm:self-auto">
+        <div className="flex bg-[#f1f3f4] p-1 rounded-lg text-xs font-semibold overflow-x-auto scrollbar-none whitespace-nowrap shrink-0">
           <button
             type="button"
             onClick={() => setListTab("active")}
-            className={`px-3.5 py-1.5 rounded-md transition-all ${
+            className={`px-3.5 py-1.5 rounded-md transition-all whitespace-nowrap ${
               listTab === "active"
                 ? "bg-white text-[#1a73e8] shadow-xs font-bold"
                 : "text-[#5f6368] hover:text-[#202124]"
@@ -127,7 +127,7 @@ export function ClassesTable({ classes = [], onSelectClass, onRefresh }) {
           <button
             type="button"
             onClick={() => setListTab("archived")}
-            className={`px-3.5 py-1.5 rounded-md transition-all ${
+            className={`px-3.5 py-1.5 rounded-md transition-all whitespace-nowrap ${
               listTab === "archived"
                 ? "bg-white text-[#1a73e8] shadow-xs font-bold"
                 : "text-[#5f6368] hover:text-[#202124]"
@@ -138,7 +138,7 @@ export function ClassesTable({ classes = [], onSelectClass, onRefresh }) {
         </div>
 
         {/* Search & Grid/Table View Switcher */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 w-full sm:w-auto">
           <div className="relative flex-1 sm:w-64">
             <IconSearch className="w-4 h-4 text-[#5f6368] absolute left-3 top-1/2 -translate-y-1/2" />
             <input
@@ -146,7 +146,7 @@ export function ClassesTable({ classes = [], onSelectClass, onRefresh }) {
               placeholder="Search classes or code..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3.5 py-1.5 bg-[#f8f9fa] hover:bg-white border border-[#dadce0] rounded-lg text-xs text-[#202124] placeholder-[#80868b] focus:bg-white focus:border-[#1a73e8] focus:outline-none focus:ring-2 focus:ring-[#e8f0fe] transition-all"
+              className="w-full pl-9 pr-3.5 py-2 sm:py-1.5 bg-[#f8f9fa] hover:bg-white border border-[#dadce0] rounded-lg text-xs text-[#202124] placeholder-[#80868b] focus:bg-white focus:border-[#1a73e8] focus:outline-none focus:ring-2 focus:ring-[#e8f0fe] transition-all"
             />
           </div>
 
