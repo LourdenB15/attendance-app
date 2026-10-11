@@ -31,7 +31,13 @@ export function AuthProvider({ children }) {
     async function checkSession() {
       try {
         const user = await authApi.getMe();
-        if (!ignore) setCurrentUser(user);
+        if (!ignore && user) {
+          const cachedAvatar = localStorage.getItem(`user_avatar_${user.email?.toLowerCase()}`);
+          if (cachedAvatar && !user.avatar) {
+            user.avatar = cachedAvatar;
+          }
+          setCurrentUser(user);
+        }
       } catch {
         if (!ignore) setCurrentUser(null);
       } finally {
@@ -47,6 +53,10 @@ export function AuthProvider({ children }) {
   const login = async ({ email, password }) => {
     try {
       const user = await authApi.login({ email, password });
+      const cachedAvatar = localStorage.getItem(`user_avatar_${user.email?.toLowerCase()}`);
+      if (cachedAvatar && !user.avatar) {
+        user.avatar = cachedAvatar;
+      }
       setCurrentUser(user);
       showToast("success", `Welcome back, ${user.full_name}!`);
       return user;
@@ -59,7 +69,19 @@ export function AuthProvider({ children }) {
 
   const loginWithGoogle = async (credential) => {
     try {
+      try {
+        const payload = JSON.parse(atob(credential.split(".")[1]));
+        if (payload?.picture && payload?.email) {
+          localStorage.setItem(`user_avatar_${payload.email.toLowerCase()}`, payload.picture);
+        }
+      } catch {
+        // ignore
+      }
       const user = await authApi.loginWithGoogle(credential);
+      const cachedAvatar = localStorage.getItem(`user_avatar_${user.email?.toLowerCase()}`);
+      if (cachedAvatar && !user.avatar) {
+        user.avatar = cachedAvatar;
+      }
       setCurrentUser(user);
       showToast("success", `Signed in with Google! Welcome, ${user.full_name}.`);
       return user;

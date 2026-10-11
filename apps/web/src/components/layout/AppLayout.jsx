@@ -12,7 +12,7 @@ import { ProfessorPortal } from "../professor/ProfessorPortal";
 import { StudentPortal } from "../student/StudentPortal";
 
 export function AppLayout() {
-  const { currentUser, changePassword } = useAuth();
+  const { currentUser, changePassword, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -80,6 +80,7 @@ export function AppLayout() {
         activeNav={activeNav}
         onNavSelect={handleNavSelect}
         onOpenSettings={() => setSettingsOpen(true)}
+        onLogout={logout}
       />
 
       {/* Main Content Area */}

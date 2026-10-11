@@ -10,7 +10,8 @@ import { BiometricEnrollmentCard } from "./BiometricEnrollmentCard";
 import { AttendanceHistoryTable } from "./AttendanceHistoryTable";
 import { LivenessCamera } from "../liveness/LivenessCamera";
 import { LoadingOverlay } from "../ui/LoadingOverlay";
-import { IconBook, IconClock, IconCamera } from "../ui/Icons";
+import { Modal } from "../ui/Modal";
+import { IconCamera, IconPlus, IconRefresh } from "../ui/Icons";
 
 export function StudentPortal({ activeNav = "classes", navKey = 0, onNavSelect }) {
   const { currentUser, setBiometricEnrolled } = useAuth();
@@ -21,6 +22,7 @@ export function StudentPortal({ activeNav = "classes", navKey = 0, onNavSelect }
   const [selectedClassId, setSelectedClassId] = useState(null);
   const [activeScanningClassId, setActiveScanningClassId] = useState(null);
   const [verifying, setVerifying] = useState(false); // check-in sent, waiting for the server
+  const [showJoinModal, setShowJoinModal] = useState(false);
 
   const isBiometricEnrolled = Boolean(currentUser?.has_biometric_enrolled);
 
@@ -187,71 +189,72 @@ export function StudentPortal({ activeNav = "classes", navKey = 0, onNavSelect }
 
   return (
     <div className="space-y-6">
-      {/* Top Header & Navigation Tabs */}
+      {/* Top Header & Context Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#dadce0]">
         <div>
           <div className="flex items-center gap-2.5">
-            <h2 className="text-xl font-bold text-[#202124]">Student Attendance Hub</h2>
+            <h2 className="text-xl font-bold text-[#202124]">
+              {activeTab === "enroll-face"
+                ? "Facial Biometric Setup"
+                : activeTab === "history"
+                ? "Attendance History"
+                : "Student Attendance Hub"}
+            </h2>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#e6f4ea] text-[#137333] border border-[#ceead6]">
               <span className="w-1.5 h-1.5 rounded-full bg-[#1e8e3e] animate-pulse" />
               Live Sync
             </span>
           </div>
           <p className="text-xs text-[#5f6368] mt-0.5">
-            View enrolled classes, open live attendance sessions, and review personal records.
+            {activeTab === "enroll-face"
+              ? "Register or update your face profile for automated attendance verification."
+              : activeTab === "history"
+              ? "Review your past session attendances and verification details."
+              : "View enrolled classes, open live attendance sessions, and join new courses."}
           </p>
         </div>
 
-        {/* Tab Toggle */}
-        <div className="flex bg-[#f1f3f4] p-1 rounded-xl text-xs font-semibold shrink-0">
-          <button
-            type="button"
-            onClick={() => handleTabChange("classes")}
-            className={`px-3.5 py-1.5 rounded-lg transition-all inline-flex items-center gap-1.5 ${
-              activeTab === "classes"
-                ? "bg-white text-[#1a73e8] shadow-xs font-bold"
-                : "text-[#5f6368] hover:text-[#202124]"
-            }`}
-          >
-            <IconBook className="w-3.5 h-3.5" />
-            <span>My Classes</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleTabChange("enroll-face")}
-            className={`px-3.5 py-1.5 rounded-lg transition-all inline-flex items-center gap-1.5 ${
-              activeTab === "enroll-face"
-                ? "bg-white text-[#1a73e8] shadow-xs font-bold"
-                : "text-[#5f6368] hover:text-[#202124]"
-            }`}
-          >
-            <IconCamera className="w-3.5 h-3.5" />
-            <span>Face Setup</span>
-            {!isBiometricEnrolled ? (
-              <span className="w-2 h-2 rounded-full bg-[#d93025]" title="Face setup required" />
-            ) : (
-              <span className="w-2 h-2 rounded-full bg-[#137333]" title="Face verified" />
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              handleTabChange("history");
-              loadAttendance();
-            }}
-            className={`px-3.5 py-1.5 rounded-lg transition-all inline-flex items-center gap-1.5 ${
-              activeTab === "history"
-                ? "bg-white text-[#1a73e8] shadow-xs font-bold"
-                : "text-[#5f6368] hover:text-[#202124]"
-            }`}
-          >
-            <IconClock className="w-3.5 h-3.5" />
-            <span>Attendance History</span>
-          </button>
+        {/* Action Controls in Header Area */}
+        <div className="flex items-center gap-2.5 shrink-0">
+          {activeTab === "classes" && !selectedClass && (
+            <button
+              type="button"
+              onClick={() => setShowJoinModal(true)}
+              className="px-4 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-semibold rounded-lg shadow-xs transition-colors inline-flex items-center gap-2 cursor-pointer"
+            >
+              <IconPlus className="w-4 h-4" />
+              <span>Join Class</span>
+            </button>
+          )}
+          {activeTab === "history" && (
+            <button
+              type="button"
+              onClick={() => loadAttendance(false)}
+              className="px-3.5 py-2 bg-white hover:bg-[#f8f9fa] border border-[#dadce0] text-[#202124] text-xs font-semibold rounded-lg shadow-2xs transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+            >
+              <IconRefresh className="w-3.5 h-3.5 text-[#5f6368]" />
+              <span>Refresh</span>
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Join Class Modal */}
+      <Modal
+        isOpen={showJoinModal}
+        onClose={() => setShowJoinModal(false)}
+        title="Join Class"
+      >
+        <JoinClassCard
+          isModal
+          currentUser={currentUser}
+          onJoined={() => {
+            setShowJoinModal(false);
+            loadClasses(false);
+          }}
+          onCancel={() => setShowJoinModal(false)}
+        />
+      </Modal>
 
       {verifying && <LoadingOverlay message="Recording your attendance..." />}
 
@@ -301,12 +304,12 @@ export function StudentPortal({ activeNav = "classes", navKey = 0, onNavSelect }
                 </button>
               </div>
             )}
-            <JoinClassCard onJoined={() => loadClasses(false)} />
             <EnrolledClassesTable
               classes={classes}
               isBiometricEnrolled={isBiometricEnrolled}
               onSelectClass={handleSelectClass}
               onTakeAttendance={handleDirectTakeAttendance}
+              onOpenJoin={() => setShowJoinModal(true)}
             />
           </div>
         )

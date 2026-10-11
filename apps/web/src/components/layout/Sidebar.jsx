@@ -1,4 +1,3 @@
-// apps/web/src/components/layout/Sidebar.jsx
 import {
   IconClassroom,
   IconBook,
@@ -9,9 +8,11 @@ import {
   IconSettings,
   IconClose,
   IconShieldCheck,
+  IconLogOut,
 } from "../ui/Icons";
 import { Badge } from "../ui/Badge";
 import { AppLogo } from "../ui/AppLogo";
+import { UserAvatar } from "../ui/UserAvatar";
 
 export function Sidebar({
   isOpen,
@@ -20,6 +21,7 @@ export function Sidebar({
   activeNav,
   onNavSelect,
   onOpenSettings,
+  onLogout,
 }) {
   if (!currentUser) return null;
 
@@ -141,9 +143,11 @@ export function Sidebar({
         {/* User Card in Drawer */}
         <div className="p-4 mx-3 mt-3 rounded-xl bg-[#f8f9fa] border border-[#dadce0]/70">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-[#1a73e8] text-white flex items-center justify-center font-bold text-base shadow-xs shrink-0">
-              {currentUser.full_name ? currentUser.full_name[0].toUpperCase() : "U"}
-            </div>
+            <UserAvatar
+              user={currentUser}
+              className="w-10 h-10"
+              textClassName="text-base font-bold"
+            />
             <div className="min-w-0 flex-1">
               <p className="text-xs font-bold text-[#202124] truncate">
                 {currentUser.full_name}
@@ -219,7 +223,7 @@ export function Sidebar({
         </nav>
 
         {/* Footer Actions */}
-        <div className="p-3 border-t border-[#dadce0] bg-white">
+        <div className="p-3 border-t border-[#dadce0] bg-white space-y-1">
           <button
             type="button"
             onClick={() => {
@@ -230,6 +234,18 @@ export function Sidebar({
           >
             <IconSettings className="w-4 h-4 text-[#5f6368]" />
             <span>Account Settings</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (onClose) onClose();
+              if (onLogout) onLogout();
+            }}
+            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-semibold text-[#d93025] hover:bg-[#fce8e6] transition-colors"
+          >
+            <IconLogOut className="w-4 h-4 text-[#d93025]" />
+            <span>Sign Out</span>
           </button>
         </div>
       </aside>

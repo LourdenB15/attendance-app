@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Badge } from "../ui/Badge";
 import { AppLogo } from "../ui/AppLogo";
+import { UserAvatar } from "../ui/UserAvatar";
 import {
   IconMenu,
   IconLogOut,
@@ -34,9 +35,6 @@ export function Header({ onToggleSidebar, onOpenSettings }) {
       ? "primary"
       : "success";
 
-  const userInitial = currentUser.full_name
-    ? currentUser.full_name[0].toUpperCase()
-    : "U";
 
   return (
     <header className="bg-white border-b border-[#dadce0] sticky top-0 z-30 shadow-2xs">
@@ -82,9 +80,11 @@ export function Header({ onToggleSidebar, onOpenSettings }) {
               aria-expanded={profileOpen}
               aria-haspopup="true"
             >
-              <div className="w-8 h-8 rounded-full bg-[#1a73e8] text-white flex items-center justify-center font-bold text-xs shadow-2xs">
-                {userInitial}
-              </div>
+              <UserAvatar
+                user={currentUser}
+                className="w-8 h-8"
+                textClassName="text-xs font-bold"
+              />
               <div className="text-left hidden md:block">
                 <div className="text-xs font-semibold text-[#202124] leading-tight truncate max-w-[140px]">
                   {currentUser.full_name}
@@ -100,9 +100,11 @@ export function Header({ onToggleSidebar, onOpenSettings }) {
             {profileOpen && (
               <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-[#dadce0] p-4 z-50 animate-in fade-in zoom-in-95 duration-100">
                 <div className="flex items-center gap-3 pb-3 border-b border-[#e8eaed]">
-                  <div className="w-12 h-12 rounded-full bg-[#1a73e8] text-white flex items-center justify-center font-bold text-lg shrink-0 shadow-xs">
-                    {userInitial}
-                  </div>
+                  <UserAvatar
+                    user={currentUser}
+                    className="w-12 h-12"
+                    textClassName="text-lg font-bold"
+                  />
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-[#202124] truncate">
                       {currentUser.full_name}

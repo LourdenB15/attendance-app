@@ -11,6 +11,7 @@ import {
   IconCamera,
   IconCheck,
   IconChevronRight,
+  IconPlus,
 } from "../ui/Icons";
 
 export function EnrolledClassesTable({
@@ -18,6 +19,7 @@ export function EnrolledClassesTable({
   onSelectClass,
   onTakeAttendance,
   isBiometricEnrolled = true,
+  onOpenJoin,
 }) {
   const [viewMode, setViewMode] = useState("grid"); // "grid" | "table"
   const [searchQuery, setSearchQuery] = useState("");
@@ -100,7 +102,19 @@ export function EnrolledClassesTable({
           description={
             searchQuery
               ? `No enrolled courses matched "${searchQuery}".`
-              : "Enter your teacher's class join code in the card above to enroll."
+              : "Ask your teacher for the class code, then click Join Class to enroll."
+          }
+          action={
+            !searchQuery && onOpenJoin ? (
+              <button
+                type="button"
+                onClick={onOpenJoin}
+                className="px-4 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-semibold rounded-lg shadow-xs transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+              >
+                <IconPlus className="w-4 h-4" />
+                <span>Join a Class</span>
+              </button>
+            ) : null
           }
         />
       ) : viewMode === "grid" ? (

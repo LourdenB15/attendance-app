@@ -14,6 +14,14 @@ export function GoogleLoginButton() {
   const handleCredentialResponse = useCallback(
     async (response) => {
       if (!response.credential) return;
+      try {
+        const payload = JSON.parse(atob(response.credential.split(".")[1]));
+        if (payload?.picture && payload?.email) {
+          localStorage.setItem(`user_avatar_${payload.email.toLowerCase()}`, payload.picture);
+        }
+      } catch (err) {
+        console.warn("Could not extract Google profile image:", err);
+      }
       setLoading(true);
       try {
         await loginWithGoogle(response.credential);
