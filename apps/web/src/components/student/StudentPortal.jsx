@@ -18,8 +18,6 @@ export function StudentPortal({
   navKey = 0,
   onNavSelect,
   targetClassId,
-  joinModalOpen = false,
-  onCloseJoinModal,
 }) {
   const { currentUser, setBiometricEnrolled } = useAuth();
   const { showToast } = useToast();
@@ -32,15 +30,6 @@ export function StudentPortal({
   const [showJoinModal, setShowJoinModal] = useState(false);
 
   const isBiometricEnrolled = Boolean(currentUser?.has_biometric_enrolled);
-
-  // Sync external join modal trigger from header
-  const [prevJoinModalOpen, setPrevJoinModalOpen] = useState(joinModalOpen);
-  if (joinModalOpen !== prevJoinModalOpen) {
-    setPrevJoinModalOpen(joinModalOpen);
-    if (joinModalOpen) {
-      setShowJoinModal(true);
-    }
-  }
 
   // Handle external selection from sidebar drawer
   const [prevTargetClassId, setPrevTargetClassId] = useState(targetClassId);
@@ -273,10 +262,7 @@ export function StudentPortal({
       {/* Join Class Modal */}
       <Modal
         isOpen={showJoinModal}
-        onClose={() => {
-          setShowJoinModal(false);
-          if (onCloseJoinModal) onCloseJoinModal();
-        }}
+        onClose={() => setShowJoinModal(false)}
         title="Join Class"
       >
         <JoinClassCard
@@ -284,13 +270,9 @@ export function StudentPortal({
           currentUser={currentUser}
           onJoined={() => {
             setShowJoinModal(false);
-            if (onCloseJoinModal) onCloseJoinModal();
             loadClasses(false);
           }}
-          onCancel={() => {
-            setShowJoinModal(false);
-            if (onCloseJoinModal) onCloseJoinModal();
-          }}
+          onCancel={() => setShowJoinModal(false)}
         />
       </Modal>
 

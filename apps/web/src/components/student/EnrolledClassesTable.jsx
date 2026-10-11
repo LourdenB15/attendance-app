@@ -1,5 +1,5 @@
 // apps/web/src/components/student/EnrolledClassesTable.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "../ui/Badge";
 import { getClassTheme } from "../ui/classroomThemes";
 import { EmptyState } from "../ui/EmptyState";
@@ -20,6 +20,8 @@ import {
   IconPlus,
   IconArchive,
   IconRefresh,
+  IconDotsVertical,
+  IconCopy,
 } from "../ui/Icons";
 
 export function EnrolledClassesTable({
@@ -37,9 +39,26 @@ export function EnrolledClassesTable({
   const [studentArchivedIds, setStudentArchivedIds] = useState(() =>
     getStudentArchivedIds(studentId),
   );
+  const [openMenuId, setOpenMenuId] = useState(null);
 
   const { showToast } = useToast();
   const confirm = useConfirm();
+
+  // Dismiss card dropdown on outside click or tap
+  useEffect(() => {
+    if (!openMenuId) return;
+    const handleClickOutside = (e) => {
+      if (!e.target.closest("[data-menu-dropdown]")) {
+        setOpenMenuId(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [openMenuId]);
 
   // Sync initialTab when navigation changes
   const [prevInitialTab, setPrevInitialTab] = useState(initialTab);
@@ -90,6 +109,13 @@ export function EnrolledClassesTable({
     setStudentArchivedIds(next);
     saveStudentArchivedIds(studentId, next);
     showToast("success", `${c.name} restored to Enrolled Classes.`);
+  };
+
+  const handleCopyJoinCode = (e, code) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(code);
+    setOpenMenuId(null);
+    showToast("info", `Class code "${code}" copied to clipboard!`);
   };
 
   return (
@@ -249,24 +275,80 @@ export function EnrolledClassesTable({
                       </p>
                     </div>
 
-                    {/* Active Pulse or Quick Archive Button */}
+                    {/* Top Right: Active Pulse & 3-Dot Dropdown Menu */}
                     <div className="flex items-center gap-1.5 shrink-0">
                       {hasActive && !isPresent && !isMarkedAbsent && (
-                        <span className="w-3 h-3 rounded-full bg-emerald-300 ring-4 ring-emerald-300/30 animate-pulse" />
+                        <span
+                          className="w-2.5 h-2.5 rounded-full bg-emerald-300 ring-4 ring-emerald-300/30 animate-pulse mr-1"
+                          title="Live session active"
+                        />
                       )}
-                      {!isProfArchived && !isSelfArchived && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleArchiveClass(c);
-                          }}
-                          className="w-7 h-7 rounded-full bg-black/20 hover:bg-black/40 text-white/90 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-                          title="Archive class"
-                          aria-label="Archive class"
-                        >
-                          <IconArchive className="w-3.5 h-3.5" />
-                        </button>
+
+                      {!isProfArchived && (
+                        <div className="relative" data-menu-dropdown>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenMenuId((prev) =>
+                                prev === c.class_id ? null : c.class_id,
+                              );
+                            }}
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-white/90 hover:text-white hover:bg-black/20 active:bg-black/30 transition-colors cursor-pointer"
+                            title="Class options"
+                            aria-label="Class options"
+                          >
+                            <IconDotsVertical className="w-4 h-4" />
+                          </button>
+
+                          {openMenuId === c.class_id && (
+                            <div
+                              onClick={(e) => e.stopPropagation()}
+                              className="absolute right-0 top-full mt-1.5 w-44 bg-white rounded-xl shadow-xl border border-[#dadce0] py-1.5 z-30 animate-in fade-in zoom-in-95 duration-100 text-[#202124]"
+                            >
+                              {c.join_code && (
+                                <button
+                                  type="button"
+                                  onClick={(e) =>
+                                    handleCopyJoinCode(e, c.join_code)
+                                  }
+                                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-[#3c4043] hover:bg-[#f1f3f4] transition-colors text-left cursor-pointer"
+                                >
+                                  <IconCopy className="w-3.5 h-3.5 text-[#5f6368] shrink-0" />
+                                  <span>Copy Class Code</span>
+                                </button>
+                              )}
+
+                              {isSelfArchived ? (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenMenuId(null);
+                                    handleUnarchiveClass(c);
+                                  }}
+                                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-[#1a73e8] hover:bg-[#e8f0fe] transition-colors text-left cursor-pointer"
+                                >
+                                  <IconRefresh className="w-3.5 h-3.5 shrink-0" />
+                                  <span>Restore Class</span>
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setOpenMenuId(null);
+                                    handleArchiveClass(c);
+                                  }}
+                                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-[#c5221f] hover:bg-[#fce8e6] transition-colors text-left cursor-pointer"
+                                >
+                                  <IconArchive className="w-3.5 h-3.5 shrink-0" />
+                                  <span>Archive Class</span>
+                                </button>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -337,53 +419,75 @@ export function EnrolledClassesTable({
                     )}
                   </div>
 
-                  {/* Action Button */}
+                  {/* Actions Footer (matching professor side layout) */}
                   <div className="pt-2 border-t border-[#e8eaed] flex items-center justify-between gap-2">
-                    <span className="text-[11px] text-[#70757a] truncate">
-                      Enrolled: {new Date(c.enrolled_at).toLocaleDateString()}
-                    </span>
-
                     {isProfArchived ? (
-                      <span className="text-xs font-semibold text-[#5f6368] inline-flex items-center gap-1">
-                        <span>Past History</span>
-                        <IconChevronRight className="w-3.5 h-3.5" />
-                      </span>
-                    ) : isSelfArchived ? (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleUnarchiveClass(c);
-                        }}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-[#1a73e8] bg-[#e8f0fe] hover:bg-[#d2e3fc] transition cursor-pointer"
-                        title="Restore to Enrolled Classes"
-                      >
-                        <IconRefresh className="w-3.5 h-3.5" />
-                        <span>Restore</span>
-                      </button>
-                    ) : hasActive && !isPresent && !isMarkedAbsent ? (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (onTakeAttendance) onTakeAttendance(c.class_id);
-                        }}
-                        className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold text-white shadow-xs transition cursor-pointer ${
-                          !isBiometricEnrolled
-                            ? "bg-[#b06000] hover:bg-[#8f4e00]"
-                            : "bg-[#1a73e8] hover:bg-[#1557b0]"
-                        }`}
-                      >
-                        <IconCamera className="w-3.5 h-3.5" />
-                        <span>
-                          {!isBiometricEnrolled ? "Setup Face" : "Take Attendance"}
+                      <>
+                        <span className="text-[11px] text-[#70757a]">
+                          Enrolled: {new Date(c.enrolled_at).toLocaleDateString()}
                         </span>
-                      </button>
+                        <span className="text-xs font-semibold text-[#5f6368] inline-flex items-center gap-1">
+                          <span>Past History</span>
+                          <IconChevronRight className="w-3.5 h-3.5" />
+                        </span>
+                      </>
+                    ) : isSelfArchived ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleUnarchiveClass(c);
+                          }}
+                          className="px-2.5 py-1 text-xs font-semibold text-[#1a73e8] hover:bg-[#e8f0fe] rounded-md transition cursor-pointer"
+                        >
+                          Restore Class
+                        </button>
+                        <span className="text-xs font-semibold text-[#1a73e8] group-hover:translate-x-0.5 transition-transform inline-flex items-center gap-1">
+                          <span>Open Class</span>
+                          <IconChevronRight className="w-3.5 h-3.5" />
+                        </span>
+                      </>
                     ) : (
-                      <span className="text-xs font-semibold text-[#1a73e8] group-hover:translate-x-0.5 transition-transform inline-flex items-center gap-1">
-                        <span>View Class</span>
-                        <IconChevronRight className="w-3.5 h-3.5" />
-                      </span>
+                      <>
+                        <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleArchiveClass(c);
+                            }}
+                            className="px-2.5 py-1 text-xs font-medium text-[#5f6368] hover:bg-[#fce8e6] hover:text-[#c5221f] rounded-md transition cursor-pointer"
+                          >
+                            Archive
+                          </button>
+                        </div>
+
+                        {hasActive && !isPresent && !isMarkedAbsent ? (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (onTakeAttendance) onTakeAttendance(c.class_id);
+                            }}
+                            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold text-white shadow-xs transition cursor-pointer ${
+                              !isBiometricEnrolled
+                                ? "bg-[#b06000] hover:bg-[#8f4e00]"
+                                : "bg-[#1a73e8] hover:bg-[#1557b0]"
+                            }`}
+                          >
+                            <IconCamera className="w-3.5 h-3.5" />
+                            <span>
+                              {!isBiometricEnrolled ? "Setup Face" : "Take Attendance"}
+                            </span>
+                          </button>
+                        ) : (
+                          <span className="text-xs font-semibold text-[#1a73e8] group-hover:translate-x-0.5 transition-transform inline-flex items-center gap-1">
+                            <span>Open Class</span>
+                            <IconChevronRight className="w-3.5 h-3.5" />
+                          </span>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
@@ -478,16 +582,21 @@ export function EnrolledClassesTable({
                           {isProfArchived ? (
                             <span className="text-xs text-[#5f6368]">View History →</span>
                           ) : isSelfArchived ? (
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleUnarchiveClass(c);
-                              }}
-                              className="px-2.5 py-1 text-xs font-bold rounded-md bg-[#e8f0fe] text-[#1a73e8] hover:bg-[#d2e3fc] transition cursor-pointer"
-                            >
-                              Restore
-                            </button>
+                            <>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleUnarchiveClass(c);
+                                }}
+                                className="px-2.5 py-1 text-xs font-semibold rounded-md bg-[#e8f0fe] text-[#1a73e8] hover:bg-[#d2e3fc] transition cursor-pointer"
+                              >
+                                Restore
+                              </button>
+                              <span className="text-xs font-semibold text-[#1a73e8] hover:underline">
+                                Open →
+                              </span>
+                            </>
                           ) : hasActive && !isPresent && !isMarkedAbsent ? (
                             <button
                               type="button"
@@ -511,13 +620,12 @@ export function EnrolledClassesTable({
                                   e.stopPropagation();
                                   handleArchiveClass(c);
                                 }}
-                                className="p-1 rounded text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4] transition"
-                                title="Archive class"
+                                className="px-2.5 py-1 text-xs font-medium text-[#5f6368] hover:bg-[#fce8e6] hover:text-[#c5221f] rounded-md transition cursor-pointer"
                               >
-                                <IconArchive className="w-4 h-4" />
+                                Archive
                               </button>
                               <span className="text-xs font-semibold text-[#1a73e8] hover:underline">
-                                View →
+                                Open →
                               </span>
                             </>
                           )}

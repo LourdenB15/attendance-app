@@ -6,14 +6,12 @@ import { AppLogo } from "../ui/AppLogo";
 import { UserAvatar } from "../ui/UserAvatar";
 import {
   IconMenu,
-  IconPlus,
-  IconAppsGrid,
   IconLogOut,
   IconSettings,
   IconChevronDown,
 } from "../ui/Icons";
 
-export function Header({ onToggleSidebar, onOpenSettings, onActionPlus }) {
+export function Header({ onToggleSidebar, onOpenSettings }) {
   const { currentUser, logout } = useAuth();
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
@@ -66,37 +64,9 @@ export function Header({ onToggleSidebar, onOpenSettings, onActionPlus }) {
           </div>
         </div>
 
-        {/* Right: Plus, Apps Grid & User Profile */}
-        <div className="flex items-center gap-1 sm:gap-2">
-          {onActionPlus && (
-            <button
-              type="button"
-              onClick={onActionPlus}
-              className="w-10 h-10 rounded-full flex items-center justify-center text-[#5f6368] hover:bg-[#f1f3f4] hover:text-[#202124] transition-colors cursor-pointer"
-              title={
-                currentUser.role === "STUDENT"
-                  ? "Join class"
-                  : currentUser.role === "PROFESSOR"
-                  ? "Create class"
-                  : "Invite professor"
-              }
-              aria-label="Action"
-            >
-              <IconPlus className="w-5 h-5" />
-            </button>
-          )}
-
-          <button
-            type="button"
-            className="w-10 h-10 rounded-full hidden sm:flex items-center justify-center text-[#5f6368] hover:bg-[#f1f3f4] hover:text-[#202124] transition-colors"
-            title="Google apps"
-            aria-label="Google apps"
-          >
-            <IconAppsGrid className="w-5 h-5" />
-          </button>
-
-          {/* User Profile Dropdown */}
-          <div className="relative ml-1" ref={profileRef}>
+        {/* Right: User Profile Dropdown */}
+        <div className="flex items-center">
+          <div className="relative" ref={profileRef}>
             <button
               type="button"
               onClick={() => setProfileOpen((prev) => !prev)}
