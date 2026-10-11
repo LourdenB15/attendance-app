@@ -48,7 +48,7 @@ export function ProfessorPortal({ activeNav, navKey = 0, onNavSelect, targetClas
   const [prevNavKey, setPrevNavKey] = useState(navKey);
   if (navKey !== prevNavKey) {
     setPrevNavKey(navKey);
-    if (activeNav === "classes" || activeNav === "create-class") {
+    if (activeNav === "classes" || activeNav === "create-class" || activeNav === "archived-classes") {
       if (!targetClassId) setSelectedClass(null);
     }
   }
@@ -230,6 +230,7 @@ export function ProfessorPortal({ activeNav, navKey = 0, onNavSelect, targetClas
             classes={classes}
             onSelectClass={handleSelectClass}
             onRefresh={loadClasses}
+            initialTab={activeNav === "archived-classes" ? "archived" : "active"}
           />
         </div>
       ) : (

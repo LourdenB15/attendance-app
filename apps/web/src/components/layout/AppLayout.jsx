@@ -12,7 +12,9 @@ import { StudentPortal } from "../student/StudentPortal";
 
 export function AppLayout() {
   const { currentUser, changePassword, logout } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(
+    () => typeof window !== "undefined" && window.innerWidth >= 1024,
+  );
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [targetClassId, setTargetClassId] = useState(null);
   const [joinClassModalOpen, setJoinClassModalOpen] = useState(false);
@@ -29,7 +31,7 @@ export function AppLayout() {
   const [navKey, setNavKey] = useState(0);
 
   const handleNavSelect = (navId) => {
-    if (navId === "classes") {
+    if (navId === "classes" || navId === "archived-classes") {
       setTargetClassId(null);
     }
     setActiveNav(navId);
@@ -94,7 +96,7 @@ export function AppLayout() {
       />
 
       <div className="flex-1 flex flex-col">
-        {/* Navigation Sidebar (Mini rail on desktop, expanded overlay drawer on toggle) */}
+        {/* Navigation Sidebar (sliding drawer with 300ms transition) */}
         <Sidebar
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
@@ -106,8 +108,12 @@ export function AppLayout() {
           onLogout={logout}
         />
 
-        {/* Main Content Area (offset by fixed 72px mini-rail on desktop) */}
-        <div className="flex-1 lg:pl-[72px] flex flex-col min-w-0 transition-all duration-200">
+        {/* Main Content Area (smoothly offsets by w-72 when sidebar is open on desktop) */}
+        <div
+          className={`flex-1 ${
+            sidebarOpen ? "lg:pl-72" : "lg:pl-0"
+          } flex flex-col min-w-0 transition-all duration-300 ease-in-out`}
+        >
           <main className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1">
             <MustChangePasswordBanner />
 
