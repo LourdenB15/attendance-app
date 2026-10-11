@@ -8,6 +8,7 @@ import {
   IconRefresh,
   IconSearch,
   IconShieldCheck,
+  IconPlus,
 } from "../ui/Icons";
 
 export function UserDirectoryTable({
@@ -19,6 +20,7 @@ export function UserDirectoryTable({
   onUpdateRole,
   onDeactivate,
   onReactivate,
+  onAddProfessor,
 }) {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -96,6 +98,18 @@ export function UserDirectoryTable({
                   : "No users in this category"
               }
               description="Try selecting a different role filter or clearing your search term."
+              action={
+                !searchQuery && onAddProfessor ? (
+                  <button
+                    type="button"
+                    onClick={onAddProfessor}
+                    className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-semibold rounded-lg shadow-xs transition cursor-pointer"
+                  >
+                    <IconPlus className="w-3.5 h-3.5" />
+                    <span>Invite Professor</span>
+                  </button>
+                ) : null
+              }
               className="border-none p-4"
             />
           </div>
@@ -252,6 +266,18 @@ export function UserDirectoryTable({
                         : "No users in this category"
                     }
                     description="Try selecting a different role filter or clearing your search term."
+                    action={
+                      !searchQuery && onAddProfessor ? (
+                        <button
+                          type="button"
+                          onClick={onAddProfessor}
+                          className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-semibold rounded-lg shadow-xs transition cursor-pointer"
+                        >
+                          <IconPlus className="w-3.5 h-3.5" />
+                          <span>Invite Professor</span>
+                        </button>
+                      ) : null
+                    }
                     className="border-none p-4"
                   />
                 </td>

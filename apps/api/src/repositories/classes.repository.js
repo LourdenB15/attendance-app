@@ -75,3 +75,13 @@ export async function unarchiveClass(classId, professorId) {
   );
   return result.rows[0];
 }
+
+export async function findById(classId) {
+  const result = await pool.query(
+    `SELECT id, name, semester, section, join_code, is_archived, created_at
+     FROM classes
+     WHERE id = $1`,
+    [classId],
+  );
+  return result.rows[0];
+}

@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import * as classesRepository from "../repositories/classes.repository.js";
+import * as sessionsRepository from "../repositories/sessions.repository.js";
 import { httpError } from "../utils/http-error.js";
 
 const JOIN_CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
@@ -70,6 +71,7 @@ export async function archiveClass(professorId, classId) {
   if (!archived) {
     throw httpError(404, "Class not found");
   }
+  await sessionsRepository.closeAnyOpenSessionForClass(classId, professorId);
   return archived;
 }
 

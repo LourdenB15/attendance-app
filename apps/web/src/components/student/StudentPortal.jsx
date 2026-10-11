@@ -56,9 +56,14 @@ export function StudentPortal({
   const [prevNavKey, setPrevNavKey] = useState(navKey);
   if (navKey !== prevNavKey) {
     setPrevNavKey(navKey);
-    setStudentTab(activeNav);
-    if (activeNav === "classes") {
+    if (activeNav === "archived-classes") {
+      setStudentTab("classes");
       if (!targetClassId) setSelectedClassId(null);
+    } else {
+      setStudentTab(activeNav);
+      if (activeNav === "classes") {
+        if (!targetClassId) setSelectedClassId(null);
+      }
     }
   }
 
@@ -339,6 +344,8 @@ export function StudentPortal({
             )}
             <EnrolledClassesTable
               classes={classes}
+              studentId={currentUser?.id}
+              initialTab={activeNav === "archived-classes" ? "archived" : "active"}
               isBiometricEnrolled={isBiometricEnrolled}
               onSelectClass={handleSelectClass}
               onTakeAttendance={handleDirectTakeAttendance}

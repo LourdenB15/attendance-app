@@ -16,10 +16,22 @@ import {
   IconSearch,
 } from "../ui/Icons";
 
-export function ClassesTable({ classes = [], onSelectClass, onRefresh }) {
+export function ClassesTable({
+  classes = [],
+  onSelectClass,
+  onRefresh,
+  initialTab = "active",
+}) {
   const [viewMode, setViewMode] = useState("grid"); // "grid" | "table"
   const [searchQuery, setSearchQuery] = useState("");
-  const [listTab, setListTab] = useState("active"); // "active" | "archived"
+  const [listTab, setListTab] = useState(initialTab);
+
+  const [prevInitialTab, setPrevInitialTab] = useState(initialTab);
+  if (initialTab !== prevInitialTab) {
+    setPrevInitialTab(initialTab);
+    setListTab(initialTab);
+  }
+
   const [editingClass, setEditingClass] = useState(null);
   const [editName, setEditName] = useState("");
   const [editSemester, setEditSemester] = useState("");

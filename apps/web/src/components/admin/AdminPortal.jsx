@@ -7,13 +7,12 @@ import { useConfirm } from "../../context/useConfirm";
 import { CreateProfessorCard } from "./CreateProfessorCard";
 import { UserDirectoryTable } from "./UserDirectoryTable";
 import { Modal } from "../ui/Modal";
-import { IconUsers, IconPlus } from "../ui/Icons";
+import { IconPlus } from "../ui/Icons";
 
-export function AdminPortal({ activeNav, navKey = 0, onNavSelect }) {
+export function AdminPortal({ activeNav, navKey = 0 }) {
   const { currentUser } = useAuth();
   const { showToast } = useToast();
   const confirm = useConfirm();
-  const [adminTab, setAdminTab] = useState(activeNav || "users"); // "users" | "create-prof"
   const [showAddProfModal, setShowAddProfModal] = useState(false);
   const [userList, setUserList] = useState([]);
   const [roleFilter, setRoleFilter] = useState("ALL");
@@ -23,19 +22,14 @@ export function AdminPortal({ activeNav, navKey = 0, onNavSelect }) {
     roleFilterRef.current = roleFilter;
   }, [roleFilter]);
 
-  // Synchronize state when navigation triggers arrive from sidebar without cascading effect renders
+  // Synchronize state when navigation triggers arrive from sidebar
   const [prevNavKey, setPrevNavKey] = useState(navKey);
   if (navKey !== prevNavKey) {
     setPrevNavKey(navKey);
-    if (activeNav === "users" || activeNav === "create-prof") {
-      setAdminTab(activeNav);
+    if (activeNav === "create-prof") {
+      setShowAddProfModal(true);
     }
   }
-
-  const handleTabChange = (tab) => {
-    setAdminTab(tab);
-    if (onNavSelect) onNavSelect(tab);
-  };
 
   const loadUsers = useCallback(async (role, silent = false) => {
     try {
@@ -130,66 +124,28 @@ export function AdminPortal({ activeNav, navKey = 0, onNavSelect }) {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex bg-[#f1f3f4] p-1 rounded-xl text-xs font-semibold shrink-0">
-            <button
-              type="button"
-              onClick={() => handleTabChange("users")}
-              className={`px-3.5 py-1.5 rounded-lg transition-all inline-flex items-center gap-1.5 ${
-                adminTab === "users"
-                  ? "bg-white text-[#1a73e8] shadow-xs font-bold"
-                  : "text-[#5f6368] hover:text-[#202124]"
-              }`}
-            >
-              <IconUsers className="w-3.5 h-3.5" />
-              <span>User Directory</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleTabChange("create-prof")}
-              className={`px-3.5 py-1.5 rounded-lg transition-all inline-flex items-center gap-1.5 ${
-                adminTab === "create-prof"
-                  ? "bg-white text-[#1a73e8] shadow-xs font-bold"
-                  : "text-[#5f6368] hover:text-[#202124]"
-              }`}
-            >
-              <IconPlus className="w-3.5 h-3.5" />
-              <span>Add Professor</span>
-            </button>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setShowAddProfModal(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white rounded-xl text-xs font-semibold shadow-xs transition"
-          >
-            <IconPlus className="w-3.5 h-3.5" />
-            <span>Invite Professor</span>
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setShowAddProfModal(true)}
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white rounded-xl text-xs font-semibold shadow-xs transition cursor-pointer self-start sm:self-auto"
+        >
+          <IconPlus className="w-4 h-4" />
+          <span>Invite Professor</span>
+        </button>
       </div>
 
-      {adminTab === "users" && (
-        <UserDirectoryTable
-          currentUserId={currentUser?.id}
-          users={userList}
-          roleFilter={roleFilter}
-          onRoleFilterChange={setRoleFilter}
-          onRefresh={() => loadUsers(roleFilter)}
-          onUpdateRole={handleUpdateRole}
-          onDeactivate={handleDeactivate}
-          onReactivate={handleReactivate}
-        />
-      )}
-
-      {adminTab === "create-prof" && (
-        <CreateProfessorCard
-          onCreated={() => {
-            setAdminTab("users");
-            loadUsers(roleFilter);
-          }}
-        />
-      )}
+      {/* Main Directory Table */}
+      <UserDirectoryTable
+        currentUserId={currentUser?.id}
+        users={userList}
+        roleFilter={roleFilter}
+        onRoleFilterChange={setRoleFilter}
+        onRefresh={() => loadUsers(roleFilter)}
+        onUpdateRole={handleUpdateRole}
+        onDeactivate={handleDeactivate}
+        onReactivate={handleReactivate}
+        onAddProfessor={() => setShowAddProfModal(true)}
+      />
 
       {/* Modal Quick Flow for Inviting Professor */}
       <Modal

@@ -3,6 +3,12 @@ import { useState } from "react";
 import { Badge } from "../ui/Badge";
 import { getClassTheme } from "../ui/classroomThemes";
 import { EmptyState } from "../ui/EmptyState";
+import { useToast } from "../../context/useToast";
+import { useConfirm } from "../../context/useConfirm";
+import {
+  getStudentArchivedIds,
+  saveStudentArchivedIds,
+} from "../../utils/studentArchivedClasses";
 import {
   IconBook,
   IconGrid,
@@ -12,10 +18,14 @@ import {
   IconCheck,
   IconChevronRight,
   IconPlus,
+  IconArchive,
+  IconRefresh,
 } from "../ui/Icons";
 
 export function EnrolledClassesTable({
   classes = [],
+  studentId,
+  initialTab = "active",
   onSelectClass,
   onTakeAttendance,
   isBiometricEnrolled = true,
@@ -23,8 +33,34 @@ export function EnrolledClassesTable({
 }) {
   const [viewMode, setViewMode] = useState("grid"); // "grid" | "table"
   const [searchQuery, setSearchQuery] = useState("");
+  const [listTab, setListTab] = useState(initialTab); // "active" | "archived"
+  const [studentArchivedIds, setStudentArchivedIds] = useState(() =>
+    getStudentArchivedIds(studentId),
+  );
 
-  const visibleClasses = classes.filter((c) => {
+  const { showToast } = useToast();
+  const confirm = useConfirm();
+
+  // Sync initialTab when navigation changes
+  const [prevInitialTab, setPrevInitialTab] = useState(initialTab);
+  if (initialTab !== prevInitialTab) {
+    setPrevInitialTab(initialTab);
+    setListTab(initialTab);
+  }
+
+  // Identify archived status:
+  // - Professor archived: c.is_archived is truthy
+  // - Student archived: class_id is in studentArchivedIds
+  const isArchivedByProfessor = (c) => Boolean(c.is_archived);
+  const isArchivedByStudent = (c) => studentArchivedIds.includes(c.class_id);
+  const isClassArchived = (c) => isArchivedByProfessor(c) || isArchivedByStudent(c);
+
+  const activeClasses = classes.filter((c) => !isClassArchived(c));
+  const archivedClasses = classes.filter((c) => isClassArchived(c));
+
+  const pool = listTab === "archived" ? archivedClasses : activeClasses;
+
+  const visibleClasses = pool.filter((c) => {
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
     return (
@@ -35,25 +71,67 @@ export function EnrolledClassesTable({
     );
   });
 
+  const handleArchiveClass = async (c) => {
+    const confirmed = await confirm({
+      title: "Archive this class?",
+      message: `Are you sure you want to archive ${c.name}? You can find it under Archived Classes and restore it anytime.`,
+      confirmLabel: "Archive Class",
+    });
+    if (!confirmed) return;
+
+    const next = [...new Set([...studentArchivedIds, c.class_id])];
+    setStudentArchivedIds(next);
+    saveStudentArchivedIds(studentId, next);
+    showToast("success", `${c.name} moved to Archived Classes.`);
+  };
+
+  const handleUnarchiveClass = (c) => {
+    const next = studentArchivedIds.filter((id) => id !== c.class_id);
+    setStudentArchivedIds(next);
+    saveStudentArchivedIds(studentId, next);
+    showToast("success", `${c.name} restored to Enrolled Classes.`);
+  };
+
   return (
     <div className="space-y-4">
       {/* Controls Bar */}
       <div className="bg-white border border-[#dadce0] rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shadow-xs">
-        <div>
-          <h3 className="font-bold text-[#202124] text-sm">
-            Enrolled Classes ({classes.length})
-          </h3>
-          <p className="text-xs text-[#5f6368] mt-0.5">
-            Select a class to view details or check in when a live session is active.
-          </p>
+        {/* Segmented Tab Toggle: Active vs Archived */}
+        <div className="flex bg-[#f1f3f4] p-1 rounded-xl text-xs font-semibold overflow-x-auto scrollbar-none shrink-0">
+          <button
+            type="button"
+            onClick={() => setListTab("active")}
+            className={`px-3.5 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${
+              listTab === "active"
+                ? "bg-white text-[#1a73e8] shadow-xs font-bold"
+                : "text-[#5f6368] hover:text-[#202124]"
+            }`}
+          >
+            Enrolled ({activeClasses.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setListTab("archived")}
+            className={`px-3.5 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${
+              listTab === "archived"
+                ? "bg-white text-[#1a73e8] shadow-xs font-bold"
+                : "text-[#5f6368] hover:text-[#202124]"
+            }`}
+          >
+            Archived ({archivedClasses.length})
+          </button>
         </div>
 
-        <div className="flex items-center gap-2.5">
-          <div className="relative flex-1 sm:w-64">
+        <div className="flex items-center gap-2.5 flex-1 justify-end">
+          <div className="relative flex-1 sm:w-64 max-w-sm">
             <IconSearch className="w-4 h-4 text-[#5f6368] absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search enrolled classes..."
+              placeholder={
+                listTab === "archived"
+                  ? "Search archived classes..."
+                  : "Search enrolled classes..."
+              }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-3.5 py-1.5 bg-[#f8f9fa] border border-[#dadce0] rounded-lg text-xs text-[#202124] placeholder-[#80868b] focus:bg-white focus:border-[#1a73e8] focus:outline-none focus:ring-2 focus:ring-[#e8f0fe] transition-all"
@@ -64,7 +142,7 @@ export function EnrolledClassesTable({
             <button
               type="button"
               onClick={() => setViewMode("grid")}
-              className={`p-1.5 rounded-md transition-colors ${
+              className={`p-1.5 rounded-md transition-colors cursor-pointer ${
                 viewMode === "grid"
                   ? "bg-white text-[#1a73e8] shadow-2xs"
                   : "text-[#5f6368] hover:text-[#202124]"
@@ -77,7 +155,7 @@ export function EnrolledClassesTable({
             <button
               type="button"
               onClick={() => setViewMode("table")}
-              className={`p-1.5 rounded-md transition-colors ${
+              className={`p-1.5 rounded-md transition-colors cursor-pointer ${
                 viewMode === "table"
                   ? "bg-white text-[#1a73e8] shadow-2xs"
                   : "text-[#5f6368] hover:text-[#202124]"
@@ -97,15 +175,19 @@ export function EnrolledClassesTable({
           title={
             searchQuery
               ? "No classes match your search"
+              : listTab === "archived"
+              ? "No archived classes"
               : "You haven't joined any classes yet"
           }
           description={
             searchQuery
-              ? `No enrolled courses matched "${searchQuery}".`
+              ? `No classes matched "${searchQuery}".`
+              : listTab === "archived"
+              ? "Classes you archive or that your teacher archives will appear here for reference."
               : "Ask your teacher for the class code, then click Join Class to enroll."
           }
           action={
-            !searchQuery && onOpenJoin ? (
+            !searchQuery && listTab === "active" && onOpenJoin ? (
               <button
                 type="button"
                 onClick={onOpenJoin}
@@ -118,11 +200,13 @@ export function EnrolledClassesTable({
           }
         />
       ) : viewMode === "grid" ? (
-        /* GOOGLE CLASSROOM STUDENT CARD GRID */
+        /* CARD GRID */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {visibleClasses.map((c) => {
             const theme = getClassTheme(c.class_id || c.name);
-            const hasActive = Boolean(c.active_session_id);
+            const isProfArchived = isArchivedByProfessor(c);
+            const isSelfArchived = isArchivedByStudent(c);
+            const hasActive = Boolean(c.active_session_id) && !isProfArchived;
             const isPresent = c.my_attendance_status === "PRESENT";
             const isMarkedAbsent =
               c.my_attendance_source === "MANUAL_OVERRIDE" && !isPresent;
@@ -131,12 +215,29 @@ export function EnrolledClassesTable({
               <div
                 key={c.class_id}
                 onClick={() => onSelectClass && onSelectClass(c.class_id)}
-                className="gc-card rounded-2xl overflow-hidden flex flex-col justify-between group cursor-pointer text-left"
+                className={`gc-card rounded-2xl overflow-hidden flex flex-col justify-between group cursor-pointer text-left transition-all ${
+                  isProfArchived ? "opacity-80 border-dashed" : ""
+                }`}
               >
                 {/* Card Header Banner */}
-                <div className={`${theme.bannerBg} p-5 relative select-none`}>
+                <div
+                  className={`${
+                    isProfArchived ? "bg-gradient-to-r from-gray-600 to-gray-700" : theme.bannerBg
+                  } p-5 relative select-none`}
+                >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        {isProfArchived ? (
+                          <Badge variant="default" size="xs">
+                            Archived by Professor
+                          </Badge>
+                        ) : isSelfArchived ? (
+                          <Badge variant="purple" size="xs">
+                            Archived by You
+                          </Badge>
+                        ) : null}
+                      </div>
                       <h4
                         className="text-base font-bold text-white leading-tight truncate group-hover:underline"
                         title={c.name}
@@ -148,9 +249,26 @@ export function EnrolledClassesTable({
                       </p>
                     </div>
 
-                    {hasActive && !isPresent && !isMarkedAbsent && (
-                      <span className="w-3 h-3 rounded-full bg-emerald-300 ring-4 ring-emerald-300/30 animate-pulse shrink-0" />
-                    )}
+                    {/* Active Pulse or Quick Archive Button */}
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {hasActive && !isPresent && !isMarkedAbsent && (
+                        <span className="w-3 h-3 rounded-full bg-emerald-300 ring-4 ring-emerald-300/30 animate-pulse" />
+                      )}
+                      {!isProfArchived && !isSelfArchived && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleArchiveClass(c);
+                          }}
+                          className="w-7 h-7 rounded-full bg-black/20 hover:bg-black/40 text-white/90 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                          title="Archive class"
+                          aria-label="Archive class"
+                        >
+                          <IconArchive className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   <div className="mt-3 flex items-center justify-between text-[11px] text-white/90">
@@ -167,7 +285,19 @@ export function EnrolledClassesTable({
                 <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between bg-white gap-4">
                   {/* Status Indicator */}
                   <div>
-                    {hasActive ? (
+                    {isProfArchived ? (
+                      <div className="p-3 bg-[#f8f9fa] border border-[#dadce0] rounded-xl flex items-center gap-2.5">
+                        <IconArchive className="w-4 h-4 text-[#70757a] shrink-0" />
+                        <div>
+                          <span className="block text-xs font-bold text-[#3c4043]">
+                            Course Archived by Teacher
+                          </span>
+                          <span className="block text-[11px] text-[#70757a]">
+                            Attendance and interactive access closed
+                          </span>
+                        </div>
+                      </div>
+                    ) : hasActive ? (
                       isPresent ? (
                         <div className="p-3 bg-[#e6f4ea] border border-[#ceead6] rounded-xl flex items-center gap-2.5">
                           <div className="w-7 h-7 rounded-full bg-[#137333] text-white flex items-center justify-center shrink-0">
@@ -208,19 +338,37 @@ export function EnrolledClassesTable({
                   </div>
 
                   {/* Action Button */}
-                  <div className="pt-2 border-t border-[#e8eaed] flex items-center justify-between">
-                    <span className="text-[11px] text-[#70757a]">
+                  <div className="pt-2 border-t border-[#e8eaed] flex items-center justify-between gap-2">
+                    <span className="text-[11px] text-[#70757a] truncate">
                       Enrolled: {new Date(c.enrolled_at).toLocaleDateString()}
                     </span>
 
-                    {hasActive && !isPresent && !isMarkedAbsent ? (
+                    {isProfArchived ? (
+                      <span className="text-xs font-semibold text-[#5f6368] inline-flex items-center gap-1">
+                        <span>Past History</span>
+                        <IconChevronRight className="w-3.5 h-3.5" />
+                      </span>
+                    ) : isSelfArchived ? (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleUnarchiveClass(c);
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-[#1a73e8] bg-[#e8f0fe] hover:bg-[#d2e3fc] transition cursor-pointer"
+                        title="Restore to Enrolled Classes"
+                      >
+                        <IconRefresh className="w-3.5 h-3.5" />
+                        <span>Restore</span>
+                      </button>
+                    ) : hasActive && !isPresent && !isMarkedAbsent ? (
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           if (onTakeAttendance) onTakeAttendance(c.class_id);
                         }}
-                        className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold text-white shadow-xs transition ${
+                        className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold text-white shadow-xs transition cursor-pointer ${
                           !isBiometricEnrolled
                             ? "bg-[#b06000] hover:bg-[#8f4e00]"
                             : "bg-[#1a73e8] hover:bg-[#1557b0]"
@@ -254,13 +402,15 @@ export function EnrolledClassesTable({
                   <th className="px-5 py-3">Teacher</th>
                   <th className="px-5 py-3">Section / Term</th>
                   <th className="px-5 py-3">Class Code</th>
-                  <th className="px-5 py-3 text-center">Session Status</th>
+                  <th className="px-5 py-3 text-center">Status</th>
                   <th className="px-5 py-3 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e8eaed]">
                 {visibleClasses.map((c) => {
-                  const hasActive = Boolean(c.active_session_id);
+                  const isProfArchived = isArchivedByProfessor(c);
+                  const isSelfArchived = isArchivedByStudent(c);
+                  const hasActive = Boolean(c.active_session_id) && !isProfArchived;
                   const isPresent = c.my_attendance_status === "PRESENT";
                   const isMarkedAbsent =
                     c.my_attendance_source === "MANUAL_OVERRIDE" && !isPresent;
@@ -269,10 +419,24 @@ export function EnrolledClassesTable({
                     <tr
                       key={c.class_id}
                       onClick={() => onSelectClass && onSelectClass(c.class_id)}
-                      className="hover:bg-[#f8f9fa] cursor-pointer transition-colors"
+                      className={`hover:bg-[#f8f9fa] cursor-pointer transition-colors ${
+                        isProfArchived ? "opacity-75" : ""
+                      }`}
                     >
                       <td className="px-5 py-3.5 font-semibold text-[#202124] hover:text-[#1a73e8]">
-                        {c.name}
+                        <div className="flex items-center gap-2">
+                          <span>{c.name}</span>
+                          {isProfArchived && (
+                            <Badge variant="default" size="xs">
+                              Archived by Professor
+                            </Badge>
+                          )}
+                          {isSelfArchived && !isProfArchived && (
+                            <Badge variant="purple" size="xs">
+                              Archived
+                            </Badge>
+                          )}
+                        </div>
                       </td>
                       <td className="px-5 py-3.5 text-xs text-[#5f6368]">
                         {c.professor_name || "Faculty Member"}
@@ -286,7 +450,11 @@ export function EnrolledClassesTable({
                         </code>
                       </td>
                       <td className="px-5 py-3.5 text-center">
-                        {hasActive ? (
+                        {isProfArchived ? (
+                          <span className="text-xs text-[#70757a] italic">
+                            Archived (No Access)
+                          </span>
+                        ) : hasActive ? (
                           isPresent ? (
                             <Badge variant="success" size="xs" dot>
                               Present
@@ -306,26 +474,54 @@ export function EnrolledClassesTable({
                         )}
                       </td>
                       <td className="px-5 py-3.5 text-right">
-                        {hasActive && !isPresent && !isMarkedAbsent ? (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (onTakeAttendance) onTakeAttendance(c.class_id);
-                            }}
-                            className={`px-3 py-1.5 text-xs font-bold rounded-lg text-white shadow-xs transition ${
-                              !isBiometricEnrolled
-                                ? "bg-[#b06000] hover:bg-[#8f4e00]"
-                                : "bg-[#1a73e8] hover:bg-[#1557b0]"
-                            }`}
-                          >
-                            {!isBiometricEnrolled ? "Setup Face" : "Take Attendance"}
-                          </button>
-                        ) : (
-                          <span className="text-xs font-semibold text-[#1a73e8] hover:underline">
-                            View Class →
-                          </span>
-                        )}
+                        <div className="flex items-center justify-end gap-2">
+                          {isProfArchived ? (
+                            <span className="text-xs text-[#5f6368]">View History →</span>
+                          ) : isSelfArchived ? (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleUnarchiveClass(c);
+                              }}
+                              className="px-2.5 py-1 text-xs font-bold rounded-md bg-[#e8f0fe] text-[#1a73e8] hover:bg-[#d2e3fc] transition cursor-pointer"
+                            >
+                              Restore
+                            </button>
+                          ) : hasActive && !isPresent && !isMarkedAbsent ? (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (onTakeAttendance) onTakeAttendance(c.class_id);
+                              }}
+                              className={`px-3 py-1.5 text-xs font-bold rounded-lg text-white shadow-xs transition cursor-pointer ${
+                                !isBiometricEnrolled
+                                  ? "bg-[#b06000] hover:bg-[#8f4e00]"
+                                  : "bg-[#1a73e8] hover:bg-[#1557b0]"
+                              }`}
+                            >
+                              {!isBiometricEnrolled ? "Setup Face" : "Take Attendance"}
+                            </button>
+                          ) : (
+                            <>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleArchiveClass(c);
+                                }}
+                                className="p-1 rounded text-[#5f6368] hover:text-[#202124] hover:bg-[#f1f3f4] transition"
+                                title="Archive class"
+                              >
+                                <IconArchive className="w-4 h-4" />
+                              </button>
+                              <span className="text-xs font-semibold text-[#1a73e8] hover:underline">
+                                View →
+                              </span>
+                            </>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );

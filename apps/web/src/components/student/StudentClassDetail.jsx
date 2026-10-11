@@ -13,6 +13,7 @@ import {
   IconCheck,
   IconClose,
   IconClock,
+  IconArchive,
 } from "../ui/Icons";
 
 export function StudentClassDetail({
@@ -96,10 +97,10 @@ export function StudentClassDetail({
 
           <div className="bg-white/15 backdrop-blur-md border border-white/25 rounded-2xl px-4 py-3 self-start md:self-auto">
             <span className="block text-[10px] font-bold uppercase tracking-wider text-white/80">
-              Class Code
+              {classItem.is_archived ? "Status" : "Class Code"}
             </span>
             <span className="font-mono text-lg font-black tracking-widest text-white">
-              {classItem.join_code}
+              {classItem.is_archived ? "ARCHIVED" : classItem.join_code}
             </span>
           </div>
         </div>
@@ -111,7 +112,26 @@ export function StudentClassDetail({
           Session Attendance Status
         </h3>
 
-        {hasActiveSession ? (
+        {classItem.is_archived ? (
+          <div className="bg-[#f8f9fa] border border-[#dadce0] rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-full bg-[#5f6368] text-white flex items-center justify-center shrink-0 shadow-xs">
+                <IconArchive className="w-6 h-6" />
+              </div>
+              <div>
+                <h4 className="text-base font-bold text-[#202124]">
+                  Class Archived by Professor
+                </h4>
+                <p className="text-xs text-[#5f6368] mt-0.5">
+                  This class has been archived by your instructor. Access to live sessions, attendance check-ins, and coursework is closed.
+                </p>
+              </div>
+            </div>
+            <Badge variant="default" size="md">
+              ARCHIVED
+            </Badge>
+          </div>
+        ) : hasActiveSession ? (
           isAlreadyPresent ? (
             <div className="bg-[#e6f4ea] border border-[#ceead6] rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-3.5">

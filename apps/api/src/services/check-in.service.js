@@ -1,5 +1,6 @@
 import * as biometricEnrollmentsRepository from "../repositories/biometric-enrollments.repository.js";
 import * as enrollmentsRepository from "../repositories/enrollments.repository.js";
+import * as classesRepository from "../repositories/classes.repository.js";
 import * as attemptsRepository from "../repositories/check-in-attempts.repository.js";
 import * as attendanceRepository from "../repositories/attendance-records.repository.js";
 import * as sessionsRepository from "../repositories/sessions.repository.js";
@@ -16,6 +17,11 @@ export async function checkIn(studentId, sessionId, livenessResult) {
   }
   if (new Date(session.expires_at) < new Date()) {
     throw httpError(409, "This session has expired");
+  }
+
+  const foundClass = await classesRepository.findById(session.class_id);
+  if (foundClass?.is_archived) {
+    throw httpError(403, "This class has been archived by the professor. Check-in is not permitted.");
   }
   
   const classEnrollment = await enrollmentsRepository.findActiveEnrollment(
