@@ -17,7 +17,6 @@ export function AppLayout() {
   );
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [targetClassId, setTargetClassId] = useState(null);
-  const [joinClassModalOpen, setJoinClassModalOpen] = useState(false);
 
   // Synchronized navigation state between Sidebar and Portals
   const defaultNav =
@@ -42,16 +41,6 @@ export function AppLayout() {
     setTargetClassId(cls.id);
     setActiveNav("classes");
     setNavKey((k) => k + 1);
-  };
-
-  const handleActionPlus = () => {
-    if (currentUser.role === "STUDENT") {
-      setJoinClassModalOpen(true);
-    } else if (currentUser.role === "PROFESSOR") {
-      handleNavSelect("create-class");
-    } else if (currentUser.role === "ADMIN") {
-      handleNavSelect("create-prof");
-    }
   };
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -92,7 +81,6 @@ export function AppLayout() {
       <Header
         onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
         onOpenSettings={() => setSettingsOpen(true)}
-        onActionPlus={handleActionPlus}
       />
 
       <div className="flex-1 flex flex-col">
@@ -141,8 +129,6 @@ export function AppLayout() {
                     navKey={navKey}
                     onNavSelect={handleNavSelect}
                     targetClassId={targetClassId}
-                    joinModalOpen={joinClassModalOpen}
-                    onCloseJoinModal={() => setJoinClassModalOpen(false)}
                   />
                 )}
               </>
