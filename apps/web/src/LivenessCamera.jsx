@@ -83,6 +83,8 @@ export function LivenessCamera({
       basePath: "",
       headTurnThreshold: 0.4,
       challengeTimeout: 10000,
+      minFaceSize: 0.15,
+      maxFaceSize: 0.70,
     });
     sdkRef.current = sdk;
 
@@ -246,6 +248,8 @@ export function LivenessCamera({
     sdkRef.current.updateConfig({
       sessionToken,
       challenges: selectedChallenges,
+      minFaceSize: 0.15,
+      maxFaceSize: 0.70,
     });
 
     try {
@@ -259,14 +263,14 @@ export function LivenessCamera({
 
       let stream = null;
       if (isPortrait) {
-        // Phone/Portrait: Request portrait height > width so camera sensor opens in true portrait mode
+        // Phone/Portrait: Request native 3:4 uncropped camera sensor stream matching the viewport
         try {
           stream = await navigator.mediaDevices.getUserMedia({
             video: {
               facingMode: "user",
               width: { ideal: 720, max: 1080 },
-              height: { ideal: 1280, max: 1920 },
-              aspectRatio: { ideal: 9 / 16 },
+              height: { ideal: 960, max: 1440 },
+              aspectRatio: { ideal: 3 / 4 },
             },
             audio: false,
           });
@@ -276,7 +280,7 @@ export function LivenessCamera({
               video: {
                 facingMode: "user",
                 width: { ideal: 720 },
-                height: { ideal: 1280 },
+                height: { ideal: 960 },
               },
               audio: false,
             });
@@ -397,7 +401,7 @@ export function LivenessCamera({
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                 <div
                   className={`rounded-[50%] border-2 border-dashed border-white/70 animate-pulse transition-all shadow-sm ${
-                    isPortraitMode ? "w-44 h-64" : "w-56 h-72"
+                    isPortraitMode ? "w-36 h-48 sm:w-42 sm:h-56" : "w-48 h-64"
                   }`}
                 />
               </div>
