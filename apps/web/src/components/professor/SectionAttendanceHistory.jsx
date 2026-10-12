@@ -402,137 +402,139 @@ export function SectionAttendanceHistory({ classId, className, section }) {
               </div>
 
               {/* Desktop Sessions Table (>= md or mobileMode === 'sheet') */}
-              <div className={`${mobileMode === "cards" ? "hidden md:block" : "block"} overflow-x-auto relative`}>
+              <div className={`${mobileMode === "cards" ? "hidden md:block" : "block"}`}>
                 <div className="md:hidden px-4 py-2 bg-[#f1f3f4] border-b border-[#dadce0] text-[11px] text-[#5f6368] flex items-center justify-between">
                   <span>↔ Swipe horizontally for full spreadsheet</span>
-                  <span className="text-[10px] font-semibold text-[#1a73e8]">Date column frozen</span>
+                  <span className="text-[10px] font-semibold text-[#1a73e8]">Spreadsheet View</span>
                 </div>
 
-                <table className="w-full text-left text-sm border-collapse">
-                  <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[11px] tracking-wider border-b border-[#dadce0] font-semibold sticky top-0 z-10 shadow-2xs">
-                    <tr>
-                      <th
-                        onClick={() => handleSort("opened_at")}
-                        className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition sticky left-0 bg-[#f8f9fa] z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[170px]"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span>Session Date & Time</span>
-                          {renderSortIndicator("opened_at")}
-                        </div>
-                      </th>
-                      <th
-                        onClick={() => handleSort("label")}
-                        className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[160px]"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span>Label</span>
-                          {renderSortIndicator("label")}
-                        </div>
-                      </th>
-                      <th className="px-5 py-3 text-center border-r border-[#dadce0]/70 min-w-[100px]">
-                        Status
-                      </th>
-                      <th
-                        onClick={() => handleSort("present_count")}
-                        className="px-5 py-3 text-center border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[130px]"
-                      >
-                        <div className="flex items-center justify-center gap-1">
-                          <span>Present / Total</span>
-                          {renderSortIndicator("present_count")}
-                        </div>
-                      </th>
-                      <th className="px-5 py-3 border-r border-[#dadce0]/70 min-w-[150px]">
-                        Attendance Rate
-                      </th>
-                      <th className="px-5 py-3 text-right min-w-[130px]">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#e8eaed] bg-white">
-                    {filteredSessions.length === 0 ? (
+                <div className="overflow-x-auto overscroll-x-contain relative">
+                  <table className="w-full text-left text-xs sm:text-sm border-collapse">
+                    <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[10px] sm:text-[11px] tracking-wider border-b border-[#dadce0] font-semibold">
                       <tr>
-                        <td colSpan="6" className="p-8 text-center">
-                          <EmptyState
-                            icon={<IconClock className="w-6 h-6" />}
-                            title="No past attendance sessions"
-                            description="When you launch attendance sessions, their history and attendance breakdown will appear here."
-                            className="border-none p-4"
-                          />
-                        </td>
+                        <th
+                          onClick={() => handleSort("opened_at")}
+                          className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[130px] sm:min-w-[170px]"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span>Session Date & Time</span>
+                            {renderSortIndicator("opened_at")}
+                          </div>
+                        </th>
+                        <th
+                          onClick={() => handleSort("label")}
+                          className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[120px] sm:min-w-[160px]"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span>Label</span>
+                            {renderSortIndicator("label")}
+                          </div>
+                        </th>
+                        <th className="px-3 sm:px-5 py-2.5 sm:py-3 text-center border-r border-[#dadce0]/70 min-w-[90px] sm:min-w-[100px]">
+                          Status
+                        </th>
+                        <th
+                          onClick={() => handleSort("present_count")}
+                          className="px-3 sm:px-5 py-2.5 sm:py-3 text-center border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[110px] sm:min-w-[130px]"
+                        >
+                          <div className="flex items-center justify-center gap-1">
+                            <span>Present / Total</span>
+                            {renderSortIndicator("present_count")}
+                          </div>
+                        </th>
+                        <th className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 min-w-[120px] sm:min-w-[150px]">
+                          Attendance Rate
+                        </th>
+                        <th className="px-3 sm:px-5 py-2.5 sm:py-3 text-right min-w-[100px] sm:min-w-[130px]">Action</th>
                       </tr>
-                    ) : (
-                      filteredSessions.map((s) => {
-                        const rate =
-                          s.total_enrolled > 0
-                            ? Math.round(((s.present_count || 0) / s.total_enrolled) * 100)
-                            : 0;
+                    </thead>
+                    <tbody className="divide-y divide-[#e8eaed] bg-white">
+                      {filteredSessions.length === 0 ? (
+                        <tr>
+                          <td colSpan="6" className="p-8 text-center">
+                            <EmptyState
+                              icon={<IconClock className="w-6 h-6" />}
+                              title="No past attendance sessions"
+                              description="When you launch attendance sessions, their history and attendance breakdown will appear here."
+                              className="border-none p-4"
+                            />
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredSessions.map((s) => {
+                          const rate =
+                            s.total_enrolled > 0
+                              ? Math.round(((s.present_count || 0) / s.total_enrolled) * 100)
+                              : 0;
 
-                        return (
-                          <tr key={s.id} className="hover:bg-[#f8f9fa] transition-colors group">
-                            {/* Sticky Date */}
-                            <td className="px-5 py-3.5 border-r border-[#e8eaed] sticky left-0 bg-white group-hover:bg-[#f8f9fa] z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">
-                              <p className="font-semibold text-[#202124]">
-                                {new Date(s.opened_at).toLocaleDateString(undefined, {
-                                  weekday: "short",
-                                  month: "short",
-                                  day: "numeric",
-                                })}
-                              </p>
-                              <span className="text-[11px] text-[#70757a]">
-                                {new Date(s.opened_at).toLocaleTimeString([], {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })}
-                              </span>
-                            </td>
-                            <td className="px-5 py-3.5 font-medium text-[#202124] border-r border-[#e8eaed]">
-                              {s.label || "Regular Class Session"}
-                            </td>
-                            <td className="px-5 py-3.5 text-center border-r border-[#e8eaed]">
-                              {s.status === "OPEN" ? (
-                                <Badge variant="success" size="xs" dot>
-                                  OPEN
-                                </Badge>
-                              ) : (
-                                <Badge variant="default" size="xs">
-                                  CLOSED
-                                </Badge>
-                              )}
-                            </td>
-                            <td className="px-5 py-3.5 text-center font-semibold text-[#202124] border-r border-[#e8eaed]">
-                              {s.present_count || 0} / {s.total_enrolled || 0}
-                            </td>
-                            <td className="px-5 py-3.5 border-r border-[#e8eaed]">
-                              <div className="flex items-center gap-2.5">
-                                <div className="w-24 bg-[#e8eaed] rounded-full h-2 overflow-hidden">
-                                  <div
-                                    className={`h-full rounded-full transition-all ${
-                                      rate >= 80
-                                        ? "bg-[#137333]"
-                                        : rate >= 60
-                                        ? "bg-[#b06000]"
-                                        : "bg-[#c5221f]"
-                                    }`}
-                                    style={{ width: `${rate}%` }}
-                                  />
+                          return (
+                            <tr key={s.id} className="hover:bg-[#f8f9fa] transition-colors group">
+                              {/* Session Date column (frozen on md+ desktop only) */}
+                              <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] whitespace-nowrap">
+                                <p className="font-semibold text-[#202124]">
+                                  {new Date(s.opened_at).toLocaleDateString(undefined, {
+                                    weekday: "short",
+                                    month: "short",
+                                    day: "numeric",
+                                  })}
+                                </p>
+                                <span className="text-[11px] text-[#70757a]">
+                                  {new Date(s.opened_at).toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
+                                </span>
+                              </td>
+                              <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 font-medium text-[#202124] border-r border-[#e8eaed] whitespace-nowrap">
+                                {s.label || "Regular Class Session"}
+                              </td>
+                              <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-center border-r border-[#e8eaed] whitespace-nowrap">
+                                {s.status === "OPEN" ? (
+                                  <Badge variant="success" size="xs" dot>
+                                    OPEN
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="default" size="xs">
+                                    CLOSED
+                                  </Badge>
+                                )}
+                              </td>
+                              <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-center font-semibold text-[#202124] border-r border-[#e8eaed] whitespace-nowrap">
+                                {s.present_count || 0} / {s.total_enrolled || 0}
+                              </td>
+                              <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] whitespace-nowrap">
+                                <div className="flex items-center gap-2.5">
+                                  <div className="w-20 sm:w-24 bg-[#e8eaed] rounded-full h-2 overflow-hidden">
+                                    <div
+                                      className={`h-full rounded-full transition-all ${
+                                        rate >= 80
+                                          ? "bg-[#137333]"
+                                          : rate >= 60
+                                          ? "bg-[#b06000]"
+                                          : "bg-[#c5221f]"
+                                      }`}
+                                      style={{ width: `${rate}%` }}
+                                    />
+                                  </div>
+                                  <span className="text-xs font-bold text-[#202124]">{rate}%</span>
                                 </div>
-                                <span className="text-xs font-bold text-[#202124]">{rate}%</span>
-                              </div>
-                            </td>
-                            <td className="px-5 py-3.5 text-right">
-                              <button
-                                type="button"
-                                onClick={() => handleOpenRoster(s)}
-                                className="px-3 py-1.5 bg-[#e8f0fe] hover:bg-[#d2e3fc] text-[#1a73e8] font-semibold rounded-lg text-xs transition cursor-pointer"
-                              >
-                                View Roster →
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
+                              </td>
+                              <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-right whitespace-nowrap">
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenRoster(s)}
+                                  className="px-3 py-1.5 bg-[#e8f0fe] hover:bg-[#d2e3fc] text-[#1a73e8] font-semibold rounded-lg text-xs transition cursor-pointer"
+                                >
+                                  View Roster →
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </>
           )}
@@ -627,123 +629,125 @@ export function SectionAttendanceHistory({ classId, className, section }) {
               </div>
 
               {/* Desktop Student Summary Table (>= md or mobileMode === 'sheet') */}
-              <div className={`${mobileMode === "cards" ? "hidden md:block" : "block"} overflow-x-auto relative`}>
+              <div className={`${mobileMode === "cards" ? "hidden md:block" : "block"}`}>
                 <div className="md:hidden px-4 py-2 bg-[#f1f3f4] border-b border-[#dadce0] text-[11px] text-[#5f6368] flex items-center justify-between">
                   <span>↔ Swipe horizontally for full spreadsheet</span>
-                  <span className="text-[10px] font-semibold text-[#1a73e8]">Student Name frozen</span>
+                  <span className="text-[10px] font-semibold text-[#1a73e8]">Spreadsheet View</span>
                 </div>
 
-                <table className="w-full text-left text-sm border-collapse">
-                  <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[11px] tracking-wider border-b border-[#dadce0] font-semibold sticky top-0 z-10 shadow-2xs">
-                    <tr>
-                      <th
-                        onClick={() => handleSort("full_name")}
-                        className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition sticky left-0 bg-[#f8f9fa] z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[180px]"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span>Student Name</span>
-                          {renderSortIndicator("full_name")}
-                        </div>
-                      </th>
-                      <th
-                        onClick={() => handleSort("email")}
-                        className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[180px]"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span>Email</span>
-                          {renderSortIndicator("email")}
-                        </div>
-                      </th>
-                      <th
-                        onClick={() => handleSort("present_sessions")}
-                        className="px-5 py-3 text-center border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[130px]"
-                      >
-                        <div className="flex items-center justify-center gap-1">
-                          <span>Sessions Present</span>
-                          {renderSortIndicator("present_sessions")}
-                        </div>
-                      </th>
-                      <th className="px-5 py-3 text-center border-r border-[#dadce0]/70 min-w-[120px]">
-                        Sessions Absent
-                      </th>
-                      <th
-                        onClick={() => handleSort("pct")}
-                        className="px-5 py-3 text-center border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[120px]"
-                      >
-                        <div className="flex items-center justify-center gap-1">
-                          <span>Attendance %</span>
-                          {renderSortIndicator("pct")}
-                        </div>
-                      </th>
-                      <th className="px-5 py-3 text-right min-w-[140px]">Academic Standing</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#e8eaed] bg-white">
-                    {filteredStudents.length === 0 ? (
+                <div className="overflow-x-auto overscroll-x-contain relative">
+                  <table className="w-full text-left text-xs sm:text-sm border-collapse">
+                    <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[10px] sm:text-[11px] tracking-wider border-b border-[#dadce0] font-semibold">
                       <tr>
-                        <td colSpan="6" className="p-8 text-center">
-                          <EmptyState
-                            icon={<IconUsers className="w-6 h-6" />}
-                            title="No students found"
-                            description="Enrolled students will appear here with calculated attendance standings."
-                            className="border-none p-4"
-                          />
-                        </td>
+                        <th
+                          onClick={() => handleSort("full_name")}
+                          className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[140px] sm:min-w-[180px]"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span>Student Name</span>
+                            {renderSortIndicator("full_name")}
+                          </div>
+                        </th>
+                        <th
+                          onClick={() => handleSort("email")}
+                          className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[140px] sm:min-w-[180px]"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span>Email</span>
+                            {renderSortIndicator("email")}
+                          </div>
+                        </th>
+                        <th
+                          onClick={() => handleSort("present_sessions")}
+                          className="px-3 sm:px-5 py-2.5 sm:py-3 text-center border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[110px] sm:min-w-[130px]"
+                        >
+                          <div className="flex items-center justify-center gap-1">
+                            <span>Sessions Present</span>
+                            {renderSortIndicator("present_sessions")}
+                          </div>
+                        </th>
+                        <th className="px-3 sm:px-5 py-2.5 sm:py-3 text-center border-r border-[#dadce0]/70 min-w-[100px] sm:min-w-[120px]">
+                          Sessions Absent
+                        </th>
+                        <th
+                          onClick={() => handleSort("pct")}
+                          className="px-3 sm:px-5 py-2.5 sm:py-3 text-center border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px] sm:min-w-[120px]"
+                        >
+                          <div className="flex items-center justify-center gap-1">
+                            <span>Attendance %</span>
+                            {renderSortIndicator("pct")}
+                          </div>
+                        </th>
+                        <th className="px-3 sm:px-5 py-2.5 sm:py-3 text-right min-w-[120px] sm:min-w-[140px]">Academic Standing</th>
                       </tr>
-                    ) : (
-                      filteredStudents.map((st) => {
-                        const present = st.present_sessions || 0;
-                        const total = totalSessions;
-                        const pct = total > 0 ? Math.round((present / total) * 100) : 100;
+                    </thead>
+                    <tbody className="divide-y divide-[#e8eaed] bg-white">
+                      {filteredStudents.length === 0 ? (
+                        <tr>
+                          <td colSpan="6" className="p-8 text-center">
+                            <EmptyState
+                              icon={<IconUsers className="w-6 h-6" />}
+                              title="No students found"
+                              description="Enrolled students will appear here with calculated attendance standings."
+                              className="border-none p-4"
+                            />
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredStudents.map((st) => {
+                          const present = st.present_sessions || 0;
+                          const total = totalSessions;
+                          const pct = total > 0 ? Math.round((present / total) * 100) : 100;
 
-                        return (
-                          <tr key={st.student_id} className="hover:bg-[#f8f9fa] transition-colors group">
-                            {/* Sticky frozen Student Name column */}
-                            <td className="px-5 py-3.5 border-r border-[#e8eaed] sticky left-0 bg-white group-hover:bg-[#f8f9fa] z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">
-                              <div className="flex items-center gap-3">
-                                <UserAvatar
-                                  user={{ full_name: st.full_name, email: st.email }}
-                                  className="w-8 h-8"
-                                  textClassName="text-xs font-bold"
-                                />
-                                <span className="font-semibold text-[#202124]">
-                                  {st.full_name}
-                                </span>
-                              </div>
-                            </td>
-                            <td className="px-5 py-3.5 text-xs text-[#5f6368] font-mono border-r border-[#e8eaed]">
-                              {st.email}
-                            </td>
-                            <td className="px-5 py-3.5 text-center font-bold text-[#137333] border-r border-[#e8eaed]">
-                              {present}
-                            </td>
-                            <td className="px-5 py-3.5 text-center font-bold text-[#c5221f] border-r border-[#e8eaed]">
-                              {Math.max(0, total - present)}
-                            </td>
-                            <td className="px-5 py-3.5 text-center font-bold text-[#202124] border-r border-[#e8eaed]">
-                              {pct}%
-                            </td>
-                            <td className="px-5 py-3.5 text-right">
-                              {pct >= 80 ? (
-                                <Badge variant="success" size="xs">
-                                  Good Standing
-                                </Badge>
-                              ) : pct >= 60 ? (
-                                <Badge variant="warning" size="xs">
-                                  Warning
-                                </Badge>
-                              ) : (
-                                <Badge variant="danger" size="xs">
-                                  At Risk
-                                </Badge>
-                              )}
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
+                          return (
+                            <tr key={st.student_id} className="hover:bg-[#f8f9fa] transition-colors group">
+                              {/* Student Name column (frozen on md+ desktop only) */}
+                              <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] whitespace-nowrap">
+                                <div className="flex items-center gap-3">
+                                  <UserAvatar
+                                    user={{ full_name: st.full_name, email: st.email }}
+                                    className="w-8 h-8"
+                                    textClassName="text-xs font-bold"
+                                  />
+                                  <span className="font-semibold text-[#202124]">
+                                    {st.full_name}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-xs text-[#5f6368] font-mono border-r border-[#e8eaed] whitespace-nowrap">
+                                {st.email}
+                              </td>
+                              <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-center font-bold text-[#137333] border-r border-[#e8eaed] whitespace-nowrap">
+                                {present}
+                              </td>
+                              <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-center font-bold text-[#c5221f] border-r border-[#e8eaed] whitespace-nowrap">
+                                {Math.max(0, total - present)}
+                              </td>
+                              <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-center font-bold text-[#202124] border-r border-[#e8eaed] whitespace-nowrap">
+                                {pct}%
+                              </td>
+                              <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-right whitespace-nowrap">
+                                {pct >= 80 ? (
+                                  <Badge variant="success" size="xs">
+                                    Good Standing
+                                  </Badge>
+                                ) : pct >= 60 ? (
+                                  <Badge variant="warning" size="xs">
+                                    Warning
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="danger" size="xs">
+                                    At Risk
+                                  </Badge>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </>
           )}
@@ -770,8 +774,8 @@ export function SectionAttendanceHistory({ classId, className, section }) {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm border-collapse">
-              <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[11px] tracking-wider border-b border-[#dadce0] font-semibold sticky top-0 z-10 shadow-2xs">
+            <table className="w-full text-left text-xs sm:text-sm border-collapse">
+              <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[10px] sm:text-[11px] tracking-wider border-b border-[#dadce0] font-semibold">
                 <tr>
                   <th className="px-4 py-2.5 border-r border-[#dadce0]/70">Student Name</th>
                   <th className="px-4 py-2.5 border-r border-[#dadce0]/70">Status</th>

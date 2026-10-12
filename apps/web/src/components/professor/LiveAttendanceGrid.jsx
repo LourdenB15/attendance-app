@@ -367,175 +367,177 @@ export function LiveAttendanceGrid({
           </div>
 
           {/* SPREADSHEET TABLE VIEW (Desktop >= md or mobile when mobileMode === 'sheet') */}
-          <div className={`${mobileMode === "cards" ? "hidden md:block" : "block"} overflow-x-auto relative`}>
-            {/* Mobile swipe helper badge */}
+          <div className={`${mobileMode === "cards" ? "hidden md:block" : "block"}`}>
+            {/* Mobile swipe helper badge (pinned above table) */}
             <div className="md:hidden px-4 py-2 bg-[#f1f3f4] border-b border-[#dadce0] text-[11px] text-[#5f6368] flex items-center justify-between">
               <span>↔ Swipe horizontally for full spreadsheet</span>
-              <span className="text-[10px] font-semibold text-[#1a73e8]">Student Name frozen</span>
+              <span className="text-[10px] font-semibold text-[#1a73e8]">Spreadsheet View</span>
             </div>
 
-            <table className="w-full text-left text-sm border-collapse">
-              <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[11px] tracking-wider border-b border-[#dadce0] font-semibold sticky top-0 z-10 shadow-2xs">
-                <tr>
-                  <th
-                    onClick={() => handleSort("full_name")}
-                    className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition sticky left-0 bg-[#f8f9fa] z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[180px]"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Student Name</span>
-                      {renderSortIndicator("full_name")}
-                    </div>
-                  </th>
-                  <th
-                    onClick={() => handleSort("status")}
-                    className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[110px]"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Status</span>
-                      {renderSortIndicator("status")}
-                    </div>
-                  </th>
-                  <th
-                    onClick={() => handleSort("source")}
-                    className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[130px]"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Source</span>
-                      {renderSortIndicator("source")}
-                    </div>
-                  </th>
-                  <th
-                    onClick={() => handleSort("recorded_at")}
-                    className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[120px]"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Check-in Time</span>
-                      {renderSortIndicator("recorded_at")}
-                    </div>
-                  </th>
-                  <th className="px-5 py-3 border-r border-[#dadce0]/70 min-w-[140px]">Notes</th>
-                  <th className="px-5 py-3 text-right min-w-[160px]">Attendance Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#e8eaed] bg-white">
-                {filteredAttendance.length === 0 ? (
+            <div className="overflow-x-auto overscroll-x-contain relative">
+              <table className="w-full text-left text-xs sm:text-sm border-collapse">
+                <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[10px] sm:text-[11px] tracking-wider border-b border-[#dadce0] font-semibold">
                   <tr>
-                    <td colSpan="6" className="p-8 text-center">
-                      <EmptyState
-                        icon={<IconUsers className="w-6 h-6" />}
-                        title={
-                          searchQuery
-                            ? "No students match your filter"
-                            : "No students in this class roster"
-                        }
-                        description={
-                          searchQuery
-                            ? "Try clearing your search term to see all students."
-                            : "Share the class join code with your students to enroll them."
-                        }
-                        className="border-none p-4"
-                      />
-                    </td>
+                    <th
+                      onClick={() => handleSort("full_name")}
+                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[140px] sm:min-w-[180px]"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span>Student Name</span>
+                        {renderSortIndicator("full_name")}
+                      </div>
+                    </th>
+                    <th
+                      onClick={() => handleSort("status")}
+                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[90px] sm:min-w-[110px]"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span>Status</span>
+                        {renderSortIndicator("status")}
+                      </div>
+                    </th>
+                    <th
+                      onClick={() => handleSort("source")}
+                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[110px] sm:min-w-[130px]"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span>Source</span>
+                        {renderSortIndicator("source")}
+                      </div>
+                    </th>
+                    <th
+                      onClick={() => handleSort("recorded_at")}
+                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px] sm:min-w-[120px]"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span>Check-in Time</span>
+                        {renderSortIndicator("recorded_at")}
+                      </div>
+                    </th>
+                    <th className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 min-w-[110px] sm:min-w-[140px]">Notes</th>
+                    <th className="px-3 sm:px-5 py-2.5 sm:py-3 text-right min-w-[140px] sm:min-w-[160px]">Attendance Action</th>
                   </tr>
-                ) : (
-                  filteredAttendance.map((rec) => {
-                    const isPresent = rec.status === "PRESENT";
-                    const isMarkedAbsent = !isPresent && Boolean(rec.source);
+                </thead>
+                <tbody className="divide-y divide-[#e8eaed] bg-white">
+                  {filteredAttendance.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="p-8 text-center">
+                        <EmptyState
+                          icon={<IconUsers className="w-6 h-6" />}
+                          title={
+                            searchQuery
+                              ? "No students match your filter"
+                              : "No students in this class roster"
+                          }
+                          description={
+                            searchQuery
+                              ? "Try clearing your search term to see all students."
+                              : "Share the class join code with your students to enroll them."
+                          }
+                          className="border-none p-4"
+                        />
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredAttendance.map((rec) => {
+                      const isPresent = rec.status === "PRESENT";
+                      const isMarkedAbsent = !isPresent && Boolean(rec.source);
 
-                    return (
-                      <tr
-                        key={rec.student_id}
-                        className="hover:bg-[#f8f9fa] transition-colors group"
-                      >
-                        {/* Sticky frozen Student Name column */}
-                        <td className="px-5 py-3.5 border-r border-[#e8eaed] sticky left-0 bg-white group-hover:bg-[#f8f9fa] z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">
-                          <div className="flex items-center gap-3">
-                            <UserAvatar
-                              user={{ full_name: rec.full_name, email: rec.email }}
-                              className="w-8 h-8"
-                              textClassName="text-xs font-bold"
-                            />
-                            <div className="min-w-0">
-                              <p className="font-semibold text-[#202124] truncate">{rec.full_name}</p>
-                              <span className="text-[11px] text-[#5f6368] font-mono block truncate">
-                                {rec.email}
-                              </span>
+                      return (
+                        <tr
+                          key={rec.student_id}
+                          className="hover:bg-[#f8f9fa] transition-colors group"
+                        >
+                          {/* Student Name column (frozen on md+ desktop only) */}
+                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">
+                            <div className="flex items-center gap-3">
+                              <UserAvatar
+                                user={{ full_name: rec.full_name, email: rec.email }}
+                                className="w-8 h-8"
+                                textClassName="text-xs font-bold"
+                              />
+                              <div className="min-w-0">
+                                <p className="font-semibold text-[#202124] truncate">{rec.full_name}</p>
+                                <span className="text-[11px] text-[#5f6368] font-mono block truncate">
+                                  {rec.email}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        </td>
+                          </td>
 
-                        <td className="px-5 py-3.5 border-r border-[#e8eaed]">
-                          {isPresent ? (
-                            <Badge variant="success" size="xs" dot>
-                              ✓ Present
-                            </Badge>
-                          ) : (
-                            <Badge variant="danger" size="xs" dot>
-                              ✕ Absent
-                            </Badge>
-                          )}
-                        </td>
+                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] whitespace-nowrap">
+                            {isPresent ? (
+                              <Badge variant="success" size="xs" dot>
+                                ✓ Present
+                              </Badge>
+                            ) : (
+                              <Badge variant="danger" size="xs" dot>
+                                ✕ Absent
+                              </Badge>
+                            )}
+                          </td>
 
-                        <td className="px-5 py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed]">
-                          {rec.source === "BIOMETRIC_LIVENESS" ? (
-                            <span className="inline-flex items-center gap-1 font-medium text-[#137333]">
-                              Face Biometric
-                            </span>
-                          ) : rec.source === "MANUAL_OVERRIDE" ? (
-                            <span className="inline-flex items-center gap-1 font-medium text-[#b06000]">
-                              Manual Override
-                            </span>
-                          ) : (
-                            rec.source || "—"
-                          )}
-                        </td>
+                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed] whitespace-nowrap">
+                            {rec.source === "BIOMETRIC_LIVENESS" ? (
+                              <span className="inline-flex items-center gap-1 font-medium text-[#137333]">
+                                Face Biometric
+                              </span>
+                            ) : rec.source === "MANUAL_OVERRIDE" ? (
+                              <span className="inline-flex items-center gap-1 font-medium text-[#b06000]">
+                                Manual Override
+                              </span>
+                            ) : (
+                              rec.source || "—"
+                            )}
+                          </td>
 
-                        <td className="px-5 py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed]">
-                          {rec.recorded_at
-                            ? new Date(rec.recorded_at).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                second: "2-digit",
-                              })
-                            : "—"}
-                        </td>
+                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed] whitespace-nowrap">
+                            {rec.recorded_at
+                              ? new Date(rec.recorded_at).toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  second: "2-digit",
+                                })
+                              : "—"}
+                          </td>
 
-                        <td className="px-5 py-3.5 text-xs text-[#70757a] italic border-r border-[#e8eaed]">
-                          {rec.override_reason || "—"}
-                        </td>
+                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-xs text-[#70757a] italic border-r border-[#e8eaed] whitespace-nowrap">
+                            {rec.override_reason || "—"}
+                          </td>
 
-                        <td className="px-5 py-3.5 text-right space-x-1">
-                          <button
-                            type="button"
-                            disabled={isPresent}
-                            onClick={() => openDialog(rec, "PRESENT")}
-                            className={`px-2.5 py-1 text-xs font-semibold rounded-md transition cursor-pointer ${
-                              isPresent
-                                ? "bg-[#e6f4ea] text-[#137333] cursor-default opacity-70"
-                                : "text-[#137333] hover:bg-[#e6f4ea]"
-                            }`}
-                          >
-                            Mark Present
-                          </button>
-                          <button
-                            type="button"
-                            disabled={isMarkedAbsent}
-                            onClick={() => openDialog(rec, "ABSENT")}
-                            className={`px-2.5 py-1 text-xs font-semibold rounded-md transition cursor-pointer ${
-                              isMarkedAbsent
-                                ? "bg-[#fce8e6] text-[#c5221f] cursor-default opacity-70"
-                                : "text-[#c5221f] hover:bg-[#fce8e6]"
-                            }`}
-                          >
-                            Mark Absent
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-right whitespace-nowrap space-x-1">
+                            <button
+                              type="button"
+                              disabled={isPresent}
+                              onClick={() => openDialog(rec, "PRESENT")}
+                              className={`px-2.5 py-1 text-xs font-semibold rounded-md transition cursor-pointer ${
+                                isPresent
+                                  ? "bg-[#e6f4ea] text-[#137333] cursor-default opacity-70"
+                                  : "text-[#137333] hover:bg-[#e6f4ea]"
+                              }`}
+                            >
+                              Mark Present
+                            </button>
+                            <button
+                              type="button"
+                              disabled={isMarkedAbsent}
+                              onClick={() => openDialog(rec, "ABSENT")}
+                              className={`px-2.5 py-1 text-xs font-semibold rounded-md transition cursor-pointer ${
+                                isMarkedAbsent
+                                  ? "bg-[#fce8e6] text-[#c5221f] cursor-default opacity-70"
+                                  : "text-[#c5221f] hover:bg-[#fce8e6]"
+                              }`}
+                            >
+                              Mark Absent
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </>
       )}

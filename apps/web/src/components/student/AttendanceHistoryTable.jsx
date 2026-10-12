@@ -262,144 +262,146 @@ export function AttendanceHistoryTable({
             </div>
 
             {/* SPREADSHEET TABLE VIEW (Desktop >= md or mobile when mobileMode === 'sheet') */}
-            <div className={`${mobileMode === "cards" ? "hidden md:block" : "block"} overflow-x-auto relative`}>
+            <div className={`${mobileMode === "cards" ? "hidden md:block" : "block"}`}>
               <div className="md:hidden px-4 py-2 bg-[#f1f3f4] border-b border-[#dadce0] text-[11px] text-[#5f6368] flex items-center justify-between">
                 <span>↔ Swipe horizontally for full spreadsheet</span>
-                <span className="text-[10px] font-semibold text-[#1a73e8]">Class column frozen</span>
+                <span className="text-[10px] font-semibold text-[#1a73e8]">Spreadsheet View</span>
               </div>
 
-              <table className="w-full text-left text-sm border-collapse">
-                <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[11px] tracking-wider border-b border-[#dadce0] font-semibold sticky top-0 z-10 shadow-2xs">
-                  <tr>
-                    <th
-                      onClick={() => handleSort("class_name")}
-                      className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition sticky left-0 bg-[#f8f9fa] z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[160px]"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span>Class</span>
-                        {renderSortIndicator("class_name")}
-                      </div>
-                    </th>
-                    <th
-                      onClick={() => handleSort("section")}
-                      className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px]"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span>Section</span>
-                        {renderSortIndicator("section")}
-                      </div>
-                    </th>
-                    <th
-                      onClick={() => handleSort("session_label")}
-                      className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[150px]"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span>Session Label</span>
-                        {renderSortIndicator("session_label")}
-                      </div>
-                    </th>
-                    <th
-                      onClick={() => handleSort("opened_at")}
-                      className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[140px]"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span>Date & Time</span>
-                        {renderSortIndicator("opened_at")}
-                      </div>
-                    </th>
-                    <th
-                      onClick={() => handleSort("status")}
-                      className="px-5 py-3 text-center border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px]"
-                    >
-                      <div className="flex items-center justify-center gap-1">
-                        <span>Status</span>
-                        {renderSortIndicator("status")}
-                      </div>
-                    </th>
-                    <th
-                      onClick={() => handleSort("source")}
-                      className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[150px]"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span>Verification Source</span>
-                        {renderSortIndicator("source")}
-                      </div>
-                    </th>
-                    <th className="px-5 py-3 min-w-[140px]">Notes</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#e8eaed] bg-white">
-                  {filteredRecords.length === 0 ? (
+              <div className="overflow-x-auto overscroll-x-contain relative">
+                <table className="w-full text-left text-xs sm:text-sm border-collapse">
+                  <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[10px] sm:text-[11px] tracking-wider border-b border-[#dadce0] font-semibold">
                     <tr>
-                      <td colSpan="7" className="p-8 text-center">
-                        <EmptyState
-                          icon={<IconClock className="w-6 h-6" />}
-                          title={
-                            searchQuery
-                              ? "No matching attendance records"
-                              : "No attendance records logged yet"
-                          }
-                          description={
-                            searchQuery
-                              ? `No records found for "${searchQuery}".`
-                              : "When you verify your face and check into class sessions, your attendance history will be tracked here."
-                          }
-                          className="border-none p-4"
-                        />
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredRecords.map((rec, idx) => (
-                      <tr
-                        key={rec.session_id || idx}
-                        className="hover:bg-[#f8f9fa] transition-colors group"
+                      <th
+                        onClick={() => handleSort("class_name")}
+                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[130px] sm:min-w-[160px]"
                       >
-                        {/* Sticky frozen Class Name */}
-                        <td className="px-5 py-3.5 font-semibold text-[#202124] border-r border-[#e8eaed] sticky left-0 bg-white group-hover:bg-[#f8f9fa] z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">
-                          {rec.class_name}
-                        </td>
-                        <td className="px-5 py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed]">
-                          {rec.section}
-                        </td>
-                        <td className="px-5 py-3.5 text-xs text-[#202124] font-medium border-r border-[#e8eaed]">
-                          {rec.session_label || "—"}
-                        </td>
-                        <td className="px-5 py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed]">
-                          {new Date(rec.opened_at).toLocaleString([], {
-                            month: "short",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </td>
-                        <td className="px-5 py-3.5 text-center border-r border-[#e8eaed]">
-                          {rec.status === "PRESENT" ? (
-                            <Badge variant="success" size="xs" dot>
-                              Present
-                            </Badge>
-                          ) : (
-                            <Badge variant="danger" size="xs" dot>
-                              Absent
-                            </Badge>
-                          )}
-                        </td>
-                        <td className="px-5 py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed]">
-                          {rec.source === "BIOMETRIC_LIVENESS" ? (
-                            <span className="text-[#137333] font-medium">Face Biometric</span>
-                          ) : rec.source === "MANUAL_OVERRIDE" ? (
-                            <span className="text-[#b06000] font-medium">Professor Override</span>
-                          ) : (
-                            rec.source || "—"
-                          )}
-                        </td>
-                        <td className="px-5 py-3.5 text-xs text-[#70757a] italic">
-                          {rec.override_reason || "—"}
+                        <div className="flex items-center justify-between">
+                          <span>Class</span>
+                          {renderSortIndicator("class_name")}
+                        </div>
+                      </th>
+                      <th
+                        onClick={() => handleSort("section")}
+                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[80px] sm:min-w-[100px]"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span>Section</span>
+                          {renderSortIndicator("section")}
+                        </div>
+                      </th>
+                      <th
+                        onClick={() => handleSort("session_label")}
+                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[120px] sm:min-w-[150px]"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span>Session Label</span>
+                          {renderSortIndicator("session_label")}
+                        </div>
+                      </th>
+                      <th
+                        onClick={() => handleSort("opened_at")}
+                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[110px] sm:min-w-[140px]"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span>Date & Time</span>
+                          {renderSortIndicator("opened_at")}
+                        </div>
+                      </th>
+                      <th
+                        onClick={() => handleSort("status")}
+                        className="px-3 sm:px-5 py-2.5 sm:py-3 text-center border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[80px] sm:min-w-[100px]"
+                      >
+                        <div className="flex items-center justify-center gap-1">
+                          <span>Status</span>
+                          {renderSortIndicator("status")}
+                        </div>
+                      </th>
+                      <th
+                        onClick={() => handleSort("source")}
+                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[120px] sm:min-w-[150px]"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span>Verification Source</span>
+                          {renderSortIndicator("source")}
+                        </div>
+                      </th>
+                      <th className="px-3 sm:px-5 py-2.5 sm:py-3 min-w-[110px] sm:min-w-[140px]">Notes</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#e8eaed] bg-white">
+                    {filteredRecords.length === 0 ? (
+                      <tr>
+                        <td colSpan="7" className="p-8 text-center">
+                          <EmptyState
+                            icon={<IconClock className="w-6 h-6" />}
+                            title={
+                              searchQuery
+                                ? "No matching attendance records"
+                                : "No attendance records logged yet"
+                            }
+                            description={
+                              searchQuery
+                                ? `No records found for "${searchQuery}".`
+                                : "When you verify your face and check into class sessions, your attendance history will be tracked here."
+                            }
+                            className="border-none p-4"
+                          />
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      filteredRecords.map((rec, idx) => (
+                        <tr
+                          key={rec.session_id || idx}
+                          className="hover:bg-[#f8f9fa] transition-colors group"
+                        >
+                          {/* Class Name column (frozen on md+ desktop only) */}
+                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 font-semibold text-[#202124] border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] whitespace-nowrap">
+                            {rec.class_name}
+                          </td>
+                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed] whitespace-nowrap">
+                            {rec.section}
+                          </td>
+                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-xs text-[#202124] font-medium border-r border-[#e8eaed] whitespace-nowrap">
+                            {rec.session_label || "—"}
+                          </td>
+                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed] whitespace-nowrap">
+                            {new Date(rec.opened_at).toLocaleString([], {
+                              month: "short",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </td>
+                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-center border-r border-[#e8eaed] whitespace-nowrap">
+                            {rec.status === "PRESENT" ? (
+                              <Badge variant="success" size="xs" dot>
+                                Present
+                              </Badge>
+                            ) : (
+                              <Badge variant="danger" size="xs" dot>
+                                Absent
+                              </Badge>
+                            )}
+                          </td>
+                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed] whitespace-nowrap">
+                            {rec.source === "BIOMETRIC_LIVENESS" ? (
+                              <span className="text-[#137333] font-medium">Face Biometric</span>
+                            ) : rec.source === "MANUAL_OVERRIDE" ? (
+                              <span className="text-[#b06000] font-medium">Professor Override</span>
+                            ) : (
+                              rec.source || "—"
+                            )}
+                          </td>
+                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-xs text-[#70757a] italic whitespace-nowrap">
+                            {rec.override_reason || "—"}
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </>
         )}

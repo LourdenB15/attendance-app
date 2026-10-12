@@ -357,102 +357,103 @@ export function UserDirectoryTable({
           </div>
 
           {/* SPREADSHEET TABLE VIEW (Desktop >= md, or mobile when mobileMode === 'sheet') */}
-          <div className={`${mobileMode === "cards" ? "hidden md:block" : "block"} overflow-x-auto relative`}>
-            {/* Mobile swipe helper badge */}
+          <div className={`${mobileMode === "cards" ? "hidden md:block" : "block"}`}>
+            {/* Mobile swipe helper badge (pinned above table) */}
             <div className="md:hidden px-4 py-2 bg-[#f1f3f4] border-b border-[#dadce0] text-[11px] text-[#5f6368] flex items-center justify-between">
               <span>↔ Swipe horizontally for full spreadsheet</span>
-              <span className="text-[10px] font-semibold text-[#1a73e8]">User column frozen</span>
+              <span className="text-[10px] font-semibold text-[#1a73e8]">Spreadsheet View</span>
             </div>
 
-            <table className="w-full text-left text-sm border-collapse">
-              <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[11px] tracking-wider border-b border-[#dadce0] font-semibold sticky top-0 z-10 shadow-2xs">
-                <tr>
-                  <th
-                    onClick={() => handleSort("full_name")}
-                    className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition sticky left-0 bg-[#f8f9fa] z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[180px]"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>User</span>
-                      {renderSortIndicator("full_name")}
-                    </div>
-                  </th>
-                  <th
-                    onClick={() => handleSort("role")}
-                    className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[120px]"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Role</span>
-                      {renderSortIndicator("role")}
-                    </div>
-                  </th>
-                  <th className="px-5 py-3 border-r border-[#dadce0]/70 min-w-[140px]">
-                    Change Role
-                  </th>
-                  <th
-                    onClick={() => handleSort("is_active")}
-                    className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[130px]"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Account Status</span>
-                      {renderSortIndicator("is_active")}
-                    </div>
-                  </th>
-                  <th
-                    onClick={() => handleSort("created_at")}
-                    className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[120px]"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span>Created</span>
-                      {renderSortIndicator("created_at")}
-                    </div>
-                  </th>
-                  <th className="px-5 py-3 text-right min-w-[100px]">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#e8eaed] bg-white">
-                {filteredAndSortedUsers.length === 0 ? (
+            <div className="overflow-x-auto overscroll-x-contain relative">
+              <table className="w-full text-left text-xs sm:text-sm border-collapse">
+                <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[10px] sm:text-[11px] tracking-wider border-b border-[#dadce0] font-semibold">
                   <tr>
-                    <td colSpan="6" className="p-8 text-center">
-                      <EmptyState
-                        icon={<IconUsers className="w-6 h-6" />}
-                        title={
-                          searchQuery
-                            ? "No users match your search"
-                            : "No users in this category"
-                        }
-                        description="Try selecting a different role filter or clearing your search term."
-                        action={
-                          !searchQuery && onAddProfessor ? (
-                            <button
-                              type="button"
-                              onClick={onAddProfessor}
-                              className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-semibold rounded-lg shadow-xs transition cursor-pointer"
-                            >
-                              <IconPlus className="w-3.5 h-3.5" />
-                              <span>Invite Professor</span>
-                            </button>
-                          ) : null
-                        }
-                        className="border-none p-4"
-                      />
-                    </td>
+                    <th
+                      onClick={() => handleSort("full_name")}
+                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[150px] sm:min-w-[180px]"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span>User</span>
+                        {renderSortIndicator("full_name")}
+                      </div>
+                    </th>
+                    <th
+                      onClick={() => handleSort("role")}
+                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px] sm:min-w-[120px]"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span>Role</span>
+                        {renderSortIndicator("role")}
+                      </div>
+                    </th>
+                    <th className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 min-w-[120px] sm:min-w-[140px]">
+                      Change Role
+                    </th>
+                    <th
+                      onClick={() => handleSort("is_active")}
+                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[110px] sm:min-w-[130px]"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span>Account Status</span>
+                        {renderSortIndicator("is_active")}
+                      </div>
+                    </th>
+                    <th
+                      onClick={() => handleSort("created_at")}
+                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px] sm:min-w-[120px]"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span>Created</span>
+                        {renderSortIndicator("created_at")}
+                      </div>
+                    </th>
+                    <th className="px-3 sm:px-5 py-2.5 sm:py-3 text-right min-w-[90px] sm:min-w-[100px]">Actions</th>
                   </tr>
-                ) : (
-                  filteredAndSortedUsers.map((u) => {
-                    const isCurrent = u.id === currentUserId;
+                </thead>
+                <tbody className="divide-y divide-[#e8eaed] bg-white">
+                  {filteredAndSortedUsers.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="p-8 text-center">
+                        <EmptyState
+                          icon={<IconUsers className="w-6 h-6" />}
+                          title={
+                            searchQuery
+                              ? "No users match your search"
+                              : "No users in this category"
+                          }
+                          description="Try selecting a different role filter or clearing your search term."
+                          action={
+                            !searchQuery && onAddProfessor ? (
+                              <button
+                                type="button"
+                                onClick={onAddProfessor}
+                                className="mt-2 inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-semibold rounded-lg shadow-xs transition cursor-pointer"
+                              >
+                                <IconPlus className="w-3.5 h-3.5" />
+                                <span>Invite Professor</span>
+                              </button>
+                            ) : null
+                          }
+                          className="border-none p-4"
+                        />
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredAndSortedUsers.map((u) => {
+                      const isCurrent = u.id === currentUserId;
 
-                    return (
-                      <tr key={u.id} className="hover:bg-[#f8f9fa] transition-colors group">
-                        {/* Sticky frozen User column */}
-                        <td className="px-5 py-3.5 border-r border-[#e8eaed] sticky left-0 bg-white group-hover:bg-[#f8f9fa] z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">
-                          <div className="flex items-center gap-3">
-                            <UserAvatar
-                              user={u}
-                              className="w-8 h-8"
-                              textClassName="text-xs font-bold"
-                            />
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-2">
+                      return (
+                        <tr key={u.id} className="hover:bg-[#f8f9fa] transition-colors group">
+                          {/* User column (frozen on md+ desktop only) */}
+                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">
+                            <div className="flex items-center gap-3">
+                              <UserAvatar
+                                user={u}
+                                className="w-8 h-8"
+                                textClassName="text-xs font-bold"
+                              />
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2">
                                 <span className="font-semibold text-[#202124] truncate">
                                   {u.full_name}
                                 </span>
@@ -489,7 +490,7 @@ export function UserDirectoryTable({
                           </div>
                         </td>
 
-                        <td className="px-5 py-3.5 border-r border-[#e8eaed]">
+                        <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] whitespace-nowrap">
                           <Badge
                             variant={
                               u.role === "ADMIN"
@@ -505,7 +506,7 @@ export function UserDirectoryTable({
                           </Badge>
                         </td>
 
-                        <td className="px-5 py-3.5 border-r border-[#e8eaed]">
+                        <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] whitespace-nowrap">
                           {isCurrent ? (
                             <span className="text-xs text-[#70757a] italic">
                               Cannot change self
@@ -523,7 +524,7 @@ export function UserDirectoryTable({
                           )}
                         </td>
 
-                        <td className="px-5 py-3.5 border-r border-[#e8eaed]">
+                        <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] whitespace-nowrap">
                           {u.is_active ? (
                             <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[#137333]">
                               <span className="w-1.5 h-1.5 rounded-full bg-[#1e8e3e]" />
@@ -537,7 +538,7 @@ export function UserDirectoryTable({
                           )}
                         </td>
 
-                        <td className="px-5 py-3.5 text-xs text-[#70757a] border-r border-[#e8eaed]">
+                        <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-xs text-[#70757a] border-r border-[#e8eaed] whitespace-nowrap">
                           {new Date(u.created_at).toLocaleDateString(undefined, {
                             year: "numeric",
                             month: "short",
@@ -545,7 +546,7 @@ export function UserDirectoryTable({
                           })}
                         </td>
 
-                        <td className="px-5 py-3.5 text-right">
+                        <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-right whitespace-nowrap">
                           {!isCurrent &&
                             (u.is_active ? (
                               <button
@@ -572,6 +573,7 @@ export function UserDirectoryTable({
               </tbody>
             </table>
           </div>
+        </div>
         </>
       )}
     </div>

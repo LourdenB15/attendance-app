@@ -497,13 +497,13 @@ export function StudentClassDetail({
             {loading ? (
               <TableSkeleton rows={4} cols={3} headers={["Session Topic / Label", "Check-in Time", "Status"]} />
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm border-collapse">
-                  <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[11px] tracking-wider border-b border-[#dadce0] font-semibold sticky top-0 z-10 shadow-2xs">
+              <div className="overflow-x-auto overscroll-x-contain">
+                <table className="w-full text-left text-xs sm:text-sm border-collapse">
+                  <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[10px] sm:text-[11px] tracking-wider border-b border-[#dadce0] font-semibold">
                     <tr>
                       <th
                         onClick={() => handleSort("session_label")}
-                        className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition"
+                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition"
                       >
                         <div className="flex items-center justify-between">
                           <span>Session Topic / Label</span>
@@ -512,7 +512,7 @@ export function StudentClassDetail({
                       </th>
                       <th
                         onClick={() => handleSort("recorded_at")}
-                        className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[160px]"
+                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[130px] sm:min-w-[160px]"
                       >
                         <div className="flex items-center justify-between">
                           <span>Check-in Time</span>
@@ -521,7 +521,7 @@ export function StudentClassDetail({
                       </th>
                       <th
                         onClick={() => handleSort("status")}
-                        className="px-5 py-3 text-center cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px]"
+                        className="px-3 sm:px-5 py-2.5 sm:py-3 text-center cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[90px] sm:min-w-[100px]"
                       >
                         <div className="flex items-center justify-center gap-1">
                           <span>Status</span>
@@ -767,13 +767,19 @@ export function StudentClassDetail({
             ) : (
               /* SPREADSHEET SHEET VIEW */
               <div className="bg-white rounded-2xl shadow-xs border border-[#dadce0] overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm border-collapse">
-                    <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[11px] tracking-wider border-b border-[#dadce0] font-semibold sticky top-0 z-10 shadow-2xs">
+                {/* Mobile swipe helper badge (pinned above table) */}
+                <div className="md:hidden px-4 py-2 bg-[#f1f3f4] border-b border-[#dadce0] text-[11px] text-[#5f6368] flex items-center justify-between">
+                  <span>↔ Swipe horizontally for full spreadsheet</span>
+                  <span className="text-[10px] font-semibold text-[#1a73e8]">Spreadsheet View</span>
+                </div>
+
+                <div className="overflow-x-auto overscroll-x-contain relative">
+                  <table className="w-full text-left text-xs sm:text-sm border-collapse">
+                    <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[10px] sm:text-[11px] tracking-wider border-b border-[#dadce0] font-semibold">
                       <tr>
                         <th
                           onClick={() => handleClassmateSort("full_name")}
-                          className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition sticky left-0 bg-[#f8f9fa] z-20 min-w-[200px]"
+                          className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)] min-w-[140px] sm:min-w-[180px]"
                         >
                           <div className="flex items-center justify-between">
                             <span>Classmate Name</span>
@@ -782,7 +788,7 @@ export function StudentClassDetail({
                         </th>
                         <th
                           onClick={() => handleClassmateSort("email")}
-                          className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[220px]"
+                          className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[140px] sm:min-w-[180px]"
                         >
                           <div className="flex items-center justify-between">
                             <span>Email Address</span>
@@ -791,14 +797,14 @@ export function StudentClassDetail({
                         </th>
                         <th
                           onClick={() => handleClassmateSort("enrolled_at")}
-                          className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[150px]"
+                          className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px] sm:min-w-[130px]"
                         >
                           <div className="flex items-center justify-between">
                             <span>Enrolled On</span>
                             {renderClassmateSortIndicator("enrolled_at")}
                           </div>
                         </th>
-                        <th className="px-5 py-3 text-center min-w-[100px]">
+                        <th className="px-3 sm:px-5 py-2.5 sm:py-3 text-center min-w-[80px] sm:min-w-[100px]">
                           <span>Status</span>
                         </th>
                       </tr>
@@ -815,9 +821,9 @@ export function StudentClassDetail({
                               isCurrentUser ? "bg-[#f8fafd]" : ""
                             }`}
                           >
-                            {/* Sticky frozen Student Column */}
-                            <td className="px-5 py-3.5 border-r border-[#e8eaed] sticky left-0 bg-white group-hover:bg-[#f8f9fa] z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)]">
-                              <div className="flex items-center gap-3">
+                            {/* Classmate Name column (frozen on md+ desktop only) */}
+                            <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)] whitespace-nowrap">
+                              <div className="flex items-center gap-2.5 sm:gap-3">
                                 <div
                                   className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${
                                     isCurrentUser
@@ -838,7 +844,7 @@ export function StudentClassDetail({
                               </div>
                             </td>
 
-                            <td className="px-5 py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed]">
+                            <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed] whitespace-nowrap">
                               <div className="flex items-center gap-2 font-mono">
                                 <span>{c.email}</span>
                                 <button
@@ -857,7 +863,7 @@ export function StudentClassDetail({
                               </div>
                             </td>
 
-                            <td className="px-5 py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed]">
+                            <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed] whitespace-nowrap">
                               {c.enrolled_at
                                 ? new Date(c.enrolled_at).toLocaleDateString([], {
                                     month: "short",
@@ -867,7 +873,7 @@ export function StudentClassDetail({
                                 : "—"}
                             </td>
 
-                            <td className="px-5 py-3.5 text-center">
+                            <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-center whitespace-nowrap">
                               <Badge variant="success" size="xs" dot>
                                 Active
                               </Badge>

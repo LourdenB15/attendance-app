@@ -503,19 +503,19 @@ export function EnrolledClassesTable({
       ) : (
         /* SPREADSHEET TABLE VIEW */
         <div className="bg-white rounded-xl shadow-xs border border-[#dadce0] overflow-hidden">
-          {/* Mobile swipe helper */}
+          {/* Mobile swipe helper (pinned above table) */}
           <div className="sm:hidden px-4 py-2 bg-[#f1f3f4] border-b border-[#dadce0] text-[11px] text-[#5f6368] flex items-center justify-between">
             <span>↔ Swipe horizontally for full spreadsheet</span>
-            <span className="text-[10px] font-semibold text-[#1a73e8]">Class Name frozen</span>
+            <span className="text-[10px] font-semibold text-[#1a73e8]">Spreadsheet View</span>
           </div>
 
-          <div className="overflow-x-auto relative">
-            <table className="w-full text-left text-sm border-collapse">
-              <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[11px] tracking-wider border-b border-[#dadce0] font-semibold sticky top-0 z-10 shadow-2xs">
+          <div className="overflow-x-auto overscroll-x-contain relative">
+            <table className="w-full text-left text-xs sm:text-sm border-collapse">
+              <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[10px] sm:text-[11px] tracking-wider border-b border-[#dadce0] font-semibold">
                 <tr>
                   <th
                     onClick={() => handleSort("name")}
-                    className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition sticky left-0 bg-[#f8f9fa] z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[180px]"
+                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[140px] sm:min-w-[180px]"
                   >
                     <div className="flex items-center justify-between">
                       <span>Class Name</span>
@@ -524,7 +524,7 @@ export function EnrolledClassesTable({
                   </th>
                   <th
                     onClick={() => handleSort("professor_name")}
-                    className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[140px]"
+                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[110px] sm:min-w-[140px]"
                   >
                     <div className="flex items-center justify-between">
                       <span>Teacher</span>
@@ -533,7 +533,7 @@ export function EnrolledClassesTable({
                   </th>
                   <th
                     onClick={() => handleSort("section")}
-                    className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[120px]"
+                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px] sm:min-w-[120px]"
                   >
                     <div className="flex items-center justify-between">
                       <span>Section / Term</span>
@@ -542,7 +542,7 @@ export function EnrolledClassesTable({
                   </th>
                   <th
                     onClick={() => handleSort("join_code")}
-                    className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[120px]"
+                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px] sm:min-w-[120px]"
                   >
                     <div className="flex items-center justify-between">
                       <span>Class Code</span>
@@ -551,14 +551,14 @@ export function EnrolledClassesTable({
                   </th>
                   <th
                     onClick={() => handleSort("status")}
-                    className="px-5 py-3 text-center border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[120px]"
+                    className="px-3 sm:px-5 py-2.5 sm:py-3 text-center border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px] sm:min-w-[120px]"
                   >
                     <div className="flex items-center justify-center gap-1">
                       <span>Status</span>
                       {renderSortIndicator("status")}
                     </div>
                   </th>
-                  <th className="px-5 py-3 text-right min-w-[140px]">Action</th>
+                  <th className="px-3 sm:px-5 py-2.5 sm:py-3 text-right min-w-[120px] sm:min-w-[140px]">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e8eaed] bg-white">
@@ -580,8 +580,8 @@ export function EnrolledClassesTable({
                           : "hover:bg-[#f8f9fa] cursor-pointer"
                       }`}
                     >
-                      {/* Sticky frozen Class Name */}
-                      <td className="px-5 py-3.5 font-semibold text-[#202124] group-hover:text-[#1a73e8] border-r border-[#e8eaed] sticky left-0 bg-white group-hover:bg-[#f8f9fa] z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">
+                      {/* Class Name column (frozen on md+ desktop only) */}
+                      <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 font-semibold text-[#202124] group-hover:text-[#1a73e8] border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] whitespace-nowrap">
                         <div className="flex items-center gap-2">
                           <span>{c.name}</span>
                           {isProfArchived && (
@@ -597,15 +597,15 @@ export function EnrolledClassesTable({
                         </div>
                       </td>
 
-                      <td className="px-5 py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed]">
+                      <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed] whitespace-nowrap">
                         {c.professor_name || "Faculty Member"}
                       </td>
 
-                      <td className="px-5 py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed]">
+                      <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed] whitespace-nowrap">
                         {c.section} • {c.semester}
                       </td>
 
-                      <td className="px-5 py-3.5 border-r border-[#e8eaed]">
+                      <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] whitespace-nowrap">
                         <button
                           type="button"
                           disabled={copiedId === c.class_id}
@@ -620,7 +620,7 @@ export function EnrolledClassesTable({
                         </button>
                       </td>
 
-                      <td className="px-5 py-3.5 text-center border-r border-[#e8eaed]">
+                      <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-center border-r border-[#e8eaed] whitespace-nowrap">
                         {isProfArchived ? (
                           <span className="text-xs text-[#70757a] italic">
                             Archived
@@ -645,7 +645,7 @@ export function EnrolledClassesTable({
                         )}
                       </td>
 
-                      <td className="px-5 py-3.5 text-right">
+                      <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-right whitespace-nowrap">
                         <div className="flex items-center justify-end gap-2">
                           {isProfArchived ? (
                             <span className="text-xs text-[#5f6368]">View History →</span>
