@@ -160,6 +160,18 @@ export function AuthProvider({ children }) {
     } catch {
       // ignore
     } finally {
+      if (typeof window !== "undefined") {
+        window.history.replaceState(null, "", window.location.pathname);
+        try {
+          Object.keys(sessionStorage).forEach((key) => {
+            if (key.startsWith("attend_nav_")) {
+              sessionStorage.removeItem(key);
+            }
+          });
+        } catch {
+          // ignore
+        }
+      }
       setCurrentUser(null);
       showToast("info", "Logged out successfully.");
     }

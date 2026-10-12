@@ -160,6 +160,8 @@ export function ProfessorPortal({
               setSelectedClass(found);
               loadStudents(found.id, true);
               loadActiveSession(found.id);
+            } else {
+              if (onClearTargetClass) onClearTargetClass();
             }
           }
         }
@@ -341,47 +343,57 @@ export function ProfessorPortal({
           />
 
           {/* Sub Navigation Tabs */}
-          <div className="flex border-b border-[#dadce0] gap-6 text-xs sm:text-sm font-semibold overflow-x-auto scrollbar-none">
-            <button
-              type="button"
-              onClick={() => setClassViewTab("live")}
-              className={`pb-3 transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-                classViewTab === "live"
-                  ? "border-[#1a73e8] text-[#1a73e8] font-bold"
-                  : "border-transparent text-[#5f6368] hover:text-[#202124]"
-              }`}
-            >
-              <IconCamera className="w-4 h-4" />
-              <span>Live Attendance & Controller</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setClassViewTab("roster")}
-              className={`pb-3 transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-                classViewTab === "roster"
-                  ? "border-[#1a73e8] text-[#1a73e8] font-bold"
-                  : "border-transparent text-[#5f6368] hover:text-[#202124]"
-              }`}
-            >
-              <IconUsers className="w-4 h-4" />
-              <span>Class Roster ({classStudents.filter((s) => s.status === "ACTIVE").length})</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setClassViewTab("history")}
-              className={`pb-3 transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap cursor-pointer ${
-                classViewTab === "history"
-                  ? "border-[#1a73e8] text-[#1a73e8] font-bold"
-                  : "border-transparent text-[#5f6368] hover:text-[#202124]"
-              }`}
-            >
-              <IconClock className="w-4 h-4" />
-              <span>Attendance History</span>
-            </button>
-          </div>
+          {(() => {
+            const currentViewTab =
+              classViewTab === "roster"
+                ? "roster"
+                : classViewTab === "history"
+                ? "history"
+                : "live";
 
-          {/* Sub Tab Views */}
-          {classViewTab === "live" && (
+            return (
+              <>
+                <div className="flex border-b border-[#dadce0] gap-6 text-xs sm:text-sm font-semibold overflow-x-auto scrollbar-none">
+                  <button
+                    type="button"
+                    onClick={() => setClassViewTab("live")}
+                    className={`pb-3 transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                      currentViewTab === "live"
+                        ? "border-[#1a73e8] text-[#1a73e8] font-bold"
+                        : "border-transparent text-[#5f6368] hover:text-[#202124]"
+                    }`}
+                  >
+                    <IconCamera className="w-4 h-4" />
+                    <span>Live Attendance & Controller</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setClassViewTab("roster")}
+                    className={`pb-3 transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                      currentViewTab === "roster"
+                        ? "border-[#1a73e8] text-[#1a73e8] font-bold"
+                        : "border-transparent text-[#5f6368] hover:text-[#202124]"
+                    }`}
+                  >
+                    <IconUsers className="w-4 h-4" />
+                    <span>Class Roster ({classStudents.filter((s) => s.status === "ACTIVE").length})</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setClassViewTab("history")}
+                    className={`pb-3 transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                      currentViewTab === "history"
+                        ? "border-[#1a73e8] text-[#1a73e8] font-bold"
+                        : "border-transparent text-[#5f6368] hover:text-[#202124]"
+                    }`}
+                  >
+                    <IconClock className="w-4 h-4" />
+                    <span>Attendance History</span>
+                  </button>
+                </div>
+
+                {/* Sub Tab Views */}
+                {currentViewTab === "live" && (
             <div className="space-y-6">
               <SessionController
                 classId={selectedClass.id}
@@ -404,7 +416,7 @@ export function ProfessorPortal({
             </div>
           )}
 
-          {classViewTab === "roster" && (
+          {currentViewTab === "roster" && (
             <EnrolledStudentsTable
               classId={selectedClass.id}
               joinCode={selectedClass.join_code}
@@ -414,15 +426,18 @@ export function ProfessorPortal({
             />
           )}
 
-          {classViewTab === "history" && (
+          {currentViewTab === "history" && (
             <SectionAttendanceHistory
               classId={selectedClass.id}
               className={selectedClass.name}
               section={selectedClass.section}
             />
           )}
-        </div>
-      )}
+        </>
+      );
+    })()}
+  </div>
+)}
     </div>
   );
 }

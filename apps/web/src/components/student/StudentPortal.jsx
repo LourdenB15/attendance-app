@@ -24,7 +24,12 @@ export function StudentPortal({
 }) {
   const { currentUser, setBiometricEnrolled } = useAuth();
   const { showToast } = useToast();
-  const [studentTab, setStudentTab] = useState(activeNav || "classes");
+  const normalizeTab = (raw) => {
+    if (raw === "enroll-face" || raw === "history") return raw;
+    return "classes";
+  };
+
+  const [studentTab, setStudentTab] = useState(() => normalizeTab(activeNav));
   const [classes, setClasses] = useState([]);
   const [classesLoading, setClassesLoading] = useState(true);
   const [attendance, setAttendance] = useState([]);
@@ -43,25 +48,27 @@ export function StudentPortal({
     if (targetClassId) {
       setSelectedClassId(targetClassId);
       setStudentTab("classes");
+    } else {
+      setSelectedClassId(null);
     }
   }
 
-  // Synchronize state when navigation triggers arrive from sidebar without cascading effect renders
+  // Synchronize state when navigation triggers arrive from sidebar
   const [prevNavKey, setPrevNavKey] = useState(navKey);
   if (navKey !== prevNavKey) {
     setPrevNavKey(navKey);
     if (activeNav === "archived-classes") {
       setStudentTab("classes");
       if (!targetClassId) setSelectedClassId(null);
-    } else {
+    } else if (activeNav === "enroll-face" || activeNav === "history") {
       setStudentTab(activeNav);
-      if (activeNav === "classes") {
-        if (!targetClassId) setSelectedClassId(null);
-      }
+    } else {
+      setStudentTab("classes");
+      if (!targetClassId) setSelectedClassId(null);
     }
   }
 
-  const activeTab = studentTab;
+  const activeTab = normalizeTab(studentTab);
 
   const studentTabRef = useRef(activeTab);
   useEffect(() => {
@@ -135,6 +142,8 @@ export function StudentPortal({
               );
               if (found) {
                 setSelectedClassId(found.class_id || found.id);
+              } else {
+                if (onClearTargetClass) onClearTargetClass();
               }
             }
           }

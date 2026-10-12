@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback, useRef, lazy, Suspense } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/useToast";
 import { PasswordInput } from "../ui/PasswordInput";
@@ -7,6 +7,7 @@ import { Sidebar } from "./Sidebar";
 import { Modal } from "../ui/Modal";
 import { MustChangePasswordBanner } from "../auth/MustChangePasswordBanner";
 import { PortalSkeleton } from "../ui/Skeleton";
+import { ErrorBoundary } from "../ui/ErrorBoundary";
 import {
   getUrlParams,
   updateUrlParams,
@@ -25,6 +26,32 @@ const StudentPortal = lazy(() =>
   import("../student/StudentPortal").then((m) => ({ default: m.StudentPortal }))
 );
 
+const getValidNavs = (userRole) => {
+  const r = (userRole || "").toUpperCase();
+  switch (r) {
+    case "ADMIN":
+      return ["users", "create-prof"];
+    case "PROFESSOR":
+      return ["classes", "archived-classes", "create-class"];
+    case "STUDENT":
+    default:
+      return ["classes", "archived-classes", "enroll-face", "history"];
+  }
+};
+
+const getDefaultNav = (userRole, isFaceEnrolled) => {
+  const r = (userRole || "").toUpperCase();
+  switch (r) {
+    case "ADMIN":
+      return "users";
+    case "STUDENT":
+      return !isFaceEnrolled ? "enroll-face" : "classes";
+    case "PROFESSOR":
+    default:
+      return "classes";
+  }
+};
+
 export function AppLayout() {
   const { currentUser, changePassword, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(
@@ -32,25 +59,47 @@ export function AppLayout() {
   );
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  // Synchronized navigation state between Sidebar, Portals, and URL/sessionStorage
-  const defaultNav =
-    currentUser.role === "ADMIN"
-      ? "users"
-      : currentUser.role === "STUDENT" && !currentUser.has_biometric_enrolled
-      ? "enroll-face"
-      : "classes";
+  const role = currentUser?.role?.toUpperCase() || "STUDENT";
+  const validNavs = getValidNavs(role);
+  const defaultNav = getDefaultNav(role, currentUser?.has_biometric_enrolled);
+
+  const sanitizeNav = useCallback(
+    (navCandidate) => {
+      return validNavs.includes(navCandidate) ? navCandidate : defaultNav;
+    },
+    [validNavs, defaultNav],
+  );
 
   // Restore navigation state from URL query params or sessionStorage fallback
   const initialParams = getUrlParams();
-  const savedNav = getSessionState(`layout_${currentUser.role}`);
+  const savedNav = getSessionState(`layout_${role}`);
 
-  const [activeNav, setActiveNav] = useState(
-    () => initialParams.get("nav") || savedNav?.activeNav || defaultNav
-  );
+  const [activeNav, setActiveNav] = useState(() => {
+    const rawNav = initialParams.get("nav") || savedNav?.activeNav;
+    return sanitizeNav(rawNav);
+  });
   const [targetClassId, setTargetClassId] = useState(
     () => initialParams.get("classId") || savedNav?.targetClassId || null
   );
   const [navKey, setNavKey] = useState(0);
+
+  // When user account or role changes, guarantee activeNav is strictly sanitized
+  const prevUserIdRef = useRef(currentUser?.id);
+  const prevRoleRef = useRef(role);
+  useEffect(() => {
+    if (prevUserIdRef.current !== currentUser?.id || prevRoleRef.current !== role) {
+      prevUserIdRef.current = currentUser?.id;
+      prevRoleRef.current = role;
+      const currentValid = getValidNavs(role);
+      const def = getDefaultNav(role, currentUser?.has_biometric_enrolled);
+      const params = getUrlParams();
+      const currentParamNav = params.get("nav");
+      const cleanNav = currentValid.includes(currentParamNav) ? currentParamNav : def;
+      setActiveNav(cleanNav);
+      setTargetClassId(null);
+      setNavKey((k) => k + 1);
+    }
+  }, [currentUser?.id, role, currentUser?.has_biometric_enrolled]);
 
   // Sync state to URL and sessionStorage
   useEffect(() => {
@@ -61,17 +110,18 @@ export function AppLayout() {
       },
       true
     );
-    saveSessionState(`layout_${currentUser.role}`, {
+    saveSessionState(`layout_${role}`, {
       activeNav,
       targetClassId,
     });
-  }, [activeNav, targetClassId, currentUser.role]);
+  }, [activeNav, targetClassId, role]);
 
   // Handle browser Back / Forward history navigation
   useEffect(() => {
     const handlePopState = () => {
       const params = getUrlParams();
-      const nav = params.get("nav") || defaultNav;
+      const raw = params.get("nav");
+      const nav = sanitizeNav(raw);
       const classId = params.get("classId") || null;
       setActiveNav(nav);
       setTargetClassId(classId);
@@ -80,18 +130,19 @@ export function AppLayout() {
 
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [defaultNav]);
+  }, [sanitizeNav]);
 
   const handleNavSelect = useCallback((navId) => {
-    if (navId === "classes" || navId === "archived-classes") {
+    const cleanNav = sanitizeNav(navId);
+    if (cleanNav === "classes" || cleanNav === "archived-classes") {
       setTargetClassId(null);
-      updateUrlParams({ nav: navId, classId: null }, false);
+      updateUrlParams({ nav: cleanNav, classId: null }, false);
     } else {
-      updateUrlParams({ nav: navId }, false);
+      updateUrlParams({ nav: cleanNav }, false);
     }
-    setActiveNav(navId);
+    setActiveNav(cleanNav);
     setNavKey((k) => k + 1);
-  }, []);
+  }, [sanitizeNav]);
 
   const handleSelectClass = useCallback((cls) => {
     const cid = typeof cls === "object" ? cls.id || cls.class_id : cls;
@@ -171,33 +222,52 @@ export function AppLayout() {
 
             {/* Portals load data the API refuses until the password is changed */}
             {!currentUser.must_change_password && (
-              <Suspense fallback={<PortalSkeleton role={currentUser.role} />}>
-                {currentUser.role === "ADMIN" && (
-                  <AdminPortal
-                    activeNav={activeNav}
-                    navKey={navKey}
-                    onNavSelect={handleNavSelect}
-                  />
-                )}
-                {currentUser.role === "PROFESSOR" && (
-                  <ProfessorPortal
-                    activeNav={activeNav}
-                    navKey={navKey}
-                    onNavSelect={handleNavSelect}
-                    targetClassId={targetClassId}
-                    onClearTargetClass={handleClearTargetClass}
-                  />
-                )}
-                {currentUser.role === "STUDENT" && (
-                  <StudentPortal
-                    activeNav={activeNav}
-                    navKey={navKey}
-                    onNavSelect={handleNavSelect}
-                    targetClassId={targetClassId}
-                    onClearTargetClass={handleClearTargetClass}
-                  />
-                )}
-              </Suspense>
+              <ErrorBoundary onReset={() => handleNavSelect(defaultNav)}>
+                <Suspense fallback={<PortalSkeleton role={role} />}>
+                  {role === "ADMIN" && (
+                    <AdminPortal
+                      activeNav={activeNav}
+                      navKey={navKey}
+                      onNavSelect={handleNavSelect}
+                    />
+                  )}
+                  {role === "PROFESSOR" && (
+                    <ProfessorPortal
+                      activeNav={activeNav}
+                      navKey={navKey}
+                      onNavSelect={handleNavSelect}
+                      targetClassId={targetClassId}
+                      onClearTargetClass={handleClearTargetClass}
+                    />
+                  )}
+                  {role === "STUDENT" && (
+                    <StudentPortal
+                      activeNav={activeNav}
+                      navKey={navKey}
+                      onNavSelect={handleNavSelect}
+                      targetClassId={targetClassId}
+                      onClearTargetClass={handleClearTargetClass}
+                    />
+                  )}
+                  {role !== "ADMIN" && role !== "PROFESSOR" && role !== "STUDENT" && (
+                    <div className="bg-white rounded-2xl border border-[#dadce0] p-8 text-center max-w-md mx-auto my-12 shadow-xs">
+                      <h3 className="text-base font-bold text-[#202124]">
+                        Account Initializing
+                      </h3>
+                      <p className="text-xs text-[#5f6368] mt-1.5 leading-relaxed">
+                        Your account role is currently being configured by an administrator. Please try refreshing or sign in again.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={logout}
+                        className="mt-4 px-4 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer"
+                      >
+                        Sign Out
+                      </button>
+                    </div>
+                  )}
+                </Suspense>
+              </ErrorBoundary>
             )}
           </main>
         </div>
