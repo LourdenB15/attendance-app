@@ -889,6 +889,15 @@ export function StudentClassDetail({
           </div>
         </div>
       )}
+
+      {/* Liveness Scanner Modal */}
+      {showScanner && (
+        <LivenessCamera
+          title={`Attendance Check-In: ${classItem.name}`}
+          onComplete={handleTakeAttendance}
+          onCancel={() => setShowScanner(false)}
+        />
+      )}
     </div>
   );
 }

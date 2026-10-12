@@ -177,19 +177,7 @@ export function StudentPortal({
       window.removeEventListener("focus", handleFocus);
       document.removeEventListener("visibilitychange", handleFocus);
     };
-  }, [refreshAll, showToast, setBiometricEnrolled, targetClassId]);
-
-  // Keep selectedClassId synced when classes or targetClassId changes
-  useEffect(() => {
-    if (targetClassId && classes.length > 0) {
-      const found = classes.find(
-        (c) => c.class_id === targetClassId || c.id === targetClassId
-      );
-      if (found) {
-        setSelectedClassId(found.class_id || found.id);
-      }
-    }
-  }, [targetClassId, classes]);
+  }, [refreshAll, showToast, setBiometricEnrolled, targetClassId, onClearTargetClass]);
 
   // Poll My Classes every 30 seconds to pick up newly opened sessions
   useEffect(() => {

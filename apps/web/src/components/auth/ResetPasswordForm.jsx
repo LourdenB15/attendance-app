@@ -1,141 +1,245 @@
 // apps/web/src/components/auth/ResetPasswordForm.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { authApi } from "../../api";
 import { useAuth } from "../../context/useAuth";
-import { useToast } from "../../context/useToast";
 import { PasswordInput } from "../ui/PasswordInput";
-import { IconChevronLeft } from "../ui/Icons";
+import {
+  IconChevronLeft,
+  IconLock,
+  IconCheck,
+  IconAlert,
+  IconArrowRight,
+} from "../ui/Icons";
 
 export function ResetPasswordForm({ onBackToLogin, onRequestNewLink }) {
   const { resetPassword } = useAuth();
   const [token] = useState(
     () => new URLSearchParams(window.location.search).get("token") || "",
   );
-  // Check the emailed link as soon as the page opens: "checking" | "valid" | "invalid"
   const [linkStatus, setLinkStatus] = useState(() => (token ? "checking" : "invalid"));
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { showToast } = useToast();
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
     if (!token) return;
     let ignore = false;
     authApi
       .validateResetToken(token)
-      .then(() => !ignore && setLinkStatus("valid"))
-      .catch(() => !ignore && setLinkStatus("invalid"));
+      .then(() => {
+        if (!ignore) setLinkStatus("valid");
+      })
+      .catch(() => {
+        if (!ignore) setLinkStatus("invalid");
+      });
     return () => {
       ignore = true;
     };
   }, [token]);
 
-  // Drop the dead token from the address bar so a refresh doesn't reopen this page
   const leaveInvalidLink = (goTo) => {
     window.history.replaceState({}, document.title, window.location.pathname);
     if (goTo) goTo();
   };
 
+  const passwordCriteria = useMemo(() => {
+    return {
+      hasMinLength: newPassword.length >= 6,
+      hasUpper: /[A-Z]/.test(newPassword),
+      hasLower: /[a-z]/.test(newPassword),
+      hasNumber: /[0-9]/.test(newPassword),
+      passwordsMatch: Boolean(newPassword && newPassword === confirmPassword),
+    };
+  }, [newPassword, confirmPassword]);
+
+  const isPasswordValid =
+    passwordCriteria.hasMinLength &&
+    passwordCriteria.hasUpper &&
+    passwordCriteria.hasLower &&
+    passwordCriteria.hasNumber;
+
+  const isReady = Boolean(token.trim() && isPasswordValid && passwordCriteria.passwordsMatch);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!isReady || loading) return;
 
-    if (!token.trim()) {
-      showToast("error", "Invalid or missing reset token from email link.");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      showToast("error", "Passwords do not match. Please re-enter.");
-      return;
-    }
-
+    setHasError(false);
     setLoading(true);
     try {
       await resetPassword({ token: token.trim(), newPassword });
       window.history.replaceState({}, document.title, window.location.pathname);
     } catch {
-      // toast handled in auth context
+      setHasError(true);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
+      {/* Header and Back Link */}
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-[#202124]">Set New Password</h3>
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold text-[#202124] tracking-tight">
+            New password
+          </h2>
+          <p className="text-xs text-[#5f6368] mt-1">
+            Choose a new password for your account.
+          </p>
+        </div>
         {onBackToLogin && (
           <button
             type="button"
             onClick={() => leaveInvalidLink(onBackToLogin)}
-            className="text-xs text-[#1a73e8] hover:text-[#1557b0] font-medium flex items-center gap-1"
+            className="text-xs text-[#1a73e8] hover:text-[#1557b0] font-medium flex items-center gap-1 transition cursor-pointer"
           >
             <IconChevronLeft className="w-3.5 h-3.5" />
-            <span>Back to Login</span>
+            <span>Sign in</span>
           </button>
         )}
       </div>
 
+      {/* Checking Token */}
       {linkStatus === "checking" && (
-        <div className="flex flex-col items-center gap-3 py-8">
-          <div className="w-8 h-8 border-3 border-[#1a73e8] border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-xs text-[#5f6368]">Validating your security reset link...</p>
+        <div className="flex flex-col items-center justify-center gap-2 py-8 text-xs text-[#5f6368]">
+          <div className="w-6 h-6 border-2 border-[#1a73e8] border-t-transparent rounded-full animate-spin" />
+          <span>Validating link...</span>
         </div>
       )}
 
+      {/* Invalid Token */}
       {linkStatus === "invalid" && (
-        <div className="bg-[#fce8e6] border border-[#fad2cf] rounded-xl p-4 text-center space-y-3">
-          <h4 className="text-sm font-semibold text-[#c5221f]">This reset link is invalid or has expired</h4>
-          <button
-            type="button"
-            onClick={() => leaveInvalidLink(onRequestNewLink)}
-            className="px-4 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-semibold rounded-lg transition"
-          >
-            Request a new link
-          </button>
+        <div className="bg-[#fce8e6] border border-[#fad2cf] rounded-2xl p-5 text-center space-y-3">
+          <div className="w-10 h-10 rounded-xl bg-[#fad2cf] text-[#c5221f] flex items-center justify-center mx-auto">
+            <IconAlert className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-[#c5221f]">
+              Link expired or invalid
+            </h3>
+            <p className="text-xs text-[#70757a] mt-0.5">
+              Please request a new password recovery link.
+            </p>
+          </div>
+          <div className="pt-1 flex items-center justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => leaveInvalidLink(onRequestNewLink)}
+              className="px-4 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-semibold rounded-xl transition cursor-pointer"
+            >
+              Request new link
+            </button>
+          </div>
         </div>
       )}
 
+      {/* Valid Token Form */}
       {linkStatus === "valid" && (
-        <>
-          <p className="text-xs text-[#5f6368] leading-relaxed">
-            Enter and confirm your new secure password below to complete the reset.
-          </p>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#5f6368] mb-1.5">
-                New Password
-              </label>
-              <PasswordInput
-                required
-                placeholder="••••••••"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-[#5f6368] mb-1.5">
-                Confirm New Password
-              </label>
-              <PasswordInput
-                required
-                placeholder="••••••••"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-2.5 bg-[#1a73e8] hover:bg-[#1557b0] disabled:opacity-50 text-white font-semibold rounded-lg shadow-xs text-sm transition"
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+          <div>
+            <label
+              htmlFor="reset-new-password"
+              className="block text-xs font-semibold text-[#3c4043] mb-1.5"
             >
-              {loading ? "Updating password..." : "Update Password & Sign In"}
-            </button>
-          </form>
-        </>
+              New Password
+            </label>
+            <PasswordInput
+              id="reset-new-password"
+              name="new-password"
+              autoComplete="new-password"
+              required
+              disabled={loading}
+              placeholder="••••••••"
+              value={newPassword}
+              hasError={hasError}
+              onChange={(e) => {
+                setNewPassword(e.target.value);
+                if (hasError) setHasError(false);
+              }}
+              leadingIcon={<IconLock className="w-4 h-4" />}
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="reset-confirm-password"
+              className="block text-xs font-semibold text-[#3c4043] mb-1.5"
+            >
+              Confirm Password
+            </label>
+            <PasswordInput
+              id="reset-confirm-password"
+              name="confirm-password"
+              autoComplete="new-password"
+              required
+              disabled={loading}
+              placeholder="••••••••"
+              value={confirmPassword}
+              hasError={hasError}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                if (hasError) setHasError(false);
+              }}
+              leadingIcon={<IconLock className="w-4 h-4" />}
+            />
+          </div>
+
+          {/* Criteria */}
+          <div className="grid grid-cols-2 gap-1 text-[11px]">
+            <div
+              className={`flex items-center gap-1 ${
+                passwordCriteria.hasMinLength ? "text-[#137333] font-medium" : "text-[#80868b]"
+              }`}
+            >
+              <IconCheck className="w-3 h-3" />
+              <span>6+ characters</span>
+            </div>
+            <div
+              className={`flex items-center gap-1 ${
+                passwordCriteria.hasUpper ? "text-[#137333] font-medium" : "text-[#80868b]"
+              }`}
+            >
+              <IconCheck className="w-3 h-3" />
+              <span>1 uppercase</span>
+            </div>
+            <div
+              className={`flex items-center gap-1 ${
+                passwordCriteria.hasLower ? "text-[#137333] font-medium" : "text-[#80868b]"
+              }`}
+            >
+              <IconCheck className="w-3 h-3" />
+              <span>1 lowercase</span>
+            </div>
+            <div
+              className={`flex items-center gap-1 ${
+                passwordCriteria.hasNumber ? "text-[#137333] font-medium" : "text-[#80868b]"
+              }`}
+            >
+              <IconCheck className="w-3 h-3" />
+              <span>1 number</span>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={!isReady || loading}
+            className="w-full py-2.5 px-4 bg-[#1a73e8] hover:bg-[#1557b0] active:bg-[#174ea6] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl text-sm transition-all flex items-center justify-center gap-2 cursor-pointer focus:outline-none focus-visible:ring-3 focus-visible:ring-[#1a73e8]/30 min-h-[42px]"
+          >
+            {loading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Updating...</span>
+              </>
+            ) : (
+              <>
+                <span>Update password</span>
+                <IconArrowRight className="w-4 h-4" />
+              </>
+            )}
+          </button>
+        </form>
       )}
     </div>
   );

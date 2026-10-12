@@ -192,7 +192,7 @@ export function ProfessorPortal({
       window.removeEventListener("focus", handleFocus);
       document.removeEventListener("visibilitychange", handleFocus);
     };
-  }, [loadClasses, loadStudents, loadActiveSession, showToast, targetClassId]);
+  }, [loadClasses, loadStudents, loadActiveSession, showToast, targetClassId, onClearTargetClass]);
 
   // Live polling interval
   useEffect(() => {
