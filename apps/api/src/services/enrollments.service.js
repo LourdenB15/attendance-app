@@ -31,12 +31,26 @@ export async function getMyClasses(studentId) {
   return enrollmentsRepository.findClassesByStudent(studentId);
 }
 
-export async function getStudents(professorId, classId) {
-  const foundClass = await classesRepository.findByIdAndProfessor(classId, professorId);
-  if (!foundClass) {
-    throw httpError(404, "Class not found");
+export async function getStudents(userId, role, classId) {
+  if (role === "PROFESSOR") {
+    const foundClass = await classesRepository.findByIdAndProfessor(classId, userId);
+    if (!foundClass) {
+      throw httpError(404, "Class not found");
+    }
+  } else if (role === "STUDENT") {
+    const enrollment = await enrollmentsRepository.findActiveEnrollment(classId, userId);
+    if (!enrollment) {
+      throw httpError(403, "You are not enrolled in this class");
+    }
+  } else if (role !== "ADMIN") {
+    throw httpError(403, "Access denied");
   }
-  return enrollmentsRepository.findStudentsByClass(classId);
+
+  const students = await enrollmentsRepository.findStudentsByClass(classId);
+  if (role === "STUDENT") {
+    return students.filter((s) => s.status === "ACTIVE");
+  }
+  return students;
 }
 
 export async function restoreStudent(professorId, classId, studentId) {

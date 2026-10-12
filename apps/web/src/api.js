@@ -137,6 +137,8 @@ export const studentApi = {
   joinClass: (joinCode) =>
     request("/enrollments", { method: "POST", body: { joinCode } }),
   getMyAttendance: () => request("/attendance", { method: "GET" }),
+  getClassStudents: (classId) =>
+    request(`/classes/${classId}/students`, { method: "GET" }),
 };
 
 // Biometric & Check-in API

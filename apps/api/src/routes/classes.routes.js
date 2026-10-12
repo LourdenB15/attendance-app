@@ -9,7 +9,7 @@ const router = Router();
 
 router.post("/", authenticate, checkAccountStatus, requireRole("PROFESSOR"), classesController.createClass);
 router.get("/", authenticate, checkAccountStatus, requireRole("PROFESSOR"), classesController.listClasses);
-router.get("/:classId/students", authenticate, checkAccountStatus, requireRole("PROFESSOR"), enrollmentsController.getStudents);
+router.get("/:classId/students", authenticate, checkAccountStatus, requireRole("PROFESSOR", "STUDENT"), enrollmentsController.getStudents);
 router.get("/:classId/attendance-history", authenticate, checkAccountStatus, requireRole("PROFESSOR"), attendanceController.getClassAttendanceHistory);
 router.get("/:classId/attendance-summary", authenticate, checkAccountStatus, requireRole("PROFESSOR"), attendanceController.getClassAttendanceSummary);
 router.post("/:classId/students/:studentId/drop", authenticate, checkAccountStatus, requireRole("PROFESSOR"), enrollmentsController.dropStudent);

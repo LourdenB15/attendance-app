@@ -10,6 +10,8 @@ import { BiometricEnrollmentCard } from "./BiometricEnrollmentCard";
 import { AttendanceHistoryTable } from "./AttendanceHistoryTable";
 import { LivenessCamera } from "../liveness/LivenessCamera";
 import { LoadingOverlay } from "../ui/LoadingOverlay";
+import { ClassDetailSkeleton } from "../ui/Skeleton";
+import { updateUrlParams } from "../../utils/navigation";
 import { Modal } from "../ui/Modal";
 import { IconCamera, IconPlus, IconRefresh } from "../ui/Icons";
 
@@ -18,12 +20,15 @@ export function StudentPortal({
   navKey = 0,
   onNavSelect,
   targetClassId,
+  onClearTargetClass,
 }) {
   const { currentUser, setBiometricEnrolled } = useAuth();
   const { showToast } = useToast();
   const [studentTab, setStudentTab] = useState(activeNav || "classes");
   const [classes, setClasses] = useState([]);
+  const [classesLoading, setClassesLoading] = useState(true);
   const [attendance, setAttendance] = useState([]);
+  const [attendanceLoading, setAttendanceLoading] = useState(true);
   const [selectedClassId, setSelectedClassId] = useState(null);
   const [activeScanningClassId, setActiveScanningClassId] = useState(null);
   const [verifying, setVerifying] = useState(false); // check-in sent, waiting for the server
@@ -68,29 +73,40 @@ export function StudentPortal({
       setStudentTab(tab);
       if (tab === "classes") {
         setSelectedClassId(null);
+        if (onClearTargetClass) {
+          onClearTargetClass();
+        } else {
+          updateUrlParams({ classId: null }, false);
+        }
       }
       if (onNavSelect) {
         onNavSelect(tab);
       }
     },
-    [onNavSelect],
+    [onNavSelect, onClearTargetClass],
   );
 
   const loadClasses = useCallback(async (silent = false) => {
+    if (!silent) setClassesLoading(true);
     try {
       const list = await studentApi.getMyClasses();
       setClasses(list);
     } catch (err) {
       if (!silent) showToast("error", err.message);
+    } finally {
+      if (!silent) setClassesLoading(false);
     }
   }, [showToast]);
 
   const loadAttendance = useCallback(async (silent = false) => {
+    if (!silent) setAttendanceLoading(true);
     try {
       const att = await studentApi.getMyAttendance();
       setAttendance(att);
     } catch (err) {
       if (!silent) showToast("error", err.message);
+    } finally {
+      if (!silent) setAttendanceLoading(false);
     }
   }, [showToast]);
 
@@ -102,6 +118,8 @@ export function StudentPortal({
   useEffect(() => {
     let ignore = false;
     async function fetchInitial() {
+      setClassesLoading(true);
+      setAttendanceLoading(true);
       try {
         const [list, att, statusRes] = await Promise.allSettled([
           studentApi.getMyClasses(),
@@ -109,7 +127,17 @@ export function StudentPortal({
           livenessApi.getEnrollmentStatus(),
         ]);
         if (!ignore) {
-          if (list.status === "fulfilled") setClasses(list.value);
+          if (list.status === "fulfilled") {
+            setClasses(list.value);
+            if (targetClassId) {
+              const found = list.value.find(
+                (c) => c.class_id === targetClassId || c.id === targetClassId
+              );
+              if (found) {
+                setSelectedClassId(found.class_id || found.id);
+              }
+            }
+          }
           if (att.status === "fulfilled") setAttendance(att.value);
           if (statusRes.status === "fulfilled" && statusRes.value.isEnrolled) {
             setBiometricEnrolled(true);
@@ -117,6 +145,11 @@ export function StudentPortal({
         }
       } catch (err) {
         if (!ignore) showToast("error", err.message);
+      } finally {
+        if (!ignore) {
+          setClassesLoading(false);
+          setAttendanceLoading(false);
+        }
       }
     }
     fetchInitial();
@@ -135,7 +168,19 @@ export function StudentPortal({
       window.removeEventListener("focus", handleFocus);
       document.removeEventListener("visibilitychange", handleFocus);
     };
-  }, [refreshAll, showToast, setBiometricEnrolled]);
+  }, [refreshAll, showToast, setBiometricEnrolled, targetClassId]);
+
+  // Keep selectedClassId synced when classes or targetClassId changes
+  useEffect(() => {
+    if (targetClassId && classes.length > 0) {
+      const found = classes.find(
+        (c) => c.class_id === targetClassId || c.id === targetClassId
+      );
+      if (found) {
+        setSelectedClassId(found.class_id || found.id);
+      }
+    }
+  }, [targetClassId, classes]);
 
   // Poll My Classes every 30 seconds to pick up newly opened sessions
   useEffect(() => {
@@ -152,23 +197,40 @@ export function StudentPortal({
 
   const selectedClass = useMemo(() => {
     if (!selectedClassId) return null;
-    return classes.find((c) => c.class_id === selectedClassId) || null;
+    return (
+      classes.find(
+        (c) => c.class_id === selectedClassId || c.id === selectedClassId
+      ) || null
+    );
   }, [classes, selectedClassId]);
 
   const activeScanningClass = useMemo(() => {
     if (!activeScanningClassId) return null;
-    return classes.find((c) => c.class_id === activeScanningClassId) || null;
+    return (
+      classes.find(
+        (c) => c.class_id === activeScanningClassId || c.id === activeScanningClassId
+      ) || null
+    );
   }, [classes, activeScanningClassId]);
 
   const handleSelectClass = (classId) => {
     setSelectedClassId(classId);
+    updateUrlParams({ classId }, false);
   };
 
   const handleBackToClasses = () => {
     setSelectedClassId(null);
     loadClasses(true);
+    if (onClearTargetClass) {
+      onClearTargetClass();
+    } else {
+      updateUrlParams({ classId: null }, false);
+    }
     if (onNavSelect) onNavSelect("classes");
   };
+
+  // If a targetClassId is waiting to be resolved and classes are loading, show Skeleton
+  const isResolvingTargetClass = Boolean(targetClassId && !selectedClass && classesLoading);
 
   const handleDirectTakeAttendance = (classId) => {
     if (!isBiometricEnrolled) {
@@ -290,7 +352,9 @@ export function StudentPortal({
 
       {/* TAB 1: CLASSES VIEW */}
       {activeTab === "classes" && (
-        selectedClass ? (
+        isResolvingTargetClass ? (
+          <ClassDetailSkeleton />
+        ) : selectedClass ? (
           <StudentClassDetail
             classItem={selectedClass}
             onBack={handleBackToClasses}
@@ -332,6 +396,7 @@ export function StudentPortal({
               onSelectClass={handleSelectClass}
               onTakeAttendance={handleDirectTakeAttendance}
               onOpenJoin={() => setShowJoinModal(true)}
+              loading={classesLoading}
             />
           </div>
         )
@@ -353,6 +418,7 @@ export function StudentPortal({
       {activeTab === "history" && (
         <AttendanceHistoryTable
           records={attendance}
+          loading={attendanceLoading}
           onRefresh={() => loadAttendance(false)}
         />
       )}

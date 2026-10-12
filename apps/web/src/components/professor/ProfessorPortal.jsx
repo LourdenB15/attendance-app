@@ -9,13 +9,43 @@ import { SessionController } from "./SessionController";
 import { LiveAttendanceGrid } from "./LiveAttendanceGrid";
 import { EnrolledStudentsTable } from "./EnrolledStudentsTable";
 import { SectionAttendanceHistory } from "./SectionAttendanceHistory";
-import { IconChevronLeft, IconUsers, IconClock, IconCamera } from "../ui/Icons";
+import { ClassDetailSkeleton } from "../ui/Skeleton";
+import { Modal } from "../ui/Modal";
+import {
+  IconChevronLeft,
+  IconUsers,
+  IconClock,
+  IconCamera,
+  IconPlus,
+} from "../ui/Icons";
+import {
+  getUrlParams,
+  updateUrlParams,
+  saveSessionState,
+  getSessionState,
+} from "../../utils/navigation";
 
-export function ProfessorPortal({ activeNav, navKey = 0, onNavSelect, targetClassId }) {
+export function ProfessorPortal({
+  activeNav,
+  navKey = 0,
+  onNavSelect,
+  targetClassId,
+  onClearTargetClass,
+}) {
   const { showToast } = useToast();
+  const [showCreateClassModal, setShowCreateClassModal] = useState(false);
   const [classes, setClasses] = useState([]);
+  const [classesLoading, setClassesLoading] = useState(true);
+  const [studentsLoading, setStudentsLoading] = useState(false);
+  const [attendanceLoading, setAttendanceLoading] = useState(false);
+
+  // Restore sub-view tab from URL or session
+  const initialParams = getUrlParams();
+  const savedState = getSessionState("prof_state");
+  const initialViewTab = initialParams.get("view") || savedState?.classViewTab || "live";
+
   const [selectedClass, setSelectedClass] = useState(null);
-  const [classViewTab, setClassViewTab] = useState("live"); // "live" | "history" | "roster"
+  const [classViewTab, setClassViewTab] = useState(initialViewTab); // "live" | "history" | "roster"
   const [classStudents, setClassStudents] = useState([]);
   const [activeSession, setActiveSession] = useState(null);
   const [sessionAttendance, setSessionAttendance] = useState([]);
@@ -31,7 +61,15 @@ export function ProfessorPortal({ activeNav, navKey = 0, onNavSelect, targetClas
     activeSessionRef.current = activeSession;
   }, [activeSession]);
 
-  // Handle external selection from sidebar drawer
+  // Sync sub-tab to URL and session
+  useEffect(() => {
+    if (selectedClass) {
+      updateUrlParams({ view: classViewTab }, true);
+      saveSessionState("prof_state", { classViewTab });
+    }
+  }, [classViewTab, selectedClass]);
+
+  // Handle external selection from sidebar drawer or targetClassId prop
   const [prevTargetClassId, setPrevTargetClassId] = useState(targetClassId);
   if (targetClassId !== prevTargetClassId) {
     setPrevTargetClassId(targetClassId);
@@ -39,52 +77,55 @@ export function ProfessorPortal({ activeNav, navKey = 0, onNavSelect, targetClas
       const found = classes.find((c) => c.id === targetClassId);
       if (found) {
         setSelectedClass(found);
-        setClassViewTab("live");
       }
     }
   }
 
-  // Synchronize state when navigation triggers arrive from sidebar without cascading effect renders
+  // Synchronize state when navigation triggers arrive from sidebar
   const [prevNavKey, setPrevNavKey] = useState(navKey);
   if (navKey !== prevNavKey) {
     setPrevNavKey(navKey);
-    if (activeNav === "classes" || activeNav === "create-class" || activeNav === "archived-classes") {
+    if (activeNav === "create-class") {
+      setSelectedClass(null);
+      setShowCreateClassModal(true);
+    } else if (activeNav === "classes" || activeNav === "archived-classes") {
       if (!targetClassId) setSelectedClass(null);
     }
   }
 
-  // Scroll to create class card when triggered
-  useEffect(() => {
-    if (activeNav === "create-class") {
-      const el = document.getElementById("create-class-card");
-      if (el) el.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [navKey, activeNav]);
-
   const loadClasses = useCallback(async (silent = false) => {
+    if (!silent) setClassesLoading(true);
     try {
       const list = await classesApi.getClasses();
       setClasses(list);
     } catch (err) {
       if (!silent) showToast("error", err.message);
+    } finally {
+      if (!silent) setClassesLoading(false);
     }
   }, [showToast]);
 
   const loadStudents = useCallback(async (classId, silent = false) => {
+    if (!silent) setStudentsLoading(true);
     try {
       const list = await classesApi.getClassStudents(classId);
       setClassStudents(list);
     } catch (err) {
       if (!silent) showToast("error", err.message);
+    } finally {
+      if (!silent) setStudentsLoading(false);
     }
   }, [showToast]);
 
   const loadAttendance = useCallback(async (sessionId, silent = false) => {
+    if (!silent) setAttendanceLoading(true);
     try {
       const att = await sessionsApi.getSessionAttendance(sessionId);
       setSessionAttendance(att);
     } catch (err) {
       if (!silent) showToast("error", err.message);
+    } finally {
+      if (!silent) setAttendanceLoading(false);
     }
   }, [showToast]);
 
@@ -108,6 +149,7 @@ export function ProfessorPortal({ activeNav, navKey = 0, onNavSelect, targetClas
   useEffect(() => {
     let ignore = false;
     async function fetchInitial() {
+      setClassesLoading(true);
       try {
         const list = await classesApi.getClasses();
         if (!ignore) {
@@ -116,12 +158,15 @@ export function ProfessorPortal({ activeNav, navKey = 0, onNavSelect, targetClas
             const found = list.find((c) => c.id === targetClassId);
             if (found) {
               setSelectedClass(found);
-              setClassViewTab("live");
+              loadStudents(found.id, true);
+              loadActiveSession(found.id);
             }
           }
         }
       } catch (err) {
         if (!ignore) showToast("error", err.message);
+      } finally {
+        if (!ignore) setClassesLoading(false);
       }
     }
     fetchInitial();
@@ -178,6 +223,7 @@ export function ProfessorPortal({ activeNav, navKey = 0, onNavSelect, targetClas
     setClassViewTab("live");
     loadStudents(cls.id);
     loadActiveSession(cls.id);
+    updateUrlParams({ classId: cls.id, view: "live" }, false);
   };
 
   const handleBackToClasses = () => {
@@ -185,83 +231,145 @@ export function ProfessorPortal({ activeNav, navKey = 0, onNavSelect, targetClas
     setActiveSession(null);
     setSessionAttendance([]);
     loadClasses(true);
+    if (onClearTargetClass) {
+      onClearTargetClass();
+    } else {
+      updateUrlParams({ classId: null, view: null }, false);
+    }
     if (onNavSelect) onNavSelect("classes");
   };
+
+  // If a targetClassId is waiting to be resolved and classes are loading, show Skeleton
+  const isResolvingTargetClass = Boolean(targetClassId && !selectedClass && classesLoading);
 
   return (
     <div className="space-y-6">
       {/* Top Banner & Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#dadce0]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#dadce0]">
         <div>
-          <div className="flex items-center gap-2.5">
-            <h2 className="text-xl font-bold text-[#202124]">
-              {selectedClass ? selectedClass.name : "Teaching Hub"}
-            </h2>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#e6f4ea] text-[#137333] border border-[#ceead6]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#1e8e3e] animate-pulse" />
-              Live Sync
-            </span>
-          </div>
-          <p className="text-xs text-[#5f6368] mt-0.5">
-            {selectedClass
-              ? `${selectedClass.section} • ${selectedClass.semester}`
-              : "Manage course sections, launch biometric attendance, and view student rosters."}
-          </p>
+          {selectedClass ? (
+            <div className="flex items-center gap-2 text-xs font-medium text-[#5f6368]">
+              <button
+                type="button"
+                onClick={handleBackToClasses}
+                className="hover:text-[#1a73e8] transition cursor-pointer flex items-center gap-1 font-semibold"
+              >
+                <span>Teaching Hub</span>
+              </button>
+              <span className="text-[#9aa0a6]">/</span>
+              <span className="font-bold text-[#202124] truncate max-w-[200px] sm:max-w-md">
+                {selectedClass.name}
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 ml-1 rounded-full text-[10px] font-bold bg-[#e6f4ea] text-[#137333] border border-[#ceead6]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#1e8e3e] animate-pulse" />
+                Live Sync
+              </span>
+            </div>
+          ) : (
+            <div>
+              <div className="flex items-center gap-2.5">
+                <h2 className="text-xl font-bold text-[#202124]">Teaching Hub</h2>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#e6f4ea] text-[#137333] border border-[#ceead6]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#1e8e3e] animate-pulse" />
+                  Live Sync
+                </span>
+              </div>
+              <p className="text-xs text-[#5f6368] mt-0.5">
+                Manage course sections, launch biometric attendance, and view student rosters.
+              </p>
+            </div>
+          )}
         </div>
 
-        {selectedClass && (
-          <button
-            type="button"
-            onClick={handleBackToClasses}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white hover:bg-[#f1f3f4] text-[#3c4043] border border-[#dadce0] font-semibold rounded-lg text-xs transition shadow-2xs self-start sm:self-auto"
-          >
-            <IconChevronLeft className="w-4 h-4" />
-            <span>Back to All Classes</span>
-          </button>
-        )}
+        <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-auto">
+          {!selectedClass ? (
+            <button
+              type="button"
+              onClick={() => setShowCreateClassModal(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer"
+            >
+              <IconPlus className="w-4 h-4" />
+              <span>Create Class</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleBackToClasses}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-[#f1f3f4] text-[#3c4043] border border-[#dadce0] font-semibold rounded-lg text-xs transition shadow-2xs cursor-pointer"
+            >
+              <IconChevronLeft className="w-4 h-4" />
+              <span>All Classes</span>
+            </button>
+          )}
+        </div>
       </div>
 
-      {!selectedClass ? (
-        <div className="space-y-6">
-          <div id="create-class-card">
-            <CreateClassCard onCreated={loadClasses} />
-          </div>
-          <ClassesTable
-            classes={classes}
-            onSelectClass={handleSelectClass}
-            onRefresh={loadClasses}
-            initialTab={activeNav === "archived-classes" ? "archived" : "active"}
-          />
-        </div>
+      {/* Create Class Modal */}
+      <Modal
+        isOpen={showCreateClassModal}
+        onClose={() => setShowCreateClassModal(false)}
+        title="Create Class"
+        subtitle="Set up a course section with an automatic unique student join code"
+      >
+        <CreateClassCard
+          isModal
+          onCreated={() => {
+            setShowCreateClassModal(false);
+            loadClasses(false);
+          }}
+          onCancel={() => setShowCreateClassModal(false)}
+        />
+      </Modal>
+
+      {isResolvingTargetClass ? (
+        <ClassDetailSkeleton />
+      ) : !selectedClass ? (
+        <ClassesTable
+          classes={classes}
+          onSelectClass={handleSelectClass}
+          onCreateClass={() => setShowCreateClassModal(true)}
+          onRefresh={() => loadClasses(false)}
+          initialTab={activeNav === "archived-classes" ? "archived" : "active"}
+          loading={classesLoading}
+        />
       ) : (
         <div className="space-y-6">
+          {/* Class Hero Header Card */}
           <ClassDetailHeader
             selectedClass={selectedClass}
             onBack={handleBackToClasses}
           />
 
-          {/* In-Class Navigation Tabs */}
-          <div className="flex border-b border-[#dadce0] gap-4 sm:gap-6 text-xs sm:text-sm font-semibold overflow-x-auto scrollbar-none whitespace-nowrap">
+          {/* Sub Navigation Tabs */}
+          <div className="flex border-b border-[#dadce0] gap-6 text-xs sm:text-sm font-semibold overflow-x-auto scrollbar-none">
             <button
               type="button"
               onClick={() => setClassViewTab("live")}
-              className={`pb-3.5 transition-all border-b-2 flex items-center gap-2 shrink-0 ${
+              className={`pb-3 transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap cursor-pointer ${
                 classViewTab === "live"
                   ? "border-[#1a73e8] text-[#1a73e8] font-bold"
                   : "border-transparent text-[#5f6368] hover:text-[#202124]"
               }`}
             >
               <IconCamera className="w-4 h-4" />
-              <span>Live Attendance Window</span>
-              {activeSession && (
-                <span className="w-2 h-2 rounded-full bg-[#1e8e3e] animate-ping" />
-              )}
+              <span>Live Attendance & Controller</span>
             </button>
-
+            <button
+              type="button"
+              onClick={() => setClassViewTab("roster")}
+              className={`pb-3 transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                classViewTab === "roster"
+                  ? "border-[#1a73e8] text-[#1a73e8] font-bold"
+                  : "border-transparent text-[#5f6368] hover:text-[#202124]"
+              }`}
+            >
+              <IconUsers className="w-4 h-4" />
+              <span>Class Roster ({classStudents.filter((s) => s.status === "ACTIVE").length})</span>
+            </button>
             <button
               type="button"
               onClick={() => setClassViewTab("history")}
-              className={`pb-3.5 transition-all border-b-2 flex items-center gap-2 shrink-0 ${
+              className={`pb-3 transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap cursor-pointer ${
                 classViewTab === "history"
                   ? "border-[#1a73e8] text-[#1a73e8] font-bold"
                   : "border-transparent text-[#5f6368] hover:text-[#202124]"
@@ -270,70 +378,47 @@ export function ProfessorPortal({ activeNav, navKey = 0, onNavSelect, targetClas
               <IconClock className="w-4 h-4" />
               <span>Attendance History</span>
             </button>
-
-            <button
-              type="button"
-              onClick={() => setClassViewTab("roster")}
-              className={`pb-3.5 transition-all border-b-2 flex items-center gap-2 shrink-0 ${
-                classViewTab === "roster"
-                  ? "border-[#1a73e8] text-[#1a73e8] font-bold"
-                  : "border-transparent text-[#5f6368] hover:text-[#202124]"
-              }`}
-            >
-              <IconUsers className="w-4 h-4" />
-              <span>
-                Class Roster ({classStudents.filter((s) => s.status === "ACTIVE").length})
-              </span>
-            </button>
           </div>
 
-          {/* TAB 1: LIVE SESSION */}
+          {/* Sub Tab Views */}
           {classViewTab === "live" && (
             <div className="space-y-6">
-              {!selectedClass.is_archived && (
-                <SessionController
-                  classId={selectedClass.id}
-                  activeSession={activeSession}
-                  onSessionOpened={(session) => {
-                    setActiveSession(session);
-                    loadAttendance(session.id);
-                  }}
-                  onSessionClosed={() => {
-                    setActiveSession(null);
-                    setSessionAttendance([]);
-                  }}
-                  onRefreshAttendance={() => {
-                    if (activeSession) loadAttendance(activeSession.id);
-                  }}
-                />
-              )}
+              <SessionController
+                classId={selectedClass.id}
+                className={selectedClass.name}
+                activeSession={activeSession}
+                onSessionChanged={() => {
+                  loadActiveSession(selectedClass.id);
+                  loadClasses(true);
+                }}
+              />
 
               {activeSession && (
                 <LiveAttendanceGrid
                   activeSessionId={activeSession.id}
                   attendance={sessionAttendance}
-                  onOverrideSuccess={() => loadAttendance(activeSession.id)}
+                  onOverrideSuccess={() => loadAttendance(activeSession.id, true)}
+                  loading={attendanceLoading}
                 />
               )}
             </div>
           )}
 
-          {/* TAB 2: ATTENDANCE HISTORY FOR THIS SECTION */}
-          {classViewTab === "history" && (
-            <SectionAttendanceHistory
-              classId={selectedClass.id}
-              className={selectedClass.name}
-              section={selectedClass.section}
-            />
-          )}
-
-          {/* TAB 3: ROSTER */}
           {classViewTab === "roster" && (
             <EnrolledStudentsTable
               classId={selectedClass.id}
               joinCode={selectedClass.join_code}
               students={classStudents}
-              onStudentDropped={() => loadStudents(selectedClass.id)}
+              onStudentDropped={() => loadStudents(selectedClass.id, false)}
+              loading={studentsLoading}
+            />
+          )}
+
+          {classViewTab === "history" && (
+            <SectionAttendanceHistory
+              classId={selectedClass.id}
+              className={selectedClass.name}
+              section={selectedClass.section}
             />
           )}
         </div>

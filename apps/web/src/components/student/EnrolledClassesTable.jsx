@@ -1,10 +1,11 @@
 // apps/web/src/components/student/EnrolledClassesTable.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Badge } from "../ui/Badge";
 import { getClassTheme } from "../ui/classroomThemes";
 import { EmptyState } from "../ui/EmptyState";
 import { useToast } from "../../context/useToast";
 import { useConfirm } from "../../context/useConfirm";
+import { TableSkeleton, ClassGridSkeleton } from "../ui/Skeleton";
 import {
   getStudentArchivedIds,
   saveStudentArchivedIds,
@@ -32,14 +33,18 @@ export function EnrolledClassesTable({
   onTakeAttendance,
   isBiometricEnrolled = true,
   onOpenJoin,
+  loading = false,
 }) {
   const [viewMode, setViewMode] = useState("grid"); // "grid" | "table"
   const [searchQuery, setSearchQuery] = useState("");
   const [listTab, setListTab] = useState(initialTab); // "active" | "archived"
+  const [sortField, setSortField] = useState("name"); // "name" | "professor_name" | "section" | "join_code" | "status"
+  const [sortAsc, setSortAsc] = useState(true);
   const [studentArchivedIds, setStudentArchivedIds] = useState(() =>
     getStudentArchivedIds(studentId),
   );
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [copiedId, setCopiedId] = useState(null);
 
   const { showToast } = useToast();
   const confirm = useConfirm();
@@ -67,30 +72,69 @@ export function EnrolledClassesTable({
     setListTab(initialTab);
   }
 
-  // Identify archived status:
-  // - Professor archived: c.is_archived is truthy
-  // - Student archived: class_id is in studentArchivedIds
   const isArchivedByProfessor = (c) => Boolean(c.is_archived);
   const isArchivedByStudent = (c) => studentArchivedIds.includes(c.class_id);
   const isClassArchived = (c) => isArchivedByProfessor(c) || isArchivedByStudent(c);
 
   const activeClasses = classes.filter((c) => !isClassArchived(c));
   const archivedClasses = classes.filter((c) => isClassArchived(c));
-
   const pool = listTab === "archived" ? archivedClasses : activeClasses;
 
-  const visibleClasses = pool.filter((c) => {
-    if (!searchQuery.trim()) return true;
-    const q = searchQuery.toLowerCase();
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortAsc(!sortAsc);
+    } else {
+      setSortField(field);
+      setSortAsc(true);
+    }
+  };
+
+  const visibleClasses = useMemo(() => {
+    let list = pool.filter((c) => {
+      if (!searchQuery.trim()) return true;
+      const q = searchQuery.toLowerCase();
+      return (
+        (c.name && c.name.toLowerCase().includes(q)) ||
+        (c.professor_name && c.professor_name.toLowerCase().includes(q)) ||
+        (c.section && c.section.toLowerCase().includes(q)) ||
+        (c.semester && c.semester.toLowerCase().includes(q)) ||
+        (c.join_code && c.join_code.toLowerCase().includes(q))
+      );
+    });
+
+    list.sort((a, b) => {
+      let valA = a[sortField] || "";
+      let valB = b[sortField] || "";
+
+      if (sortField === "status") {
+        valA = a.my_attendance_status === "PRESENT" ? 2 : a.active_session_id ? 1 : 0;
+        valB = b.my_attendance_status === "PRESENT" ? 2 : b.active_session_id ? 1 : 0;
+      } else if (typeof valA === "string") {
+        valA = valA.toLowerCase();
+        valB = valB.toLowerCase();
+      }
+
+      if (valA < valB) return sortAsc ? -1 : 1;
+      if (valA > valB) return sortAsc ? 1 : -1;
+      return 0;
+    });
+
+    return list;
+  }, [pool, searchQuery, sortField, sortAsc]);
+
+  const renderSortIndicator = (field) => {
+    if (sortField !== field) {
+      return <span className="text-[#dadce0] ml-1 text-[10px]">↕</span>;
+    }
     return (
-      (c.name && c.name.toLowerCase().includes(q)) ||
-      (c.professor_name && c.professor_name.toLowerCase().includes(q)) ||
-      (c.section && c.section.toLowerCase().includes(q)) ||
-      (c.semester && c.semester.toLowerCase().includes(q))
+      <span className="text-[#1a73e8] ml-1 text-[10px] font-bold">
+        {sortAsc ? "▲" : "▼"}
+      </span>
     );
-  });
+  };
 
   const handleArchiveClass = async (c) => {
+    setOpenMenuId(null);
     const confirmed = await confirm({
       title: "Archive this class?",
       message: `Are you sure you want to archive ${c.name}? You can find it under Archived Classes and restore it anytime.`,
@@ -98,47 +142,50 @@ export function EnrolledClassesTable({
     });
     if (!confirmed) return;
 
-    const next = [...new Set([...studentArchivedIds, c.class_id])];
+    const next = [...studentArchivedIds, c.class_id];
     setStudentArchivedIds(next);
     saveStudentArchivedIds(studentId, next);
-    showToast("success", `${c.name} moved to Archived Classes.`);
+    showToast("info", `${c.name} moved to Archived Classes.`);
   };
 
   const handleUnarchiveClass = (c) => {
+    setOpenMenuId(null);
     const next = studentArchivedIds.filter((id) => id !== c.class_id);
     setStudentArchivedIds(next);
     saveStudentArchivedIds(studentId, next);
-    showToast("success", `${c.name} restored to Enrolled Classes.`);
+    showToast("success", `${c.name} restored to active enrolled classes.`);
   };
 
-  const handleCopyJoinCode = (e, code) => {
+  const handleCopyCode = (e, code, id) => {
     e.stopPropagation();
+    if (!code || copiedId === id) return;
     navigator.clipboard.writeText(code);
-    setOpenMenuId(null);
+    setCopiedId(id);
     showToast("info", `Class code "${code}" copied to clipboard!`);
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
   return (
     <div className="space-y-4">
-      {/* Controls Bar */}
+      {/* Top Filter & View Controls */}
       <div className="bg-white border border-[#dadce0] rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shadow-xs">
         {/* Segmented Tab Toggle: Active vs Archived */}
-        <div className="flex bg-[#f1f3f4] p-1 rounded-xl text-xs font-semibold overflow-x-auto scrollbar-none shrink-0">
+        <div className="flex bg-[#f1f3f4] p-1 rounded-lg text-xs font-semibold overflow-x-auto scrollbar-none whitespace-nowrap shrink-0">
           <button
             type="button"
             onClick={() => setListTab("active")}
-            className={`px-3.5 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${
+            className={`px-3.5 py-1.5 rounded-md transition-all whitespace-nowrap cursor-pointer ${
               listTab === "active"
                 ? "bg-white text-[#1a73e8] shadow-xs font-bold"
                 : "text-[#5f6368] hover:text-[#202124]"
             }`}
           >
-            Enrolled ({activeClasses.length})
+            Active Classes ({activeClasses.length})
           </button>
           <button
             type="button"
             onClick={() => setListTab("archived")}
-            className={`px-3.5 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${
+            className={`px-3.5 py-1.5 rounded-md transition-all whitespace-nowrap cursor-pointer ${
               listTab === "archived"
                 ? "bg-white text-[#1a73e8] shadow-xs font-bold"
                 : "text-[#5f6368] hover:text-[#202124]"
@@ -148,20 +195,26 @@ export function EnrolledClassesTable({
           </button>
         </div>
 
-        <div className="flex items-center gap-2.5 flex-1 justify-end">
-          <div className="relative flex-1 sm:w-64 max-w-sm">
+        {/* Search & Grid/Table View Switcher */}
+        <div className="flex items-center gap-2.5 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-64">
             <IconSearch className="w-4 h-4 text-[#5f6368] absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder={
-                listTab === "archived"
-                  ? "Search archived classes..."
-                  : "Search enrolled classes..."
-              }
+              placeholder="Search classes or teachers..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3.5 py-1.5 bg-[#f8f9fa] border border-[#dadce0] rounded-lg text-xs text-[#202124] placeholder-[#80868b] focus:bg-white focus:border-[#1a73e8] focus:outline-none focus:ring-2 focus:ring-[#e8f0fe] transition-all"
+              className="w-full pl-9 pr-7 py-2 sm:py-1.5 bg-[#f8f9fa] hover:bg-white border border-[#dadce0] rounded-lg text-xs text-[#202124] placeholder-[#80868b] focus:bg-white focus:border-[#1a73e8] focus:outline-none focus:ring-2 focus:ring-[#e8f0fe] transition-all"
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+              >
+                ✕
+              </button>
+            )}
           </div>
 
           <div className="flex items-center border border-[#dadce0] rounded-lg p-0.5 bg-[#f8f9fa] shrink-0">
@@ -186,8 +239,8 @@ export function EnrolledClassesTable({
                   ? "bg-white text-[#1a73e8] shadow-2xs"
                   : "text-[#5f6368] hover:text-[#202124]"
               }`}
-              title="Table View"
-              aria-label="Table View"
+              title="Spreadsheet Table View"
+              aria-label="Spreadsheet Table View"
             >
               <IconList className="w-4 h-4" />
             </button>
@@ -195,7 +248,20 @@ export function EnrolledClassesTable({
         </div>
       </div>
 
-      {visibleClasses.length === 0 ? (
+      {/* Loading Skeleton */}
+      {loading ? (
+        viewMode === "grid" ? (
+          <ClassGridSkeleton count={6} />
+        ) : (
+          <div className="bg-white rounded-xl shadow-xs border border-[#dadce0] overflow-hidden">
+            <TableSkeleton
+              rows={5}
+              cols={6}
+              headers={["Class Name", "Teacher", "Section / Term", "Class Code", "Status", "Action"]}
+            />
+          </div>
+        )
+      ) : visibleClasses.length === 0 ? (
         <EmptyState
           icon={<IconBook className="w-7 h-7" />}
           title={
@@ -203,21 +269,21 @@ export function EnrolledClassesTable({
               ? "No classes match your search"
               : listTab === "archived"
               ? "No archived classes"
-              : "You haven't joined any classes yet"
+              : "No enrolled classes yet"
           }
           description={
             searchQuery
-              ? `No classes matched "${searchQuery}".`
+              ? `No enrolled courses match "${searchQuery}".`
               : listTab === "archived"
-              ? "Classes you archive or that your teacher archives will appear here for reference."
-              : "Ask your teacher for the class code, then click Join Class to enroll."
+              ? "Classes you or your professor archive will appear here."
+              : "Join your first class by clicking 'Join Class' or entering a teacher's invite code."
           }
           action={
             !searchQuery && listTab === "active" && onOpenJoin ? (
               <button
                 type="button"
                 onClick={onOpenJoin}
-                className="px-4 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-semibold rounded-lg shadow-xs transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-semibold rounded-lg shadow-xs transition cursor-pointer"
               >
                 <IconPlus className="w-4 h-4" />
                 <span>Join a Class</span>
@@ -226,7 +292,7 @@ export function EnrolledClassesTable({
           }
         />
       ) : viewMode === "grid" ? (
-        /* CARD GRID */
+        /* GOOGLE CLASSROOM CARD GRID */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {visibleClasses.map((c) => {
             const theme = getClassTheme(c.class_id || c.name);
@@ -241,227 +307,166 @@ export function EnrolledClassesTable({
               <div
                 key={c.class_id}
                 onClick={() => onSelectClass && onSelectClass(c.class_id)}
-                className={`gc-card rounded-2xl overflow-hidden flex flex-col justify-between group cursor-pointer text-left transition-all ${
-                  isProfArchived ? "opacity-80 border-dashed" : ""
+                className={`bg-white rounded-2xl border border-[#dadce0] transition-all duration-200 flex flex-col group relative ${
+                  openMenuId === c.class_id ? "z-30" : "z-0"
+                } ${
+                  isProfArchived
+                    ? "opacity-75"
+                    : "hover:shadow-md hover:border-[#bdc1c6] cursor-pointer"
                 }`}
               >
-                {/* Card Header Banner */}
+                {/* Header Banner */}
                 <div
-                  className={`${
-                    isProfArchived ? "bg-gradient-to-r from-gray-600 to-gray-700" : theme.bannerBg
-                  } p-5 relative select-none`}
+                  style={{ background: theme.gradient, backgroundColor: theme.accentHex }}
+                  className={`p-5 text-white flex flex-col justify-between min-h-[120px] relative rounded-t-2xl ${theme.headerBg || theme.bannerBg}`}
                 >
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="absolute inset-0 overflow-hidden rounded-t-2xl pointer-events-none">
+                    <div className="absolute right-0 bottom-0 translate-x-3 translate-y-3 opacity-15">
+                      <IconBook className="w-28 h-28" />
+                    </div>
+                  </div>
+
+                  <div className="flex items-start justify-between gap-3 relative z-10">
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        {isProfArchived ? (
-                          <Badge variant="default" size="xs">
-                            Archived by Professor
-                          </Badge>
-                        ) : isSelfArchived ? (
-                          <Badge variant="purple" size="xs">
-                            Archived by You
-                          </Badge>
-                        ) : null}
-                      </div>
-                      <h4
-                        className="text-base font-bold text-white leading-tight truncate group-hover:underline"
-                        title={c.name}
-                      >
+                      <h3 className="font-bold text-lg sm:text-xl leading-tight truncate group-hover:underline">
                         {c.name}
-                      </h4>
-                      <p className={`text-xs ${theme.subText} mt-1 font-medium truncate`}>
-                        {c.professor_name || "Faculty Member"}
+                      </h3>
+                      <p className="text-xs text-white/90 font-medium mt-0.5 truncate">
+                        Section {c.section}
                       </p>
                     </div>
 
-                    {/* Top Right: Active Pulse & 3-Dot Dropdown Menu */}
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      {hasActive && !isPresent && !isMarkedAbsent && (
-                        <span
-                          className="w-2.5 h-2.5 rounded-full bg-emerald-300 ring-4 ring-emerald-300/30 animate-pulse mr-1"
-                          title="Live session active"
-                        />
-                      )}
+                    <div className="relative shrink-0" data-menu-dropdown>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenMenuId(openMenuId === c.class_id ? null : c.class_id);
+                        }}
+                        className="p-1.5 rounded-full text-white/80 hover:text-white hover:bg-white/15 transition cursor-pointer"
+                        title="Class options"
+                        aria-label="Class options"
+                      >
+                        <IconDotsVertical className="w-5 h-5" />
+                      </button>
 
-                      {!isProfArchived && (
-                        <div className="relative" data-menu-dropdown>
+                      {openMenuId === c.class_id && (
+                        <div
+                          className="absolute right-0 top-full mt-1.5 w-40 bg-white rounded-xl shadow-xl border border-[#dadce0] py-1 z-50 text-[#202124] text-xs font-medium animate-in fade-in zoom-in-95 duration-100"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <button
                             type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setOpenMenuId((prev) =>
-                                prev === c.class_id ? null : c.class_id,
-                              );
-                            }}
-                            className="w-8 h-8 rounded-full flex items-center justify-center text-white/90 hover:text-white hover:bg-black/20 active:bg-black/30 transition-colors cursor-pointer"
-                            title="Class options"
-                            aria-label="Class options"
+                            disabled={copiedId === c.class_id}
+                            onClick={(e) => handleCopyCode(e, c.join_code, c.class_id)}
+                            className="w-full text-left px-3 py-2 hover:bg-[#f1f3f4] flex items-center gap-2.5 transition disabled:opacity-60 cursor-pointer disabled:cursor-default"
                           >
-                            <IconDotsVertical className="w-4 h-4" />
+                            <IconCopy className="w-3.5 h-3.5 text-[#5f6368]" />
+                            <span>{copiedId === c.class_id ? "Copied" : "Copy code"}</span>
                           </button>
-
-                          {openMenuId === c.class_id && (
-                            <div
-                              onClick={(e) => e.stopPropagation()}
-                              className="absolute right-0 top-full mt-1.5 w-44 bg-white rounded-xl shadow-xl border border-[#dadce0] py-1.5 z-30 animate-in fade-in zoom-in-95 duration-100 text-[#202124]"
+                          {!isSelfArchived && !isProfArchived ? (
+                            <button
+                              type="button"
+                              onClick={() => handleArchiveClass(c)}
+                              className="w-full text-left px-3 py-2 hover:bg-[#f1f3f4] flex items-center gap-2.5 transition text-[#202124] cursor-pointer"
                             >
-                              {c.join_code && (
-                                <button
-                                  type="button"
-                                  onClick={(e) =>
-                                    handleCopyJoinCode(e, c.join_code)
-                                  }
-                                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-[#3c4043] hover:bg-[#f1f3f4] transition-colors text-left cursor-pointer"
-                                >
-                                  <IconCopy className="w-3.5 h-3.5 text-[#5f6368] shrink-0" />
-                                  <span>Copy Class Code</span>
-                                </button>
-                              )}
-
-                              {isSelfArchived ? (
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setOpenMenuId(null);
-                                    handleUnarchiveClass(c);
-                                  }}
-                                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-[#1a73e8] hover:bg-[#e8f0fe] transition-colors text-left cursor-pointer"
-                                >
-                                  <IconRefresh className="w-3.5 h-3.5 shrink-0" />
-                                  <span>Restore Class</span>
-                                </button>
-                              ) : (
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setOpenMenuId(null);
-                                    handleArchiveClass(c);
-                                  }}
-                                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-[#c5221f] hover:bg-[#fce8e6] transition-colors text-left cursor-pointer"
-                                >
-                                  <IconArchive className="w-3.5 h-3.5 shrink-0" />
-                                  <span>Archive Class</span>
-                                </button>
-                              )}
-                            </div>
-                          )}
+                              <IconArchive className="w-3.5 h-3.5 text-[#5f6368]" />
+                              <span>Archive</span>
+                            </button>
+                          ) : isSelfArchived ? (
+                            <button
+                              type="button"
+                              onClick={() => handleUnarchiveClass(c)}
+                              className="w-full text-left px-3 py-2 hover:bg-[#f1f3f4] flex items-center gap-2.5 transition text-[#202124] cursor-pointer"
+                            >
+                              <IconRefresh className="w-3.5 h-3.5 text-[#5f6368]" />
+                              <span>Restore</span>
+                            </button>
+                          ) : null}
                         </div>
                       )}
                     </div>
                   </div>
 
-                  <div className="mt-3 flex items-center justify-between text-[11px] text-white/90">
-                    <span>
-                      {c.section} • {c.semester}
+                  <div className="relative z-10 flex items-center justify-between text-xs text-white/90 pt-3">
+                    <span className="font-medium truncate">
+                      {c.professor_name || "Faculty Member"}
                     </span>
-                    <span className="font-mono text-white/80 bg-black/15 px-2 py-0.5 rounded">
-                      {c.join_code}
-                    </span>
+                    {isProfArchived ? (
+                      <span className="bg-black/25 px-2 py-0.5 rounded text-[11px] font-semibold">
+                        Archived
+                      </span>
+                    ) : isSelfArchived ? (
+                      <span className="bg-black/25 px-2 py-0.5 rounded text-[11px] font-semibold">
+                        Archived by You
+                      </span>
+                    ) : (
+                      <span className="font-mono text-[11px] font-bold bg-white/20 px-2 py-0.5 rounded">
+                        {c.join_code}
+                      </span>
+                    )}
                   </div>
                 </div>
 
-                {/* Card Body & Live Check-in Status */}
-                <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between bg-white gap-4">
-                  {/* Status Indicator */}
-                  <div>
-                    {isProfArchived ? (
-                      <div className="p-3 bg-[#f8f9fa] border border-[#dadce0] rounded-xl flex items-center gap-2.5">
-                        <IconArchive className="w-4 h-4 text-[#70757a] shrink-0" />
-                        <div>
-                          <span className="block text-xs font-bold text-[#3c4043]">
-                            Course Archived by Teacher
+                {/* Card Body */}
+                <div className="p-4 flex-1 flex flex-col justify-between gap-4">
+                  <div className="space-y-2 text-xs">
+                    <div className="flex items-center justify-between text-[#5f6368]">
+                      <span className="font-semibold">Term:</span>
+                      <span>{c.semester}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1 border-t border-[#f1f3f4]">
+                      <span className="font-semibold text-[#5f6368]">Attendance:</span>
+                      {isProfArchived ? (
+                        <span className="text-[#70757a] italic">Archived (Closed)</span>
+                      ) : hasActive ? (
+                        isPresent ? (
+                          <Badge variant="success" size="xs" dot>
+                            Present
+                          </Badge>
+                        ) : isMarkedAbsent ? (
+                          <Badge variant="danger" size="xs" dot>
+                            Marked Absent
+                          </Badge>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#e8f0fe] text-[#1a73e8] animate-pulse">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#1a73e8]" />
+                            Live Session
                           </span>
-                          <span className="block text-[11px] text-[#70757a]">
-                            Attendance and interactive access closed
-                          </span>
-                        </div>
-                      </div>
-                    ) : hasActive ? (
-                      isPresent ? (
-                        <div className="p-3 bg-[#e6f4ea] border border-[#ceead6] rounded-xl flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-full bg-[#137333] text-white flex items-center justify-center shrink-0">
-                            <IconCheck className="w-4 h-4" />
-                          </div>
-                          <div>
-                            <span className="block text-xs font-bold text-[#137333]">
-                              Attendance Recorded
-                            </span>
-                            <span className="block text-[11px] text-[#1e8e3e]">
-                              Marked Present for today's session
-                            </span>
-                          </div>
-                        </div>
-                      ) : isMarkedAbsent ? (
-                        <div className="p-3 bg-[#fce8e6] border border-[#fad2cf] rounded-xl flex items-center gap-2.5">
-                          <span className="text-xs font-bold text-[#c5221f]">
-                            Marked Absent by Professor
-                          </span>
-                        </div>
+                        )
                       ) : (
-                        <div className="p-3 bg-[#e8f0fe] border border-[#d2e3fc] rounded-xl flex items-center justify-between gap-2 animate-pulse">
-                          <div className="flex items-center gap-2">
-                            <span className="w-2 h-2 rounded-full bg-[#1a73e8]" />
-                            <span className="text-xs font-bold text-[#1a73e8]">
-                              Live Session in Progress
-                            </span>
-                          </div>
-                        </div>
-                      )
-                    ) : (
-                      <div className="p-2.5 bg-[#f8f9fa] border border-[#dadce0] rounded-xl text-center">
-                        <span className="text-xs text-[#5f6368] font-medium">
-                          No Active Session
-                        </span>
-                      </div>
-                    )}
+                        <span className="text-[#70757a]">No active session</span>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Actions Footer (matching professor side layout) */}
-                  <div className="pt-2 border-t border-[#e8eaed] flex items-center justify-between gap-2">
+                  <div className="pt-3 border-t border-[#e8eaed] flex items-center justify-between">
                     {isProfArchived ? (
-                      <>
-                        <span className="text-[11px] text-[#70757a]">
-                          Enrolled: {new Date(c.enrolled_at).toLocaleDateString()}
-                        </span>
-                        <span className="text-xs font-semibold text-[#5f6368] inline-flex items-center gap-1">
-                          <span>Past History</span>
-                          <IconChevronRight className="w-3.5 h-3.5" />
-                        </span>
-                      </>
-                    ) : isSelfArchived ? (
+                      <span className="text-xs font-semibold text-[#5f6368]">
+                        View records →
+                      </span>
+                    ) : (
                       <>
                         <button
                           type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleUnarchiveClass(c);
-                          }}
-                          className="px-2.5 py-1 text-xs font-semibold text-[#1a73e8] hover:bg-[#e8f0fe] rounded-md transition cursor-pointer"
+                          disabled={copiedId === c.class_id}
+                          onClick={(e) => handleCopyCode(e, c.join_code, c.class_id)}
+                          className="text-xs text-[#5f6368] hover:text-[#1a73e8] disabled:hover:text-[#5f6368] font-mono font-medium flex items-center gap-1 cursor-pointer disabled:cursor-default transition-colors"
+                          title="Copy join code"
                         >
-                          Restore Class
+                          {copiedId === c.class_id ? (
+                            <>
+                              <IconCheck className="w-3.5 h-3.5 text-[#137333]" />
+                              <span className="text-[#137333] font-semibold">Copied!</span>
+                            </>
+                          ) : (
+                            <>
+                              <IconCopy className="w-3.5 h-3.5" />
+                              <span>{c.join_code || "Code"}</span>
+                            </>
+                          )}
                         </button>
-                        <span className="text-xs font-semibold text-[#1a73e8] group-hover:translate-x-0.5 transition-transform inline-flex items-center gap-1">
-                          <span>Open Class</span>
-                          <IconChevronRight className="w-3.5 h-3.5" />
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleArchiveClass(c);
-                            }}
-                            className="px-2.5 py-1 text-xs font-medium text-[#5f6368] hover:bg-[#fce8e6] hover:text-[#c5221f] rounded-md transition cursor-pointer"
-                          >
-                            Archive
-                          </button>
-                        </div>
 
                         {hasActive && !isPresent && !isMarkedAbsent ? (
                           <button
@@ -470,7 +475,7 @@ export function EnrolledClassesTable({
                               e.stopPropagation();
                               if (onTakeAttendance) onTakeAttendance(c.class_id);
                             }}
-                            className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold text-white shadow-xs transition cursor-pointer ${
+                            className={`px-3.5 py-1.5 text-xs font-bold rounded-lg text-white shadow-xs transition flex items-center gap-1.5 cursor-pointer ${
                               !isBiometricEnrolled
                                 ? "bg-[#b06000] hover:bg-[#8f4e00]"
                                 : "bg-[#1a73e8] hover:bg-[#1557b0]"
@@ -496,21 +501,67 @@ export function EnrolledClassesTable({
           })}
         </div>
       ) : (
-        /* TABLE VIEW */
+        /* SPREADSHEET TABLE VIEW */
         <div className="bg-white rounded-xl shadow-xs border border-[#dadce0] overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[11px] tracking-wider border-b border-[#dadce0] font-semibold">
+          {/* Mobile swipe helper */}
+          <div className="sm:hidden px-4 py-2 bg-[#f1f3f4] border-b border-[#dadce0] text-[11px] text-[#5f6368] flex items-center justify-between">
+            <span>↔ Swipe horizontally for full spreadsheet</span>
+            <span className="text-[10px] font-semibold text-[#1a73e8]">Class Name frozen</span>
+          </div>
+
+          <div className="overflow-x-auto relative">
+            <table className="w-full text-left text-sm border-collapse">
+              <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[11px] tracking-wider border-b border-[#dadce0] font-semibold sticky top-0 z-10 shadow-2xs">
                 <tr>
-                  <th className="px-5 py-3">Class Name</th>
-                  <th className="px-5 py-3">Teacher</th>
-                  <th className="px-5 py-3">Section / Term</th>
-                  <th className="px-5 py-3">Class Code</th>
-                  <th className="px-5 py-3 text-center">Status</th>
-                  <th className="px-5 py-3 text-right">Action</th>
+                  <th
+                    onClick={() => handleSort("name")}
+                    className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition sticky left-0 bg-[#f8f9fa] z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[180px]"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>Class Name</span>
+                      {renderSortIndicator("name")}
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSort("professor_name")}
+                    className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[140px]"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>Teacher</span>
+                      {renderSortIndicator("professor_name")}
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSort("section")}
+                    className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[120px]"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>Section / Term</span>
+                      {renderSortIndicator("section")}
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSort("join_code")}
+                    className="px-5 py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[120px]"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span>Class Code</span>
+                      {renderSortIndicator("join_code")}
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSort("status")}
+                    className="px-5 py-3 text-center border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[120px]"
+                  >
+                    <div className="flex items-center justify-center gap-1">
+                      <span>Status</span>
+                      {renderSortIndicator("status")}
+                    </div>
+                  </th>
+                  <th className="px-5 py-3 text-right min-w-[140px]">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#e8eaed]">
+              <tbody className="divide-y divide-[#e8eaed] bg-white">
                 {visibleClasses.map((c) => {
                   const isProfArchived = isArchivedByProfessor(c);
                   const isSelfArchived = isArchivedByStudent(c);
@@ -523,16 +574,19 @@ export function EnrolledClassesTable({
                     <tr
                       key={c.class_id}
                       onClick={() => onSelectClass && onSelectClass(c.class_id)}
-                      className={`hover:bg-[#f8f9fa] cursor-pointer transition-colors ${
-                        isProfArchived ? "opacity-75" : ""
+                      className={`group transition-colors ${
+                        isProfArchived
+                          ? "opacity-75"
+                          : "hover:bg-[#f8f9fa] cursor-pointer"
                       }`}
                     >
-                      <td className="px-5 py-3.5 font-semibold text-[#202124] hover:text-[#1a73e8]">
+                      {/* Sticky frozen Class Name */}
+                      <td className="px-5 py-3.5 font-semibold text-[#202124] group-hover:text-[#1a73e8] border-r border-[#e8eaed] sticky left-0 bg-white group-hover:bg-[#f8f9fa] z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">
                         <div className="flex items-center gap-2">
                           <span>{c.name}</span>
                           {isProfArchived && (
                             <Badge variant="default" size="xs">
-                              Archived by Professor
+                              Archived
                             </Badge>
                           )}
                           {isSelfArchived && !isProfArchived && (
@@ -542,21 +596,34 @@ export function EnrolledClassesTable({
                           )}
                         </div>
                       </td>
-                      <td className="px-5 py-3.5 text-xs text-[#5f6368]">
+
+                      <td className="px-5 py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed]">
                         {c.professor_name || "Faculty Member"}
                       </td>
-                      <td className="px-5 py-3.5 text-xs text-[#5f6368]">
+
+                      <td className="px-5 py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed]">
                         {c.section} • {c.semester}
                       </td>
-                      <td className="px-5 py-3.5">
-                        <code className="px-2 py-0.5 bg-[#f1f3f4] text-[#202124] rounded-md font-mono text-xs font-bold border border-[#dadce0]">
-                          {c.join_code}
-                        </code>
+
+                      <td className="px-5 py-3.5 border-r border-[#e8eaed]">
+                        <button
+                          type="button"
+                          disabled={copiedId === c.class_id}
+                          onClick={(e) => handleCopyCode(e, c.join_code, c.class_id)}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#f1f3f4] hover:bg-[#e8f0fe] text-[#202124] rounded-md font-mono text-xs font-bold border border-[#dadce0] transition cursor-pointer disabled:cursor-default"
+                          title="Copy class code"
+                        >
+                          {copiedId === c.class_id ? (
+                            <span className="text-[#137333]">✓</span>
+                          ) : null}
+                          <code>{c.join_code}</code>
+                        </button>
                       </td>
-                      <td className="px-5 py-3.5 text-center">
+
+                      <td className="px-5 py-3.5 text-center border-r border-[#e8eaed]">
                         {isProfArchived ? (
                           <span className="text-xs text-[#70757a] italic">
-                            Archived (No Access)
+                            Archived
                           </span>
                         ) : hasActive ? (
                           isPresent ? (
@@ -577,6 +644,7 @@ export function EnrolledClassesTable({
                           <span className="text-xs text-[#70757a]">No Session</span>
                         )}
                       </td>
+
                       <td className="px-5 py-3.5 text-right">
                         <div className="flex items-center justify-end gap-2">
                           {isProfArchived ? (

@@ -26,6 +26,7 @@ export async function getStudents(req, res) {
   try {
     const students = await enrollmentsService.getStudents(
       req.user.sub,
+      req.user.role,
       req.params.classId,
     );
     res.status(200).json(students);

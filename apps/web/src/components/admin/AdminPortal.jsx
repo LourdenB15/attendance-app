@@ -8,18 +8,33 @@ import { CreateProfessorCard } from "./CreateProfessorCard";
 import { UserDirectoryTable } from "./UserDirectoryTable";
 import { Modal } from "../ui/Modal";
 import { IconPlus } from "../ui/Icons";
+import {
+  getUrlParams,
+  updateUrlParams,
+  saveSessionState,
+  getSessionState,
+} from "../../utils/navigation";
 
 export function AdminPortal({ activeNav, navKey = 0 }) {
   const { currentUser } = useAuth();
   const { showToast } = useToast();
   const confirm = useConfirm();
   const [showAddProfModal, setShowAddProfModal] = useState(false);
+
+  // Restore role filter from URL or session
+  const initialParams = getUrlParams();
+  const savedState = getSessionState("admin_filter");
+  const [roleFilter, setRoleFilter] = useState(
+    () => initialParams.get("role") || savedState?.role || "ALL"
+  );
   const [userList, setUserList] = useState([]);
-  const [roleFilter, setRoleFilter] = useState("ALL");
+  const [loading, setLoading] = useState(true);
 
   const roleFilterRef = useRef(roleFilter);
   useEffect(() => {
     roleFilterRef.current = roleFilter;
+    updateUrlParams({ role: roleFilter }, true);
+    saveSessionState("admin_filter", { role: roleFilter });
   }, [roleFilter]);
 
   // Synchronize state when navigation triggers arrive from sidebar
@@ -32,22 +47,28 @@ export function AdminPortal({ activeNav, navKey = 0 }) {
   }
 
   const loadUsers = useCallback(async (role, silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const users = await adminApi.getUsers(role);
       setUserList(users);
     } catch (err) {
       if (!silent) showToast("error", err.message);
+    } finally {
+      if (!silent) setLoading(false);
     }
   }, [showToast]);
 
   useEffect(() => {
     let ignore = false;
     async function fetchUsers() {
+      setLoading(true);
       try {
         const users = await adminApi.getUsers(roleFilter);
         if (!ignore) setUserList(users);
       } catch (err) {
         if (!ignore) showToast("error", err.message);
+      } finally {
+        if (!ignore) setLoading(false);
       }
     }
     fetchUsers();
@@ -72,7 +93,7 @@ export function AdminPortal({ activeNav, navKey = 0 }) {
     try {
       const updated = await adminApi.updateUserRole(userId, newRole);
       showToast("success", `Role updated to ${newRole} for ${updated.full_name}.`);
-      loadUsers(roleFilter);
+      loadUsers(roleFilter, true);
     } catch (err) {
       showToast("error", err.message);
     }
@@ -90,7 +111,7 @@ export function AdminPortal({ activeNav, navKey = 0 }) {
     try {
       await adminApi.deactivateUser(userId);
       showToast("success", "User deactivated successfully.");
-      loadUsers(roleFilter);
+      loadUsers(roleFilter, true);
     } catch (err) {
       showToast("error", err.message);
     }
@@ -100,7 +121,7 @@ export function AdminPortal({ activeNav, navKey = 0 }) {
     try {
       await adminApi.reactivateUser(userId);
       showToast("success", "User reactivated successfully.");
-      loadUsers(roleFilter);
+      loadUsers(roleFilter, true);
     } catch (err) {
       showToast("error", err.message);
     }
@@ -108,56 +129,47 @@ export function AdminPortal({ activeNav, navKey = 0 }) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Admin Portal Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#dadce0]">
         <div>
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <h2 className="text-xl font-bold text-[#202124]">
-              Admin Control Center
-            </h2>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#f3e8fd] text-[#7627bb] border border-[#e9d2fd]">
-              Administrator View
-            </span>
-          </div>
+          <h2 className="text-xl font-bold text-[#202124]">Admin Control Center</h2>
           <p className="text-xs text-[#5f6368] mt-0.5">
-            Manage user accounts, roles, faculty invitations, and access permissions.
+            Manage user accounts, roles, permissions, and faculty invitations
           </p>
         </div>
 
         <button
           type="button"
           onClick={() => setShowAddProfModal(true)}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white rounded-xl text-xs font-semibold shadow-xs transition cursor-pointer self-start sm:self-auto"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white text-xs font-semibold rounded-xl shadow-xs transition cursor-pointer self-start sm:self-auto"
         >
           <IconPlus className="w-4 h-4" />
-          <span>Invite Professor</span>
+          <span>Add Professor</span>
         </button>
       </div>
 
-      {/* Main Directory Table */}
+      {/* Directory Table with Spreadsheet styling and Skeleton loading */}
       <UserDirectoryTable
         currentUserId={currentUser?.id}
         users={userList}
         roleFilter={roleFilter}
         onRoleFilterChange={setRoleFilter}
-        onRefresh={() => loadUsers(roleFilter)}
         onUpdateRole={handleUpdateRole}
         onDeactivate={handleDeactivate}
         onReactivate={handleReactivate}
+        onRefresh={() => loadUsers(roleFilter)}
         onAddProfessor={() => setShowAddProfModal(true)}
+        loading={loading}
       />
 
-      {/* Modal Quick Flow for Inviting Professor */}
+      {/* Add Professor Modal Dialog */}
       <Modal
         isOpen={showAddProfModal}
         onClose={() => setShowAddProfModal(false)}
         title="Invite New Professor"
-        subtitle="Provision faculty account with role and temporary credentials"
-        maxWidth="max-w-xl"
+        subtitle="Create faculty account credentials and send welcome access"
       >
         <CreateProfessorCard
-          isModal={true}
-          onCancel={() => setShowAddProfModal(false)}
           onCreated={() => {
             setShowAddProfModal(false);
             loadUsers(roleFilter);

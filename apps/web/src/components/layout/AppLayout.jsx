@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/useToast";
 import { PasswordInput } from "../ui/PasswordInput";
@@ -6,9 +6,24 @@ import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
 import { Modal } from "../ui/Modal";
 import { MustChangePasswordBanner } from "../auth/MustChangePasswordBanner";
-import { AdminPortal } from "../admin/AdminPortal";
-import { ProfessorPortal } from "../professor/ProfessorPortal";
-import { StudentPortal } from "../student/StudentPortal";
+import { PortalSkeleton } from "../ui/Skeleton";
+import {
+  getUrlParams,
+  updateUrlParams,
+  saveSessionState,
+  getSessionState,
+} from "../../utils/navigation";
+
+// Lazy-loaded role portals with Suspense code splitting
+const AdminPortal = lazy(() =>
+  import("../admin/AdminPortal").then((m) => ({ default: m.AdminPortal }))
+);
+const ProfessorPortal = lazy(() =>
+  import("../professor/ProfessorPortal").then((m) => ({ default: m.ProfessorPortal }))
+);
+const StudentPortal = lazy(() =>
+  import("../student/StudentPortal").then((m) => ({ default: m.StudentPortal }))
+);
 
 export function AppLayout() {
   const { currentUser, changePassword, logout } = useAuth();
@@ -16,9 +31,8 @@ export function AppLayout() {
     () => typeof window !== "undefined" && window.innerWidth >= 1024,
   );
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [targetClassId, setTargetClassId] = useState(null);
 
-  // Synchronized navigation state between Sidebar and Portals
+  // Synchronized navigation state between Sidebar, Portals, and URL/sessionStorage
   const defaultNav =
     currentUser.role === "ADMIN"
       ? "users"
@@ -26,22 +40,72 @@ export function AppLayout() {
       ? "enroll-face"
       : "classes";
 
-  const [activeNav, setActiveNav] = useState(defaultNav);
+  // Restore navigation state from URL query params or sessionStorage fallback
+  const initialParams = getUrlParams();
+  const savedNav = getSessionState(`layout_${currentUser.role}`);
+
+  const [activeNav, setActiveNav] = useState(
+    () => initialParams.get("nav") || savedNav?.activeNav || defaultNav
+  );
+  const [targetClassId, setTargetClassId] = useState(
+    () => initialParams.get("classId") || savedNav?.targetClassId || null
+  );
   const [navKey, setNavKey] = useState(0);
 
-  const handleNavSelect = (navId) => {
+  // Sync state to URL and sessionStorage
+  useEffect(() => {
+    updateUrlParams(
+      {
+        nav: activeNav,
+        classId: targetClassId || null,
+      },
+      true
+    );
+    saveSessionState(`layout_${currentUser.role}`, {
+      activeNav,
+      targetClassId,
+    });
+  }, [activeNav, targetClassId, currentUser.role]);
+
+  // Handle browser Back / Forward history navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = getUrlParams();
+      const nav = params.get("nav") || defaultNav;
+      const classId = params.get("classId") || null;
+      setActiveNav(nav);
+      setTargetClassId(classId);
+      setNavKey((k) => k + 1);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [defaultNav]);
+
+  const handleNavSelect = useCallback((navId) => {
     if (navId === "classes" || navId === "archived-classes") {
       setTargetClassId(null);
+      updateUrlParams({ nav: navId, classId: null }, false);
+    } else {
+      updateUrlParams({ nav: navId }, false);
     }
     setActiveNav(navId);
     setNavKey((k) => k + 1);
-  };
+  }, []);
 
-  const handleSelectClass = (cls) => {
-    setTargetClassId(cls.id);
+  const handleSelectClass = useCallback((cls) => {
+    const cid = typeof cls === "object" ? cls.id || cls.class_id : cls;
+    setTargetClassId(cid);
     setActiveNav("classes");
+    updateUrlParams({ nav: "classes", classId: cid }, false);
     setNavKey((k) => k + 1);
-  };
+  }, []);
+
+  const handleClearTargetClass = useCallback(() => {
+    setTargetClassId(null);
+    updateUrlParams({ classId: null }, false);
+    setNavKey((k) => k + 1);
+  }, []);
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -107,7 +171,7 @@ export function AppLayout() {
 
             {/* Portals load data the API refuses until the password is changed */}
             {!currentUser.must_change_password && (
-              <>
+              <Suspense fallback={<PortalSkeleton role={currentUser.role} />}>
                 {currentUser.role === "ADMIN" && (
                   <AdminPortal
                     activeNav={activeNav}
@@ -121,6 +185,7 @@ export function AppLayout() {
                     navKey={navKey}
                     onNavSelect={handleNavSelect}
                     targetClassId={targetClassId}
+                    onClearTargetClass={handleClearTargetClass}
                   />
                 )}
                 {currentUser.role === "STUDENT" && (
@@ -129,9 +194,10 @@ export function AppLayout() {
                     navKey={navKey}
                     onNavSelect={handleNavSelect}
                     targetClassId={targetClassId}
+                    onClearTargetClass={handleClearTargetClass}
                   />
                 )}
-              </>
+              </Suspense>
             )}
           </main>
         </div>
@@ -196,14 +262,14 @@ export function AppLayout() {
             <button
               type="button"
               onClick={() => setSettingsOpen(false)}
-              className="px-4 py-2 text-sm font-medium text-[#5f6368] hover:bg-[#f1f3f4] hover:text-[#202124] rounded-lg transition-colors"
+              className="px-4 py-2 text-sm font-medium text-[#5f6368] hover:bg-[#f1f3f4] hover:text-[#202124] rounded-lg transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-2 bg-[#1a73e8] hover:bg-[#1557b0] disabled:opacity-50 text-white text-sm font-semibold rounded-lg shadow-xs transition"
+              className="px-5 py-2 bg-[#1a73e8] hover:bg-[#1557b0] disabled:opacity-50 text-white text-sm font-semibold rounded-lg shadow-xs transition cursor-pointer"
             >
               {loading ? "Saving..." : hasPassword ? "Update Password" : "Set Password"}
             </button>
