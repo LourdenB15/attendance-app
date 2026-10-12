@@ -125,7 +125,7 @@ export function Header({ onToggleSidebar, onOpenSettings }) {
                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-[#3c4043] hover:bg-[#f1f3f4] transition-colors cursor-pointer"
                     >
                       <IconSettings className="w-4 h-4 text-[#5f6368]" />
-                      <span>Account Settings & Password</span>
+                      <span>Account Settings</span>
                     </button>
                   )}
 

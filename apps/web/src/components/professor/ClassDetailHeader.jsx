@@ -55,7 +55,7 @@ export function ClassDetailHeader({ selectedClass, onBack }) {
                   Section {selectedClass.section ? selectedClass.section.toUpperCase() : "—"}
                 </span>
                 <span className="bg-white/20 backdrop-blur-xs px-2.5 py-0.5 rounded-md text-xs font-semibold text-white/95">
-                  {selectedClass.semester}
+                  {selectedClass.semester ? selectedClass.semester.toUpperCase() : "—"}
                 </span>
                 {selectedClass.is_archived ? (
                   <span className="bg-black/30 backdrop-blur-xs px-2.5 py-0.5 rounded-md text-xs font-semibold text-white/90">

@@ -260,7 +260,7 @@ export function StudentClassDetail({
               {formatClassDisplayName(classItem.name, classItem.section)}
             </h2>
             <p className={`text-sm ${theme.subText} font-medium mt-1`}>
-              Teacher: {classItem.professor_name || "Faculty Member"} • Section {classItem.section ? classItem.section.toUpperCase() : "—"} ({classItem.semester})
+              Teacher: {classItem.professor_name || "Faculty Member"} • Section {classItem.section ? classItem.section.toUpperCase() : "—"} ({classItem.semester ? classItem.semester.toUpperCase() : "—"})
             </p>
           </div>
 

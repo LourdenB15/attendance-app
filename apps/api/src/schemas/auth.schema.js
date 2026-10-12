@@ -39,3 +39,11 @@ export const resetPasswordSchema = z.object({
 export const googleLoginSchema = z.object({
   credential: z.string().min(1, "Google credential is required"),
 });
+
+export const updateProfileSchema = z.object({
+  fullName: z
+    .string({ required_error: "Full name is required" })
+    .trim()
+    .min(2, "Full name must be at least 2 characters")
+    .max(70, "Full name must not exceed 70 characters"),
+});

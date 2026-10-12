@@ -658,7 +658,7 @@ export function EnrolledClassesTable({
                       </td>
 
                       <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed] whitespace-nowrap">
-                        {c.section ? c.section.toUpperCase() : "—"} • {c.semester}
+                        {c.section ? c.section.toUpperCase() : "—"} • {c.semester ? c.semester.toUpperCase() : "—"}
                       </td>
 
                       <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] whitespace-nowrap">

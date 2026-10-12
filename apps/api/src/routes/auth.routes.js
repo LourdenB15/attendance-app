@@ -15,6 +15,7 @@ router.post("/forgot-password", authLimiter, emailSendLimiter, authController.fo
 router.post("/reset-password/validate", authLimiter, authController.validateResetToken);
 router.post("/reset-password", authLimiter, authController.resetPassword);
 router.get("/me", authenticate, authController.me);
+router.patch("/profile", authenticate, authController.updateProfile);
 router.post("/logout", authController.logout);
 router.post("/google", authLimiter, authController.loginWithGoogle);
 

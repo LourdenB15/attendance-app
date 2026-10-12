@@ -287,3 +287,16 @@ export async function loginWithGoogle(idToken) {
   const token = issueToken(user);
   return { user: await toSafeUser(user), token };
 }
+
+export async function updateProfile(userId, fullName) {
+  const user = await usersRepository.findById(userId);
+  if (!user) {
+    throw httpError(404, "User not found");
+  }
+  if (!user.is_active) {
+    throw httpError(403, "This account has been deactivated", "ACCOUNT_DEACTIVATED");
+  }
+
+  const updated = await usersRepository.updateProfile(userId, fullName.trim());
+  return toSafeUser(updated);
+}

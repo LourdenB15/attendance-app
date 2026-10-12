@@ -73,6 +73,8 @@ export const authApi = {
   logout: () => request("/auth/logout", { method: "POST" }),
   changePassword: (body) =>
     request("/auth/change-password", { method: "POST", body }),
+  updateProfile: (body) =>
+    request("/auth/profile", { method: "PATCH", body }),
   forgotPassword: (email) =>
     request("/auth/forgot-password", { method: "POST", body: { email } }),
   validateResetToken: (token) =>

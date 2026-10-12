@@ -127,7 +127,7 @@ export function ClassesTable({
   const startEdit = (cls) => {
     setEditingClass(cls);
     setEditName(cls.name || "");
-    setEditSemester(cls.semester || "");
+    setEditSemester((cls.semester || "").toUpperCase());
     setEditSection((cls.section || "").toUpperCase());
     setOpenMenuId(null);
   };
@@ -135,7 +135,7 @@ export function ClassesTable({
   const hasEditChanges =
     editingClass !== null &&
     (editName.trim() !== (editingClass.name || "") ||
-      editSemester.trim() !== (editingClass.semester || "") ||
+      editSemester.trim().toUpperCase() !== (editingClass.semester || "").toUpperCase() ||
       editSection.trim().toUpperCase() !== (editingClass.section || ""));
 
   const handleUpdate = async (e) => {
@@ -144,7 +144,7 @@ export function ClassesTable({
     try {
       await classesApi.updateClass(editingClass.id, {
         name: editName.trim(),
-        semester: editSemester.trim(),
+        semester: editSemester.trim().toUpperCase(),
         section: editSection.trim().toUpperCase(),
       });
       showToast("success", "Class updated successfully.");
@@ -483,7 +483,7 @@ export function ClassesTable({
                   </div>
 
                   <div className="relative z-0 flex items-center justify-between text-xs text-white/90 pt-3">
-                    <span className="font-medium truncate">{cls.semester}</span>
+                    <span className="font-medium truncate">{cls.semester ? cls.semester.toUpperCase() : ""}</span>
                     {isArchived ? (
                       <span className="bg-black/25 px-2 py-0.5 rounded text-[11px] font-semibold">
                         Archived
@@ -645,7 +645,7 @@ export function ClassesTable({
                     <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 font-semibold text-[#202124] group-hover:text-[#1a73e8] border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] whitespace-nowrap">
                       {formatClassDisplayName(cls.name, cls.section)}
                     </td>
-                    <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-[#5f6368] border-r border-[#e8eaed] whitespace-nowrap">
+                    <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-[#5f6368] border-r border-[#e8eaed] whitespace-nowrap uppercase">
                       {cls.semester}
                     </td>
                     <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-[#5f6368] border-r border-[#e8eaed] whitespace-nowrap uppercase">
@@ -768,8 +768,8 @@ export function ClassesTable({
               required
               placeholder="e.g. 1st Sem 2026 or SY 2026-2027"
               value={editSemester}
-              onChange={(e) => setEditSemester(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-lg text-sm text-[#202124] focus:border-[#1a73e8] focus:outline-none focus:ring-3 focus:ring-[#e8f0fe] transition-all"
+              onChange={(e) => setEditSemester(e.target.value.toUpperCase())}
+              className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-lg text-sm text-[#202124] uppercase focus:border-[#1a73e8] focus:outline-none focus:ring-3 focus:ring-[#e8f0fe] transition-all"
             />
           </div>
           <div>

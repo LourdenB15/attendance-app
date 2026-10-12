@@ -50,6 +50,18 @@ export async function updateRole(id, role) {
   return result.rows[0];
 }
 
+export async function updateProfile(id, fullName) {
+  const result = await pool.query(
+    `UPDATE users
+     SET full_name = $1, updated_at = now()
+     WHERE id = $2
+     RETURNING id, full_name, email, role, must_change_password, is_active, is_email_verified, created_at,
+             password_hash IS NOT NULL AS has_password`,
+    [fullName, id],
+  );
+  return result.rows[0];
+}
+
 export async function setEmailVerified(id) {
   const result = await pool.query(
     `UPDATE users SET is_email_verified = true, updated_at = now()

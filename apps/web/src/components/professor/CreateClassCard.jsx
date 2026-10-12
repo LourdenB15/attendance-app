@@ -19,7 +19,7 @@ export function CreateClassCard({ onCreated, onCancel, isModal = false }) {
     try {
       const created = await classesApi.createClass({
         name: name.trim(),
-        semester: semester.trim(),
+        semester: semester.trim().toUpperCase(),
         section: section.trim().toUpperCase(),
       });
       showToast(
@@ -93,8 +93,8 @@ export function CreateClassCard({ onCreated, onCancel, isModal = false }) {
               required
               placeholder="e.g. 1st Sem 2026 or SY 2026-2027"
               value={semester}
-              onChange={(e) => setSemester(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-lg text-sm text-[#202124] placeholder-[#80868b] focus:border-[#1a73e8] focus:outline-none focus:ring-2 focus:ring-[#e8f0fe] transition-all"
+              onChange={(e) => setSemester(e.target.value.toUpperCase())}
+              className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-lg text-sm text-[#202124] placeholder-[#80868b] uppercase focus:border-[#1a73e8] focus:outline-none focus:ring-2 focus:ring-[#e8f0fe] transition-all"
             />
           </div>
           <div>

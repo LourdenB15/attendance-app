@@ -187,6 +187,22 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const updateProfile = async ({ fullName }) => {
+    try {
+      const res = await authApi.updateProfile({ fullName });
+      const updatedUser = res.user || res;
+      setCurrentUser((prev) => ({
+        ...prev,
+        ...updatedUser,
+      }));
+      showToast("success", "Profile name updated successfully!");
+      return updatedUser;
+    } catch (err) {
+      showToast("error", err.message);
+      throw err;
+    }
+  };
+
   // Stable identity + no-op when unchanged: consumers list this in effect deps,
   // so a new function or user object on every call would re-run their fetches in a loop
   const setBiometricEnrolled = useCallback((enrolled = true) => {
@@ -209,6 +225,7 @@ export function AuthProvider({ children }) {
         resetPassword,
         resendVerification,
         changePassword,
+        updateProfile,
         logout,
         refreshUser,
         setBiometricEnrolled,
