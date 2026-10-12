@@ -3,6 +3,7 @@ import { useState } from "react";
 import { classesApi } from "../../api";
 import { useToast } from "../../context/useToast";
 import { IconClassroom } from "../ui/Icons";
+import { formatClassDisplayName } from "../../utils/classFormatting";
 
 export function CreateClassCard({ onCreated, onCancel, isModal = false }) {
   const [name, setName] = useState("");
@@ -19,11 +20,11 @@ export function CreateClassCard({ onCreated, onCancel, isModal = false }) {
       const created = await classesApi.createClass({
         name: name.trim(),
         semester: semester.trim(),
-        section: section.trim(),
+        section: section.trim().toUpperCase(),
       });
       showToast(
         "success",
-        `Class "${created.name}" created! Join Code: ${created.join_code}`,
+        `Class "${formatClassDisplayName(created.name, created.section)}" created! Join Code: ${created.join_code}`,
       );
       setName("");
       setSemester("");
@@ -69,13 +70,13 @@ export function CreateClassCard({ onCreated, onCancel, isModal = false }) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-xs font-semibold uppercase tracking-wider text-[#5f6368] mb-1.5">
-            Class Name
+            Class / Course Name
           </label>
           <input
             type="text"
             required
             autoFocus={isModal}
-            placeholder="e.g. CS101 Intro to Algorithms"
+            placeholder="e.g. CS101 Intro to Algorithms or Science 10"
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-lg text-sm text-[#202124] placeholder-[#80868b] focus:border-[#1a73e8] focus:outline-none focus:ring-2 focus:ring-[#e8f0fe] transition-all"
@@ -90,7 +91,7 @@ export function CreateClassCard({ onCreated, onCancel, isModal = false }) {
             <input
               type="text"
               required
-              placeholder="e.g. Fall 2026"
+              placeholder="e.g. 1st Sem 2026 or SY 2026-2027"
               value={semester}
               onChange={(e) => setSemester(e.target.value)}
               className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-lg text-sm text-[#202124] placeholder-[#80868b] focus:border-[#1a73e8] focus:outline-none focus:ring-2 focus:ring-[#e8f0fe] transition-all"
@@ -98,18 +99,30 @@ export function CreateClassCard({ onCreated, onCancel, isModal = false }) {
           </div>
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-[#5f6368] mb-1.5">
-              Section
+              Section / Year & Block
             </label>
             <input
               type="text"
               required
-              placeholder="e.g. Section 1A"
+              placeholder="e.g. BSCS-3A, 10-Emerald, or 1A"
               value={section}
-              onChange={(e) => setSection(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-lg text-sm text-[#202124] placeholder-[#80868b] focus:border-[#1a73e8] focus:outline-none focus:ring-2 focus:ring-[#e8f0fe] transition-all"
+              onChange={(e) => setSection(e.target.value.toUpperCase())}
+              className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-lg text-sm text-[#202124] placeholder-[#80868b] uppercase focus:border-[#1a73e8] focus:outline-none focus:ring-2 focus:ring-[#e8f0fe] transition-all"
             />
+            <p className="text-[11px] text-[#5f6368] mt-1">
+              Supports college blocks (e.g. BSCS-3A) and high school sections (e.g. 10-Emerald).
+            </p>
           </div>
         </div>
+
+        {name.trim() && (
+          <div className="bg-[#f8f9fa] border border-[#dadce0] rounded-lg p-2.5 flex items-center justify-between text-xs animate-in fade-in duration-150">
+            <span className="text-[#5f6368] font-medium">Display Title:</span>
+            <span className="font-bold text-[#1a73e8] tracking-tight">
+              {formatClassDisplayName(name, section)}
+            </span>
+          </div>
+        )}
 
         <div className={`flex items-center ${isModal ? "justify-end gap-2.5 pt-2 border-t border-[#e8eaed]" : "gap-3"}`}>
           {isModal && onCancel && (

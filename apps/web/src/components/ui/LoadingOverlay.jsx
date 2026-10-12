@@ -1,4 +1,5 @@
 // apps/web/src/components/ui/LoadingOverlay.jsx
+import { MaterialSpinner } from "./ProgressBar";
 
 // Full-screen spinner shown while a check-in is being verified and saved
 export function LoadingOverlay({ message = "Verifying your identity..." }) {
@@ -7,12 +8,9 @@ export function LoadingOverlay({ message = "Verifying your identity..." }) {
       <div
         role="status"
         aria-live="polite"
-        className="bg-white rounded-2xl shadow-xl border border-[#dadce0] px-8 py-6 flex flex-col items-center gap-3.5 max-w-sm text-center"
+        className="bg-white rounded-2xl shadow-xl border border-[#dadce0] px-8 py-6 flex flex-col items-center gap-3.5 max-w-sm text-center animate-in zoom-in-95 duration-150"
       >
-        <div className="relative w-11 h-11">
-          <div className="absolute inset-0 rounded-full border-3 border-[#e8f0fe]"></div>
-          <div className="absolute inset-0 rounded-full border-3 border-[#1a73e8] border-t-transparent animate-spin"></div>
-        </div>
+        <MaterialSpinner size="lg" />
         <div>
           <p className="text-sm font-semibold text-[#202124]">{message}</p>
           <p className="text-xs text-[#5f6368] mt-0.5">Please keep this window open</p>

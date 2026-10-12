@@ -4,6 +4,7 @@ import { Badge } from "../ui/Badge";
 import { EmptyState } from "../ui/EmptyState";
 import { UserAvatar } from "../ui/UserAvatar";
 import { TableSkeleton } from "../ui/Skeleton";
+import { GoogleProgressBar } from "../ui/ProgressBar";
 import {
   IconUsers,
   IconRefresh,
@@ -171,17 +172,23 @@ export function UserDirectoryTable({
           <button
             type="button"
             onClick={onRefresh}
-            className="inline-flex items-center gap-1.5 px-3 py-2 sm:py-1.5 text-xs font-semibold text-[#3c4043] bg-white hover:bg-[#f1f3f4] border border-[#dadce0] rounded-lg transition shadow-2xs shrink-0 cursor-pointer"
+            disabled={loading}
+            className="inline-flex items-center gap-1.5 px-3 py-2 sm:py-1.5 text-xs font-semibold text-[#3c4043] bg-white hover:bg-[#f1f3f4] border border-[#dadce0] rounded-lg transition shadow-2xs shrink-0 cursor-pointer disabled:opacity-70"
             title="Refresh directory"
           >
-            <IconRefresh className="w-3.5 h-3.5 text-[#5f6368]" />
+            <IconRefresh className={`w-3.5 h-3.5 text-[#5f6368] ${loading ? "animate-spin text-[#1a73e8]" : ""}`} />
             <span className="hidden sm:inline">Refresh</span>
           </button>
         </div>
       </div>
 
+      {/* Pinned Google Indeterminate Progress Bar during background refresh */}
+      {loading && users.length > 0 && (
+        <GoogleProgressBar height="h-1" />
+      )}
+
       {/* Loading Skeleton */}
-      {loading ? (
+      {loading && users.length === 0 ? (
         <TableSkeleton
           rows={6}
           cols={6}

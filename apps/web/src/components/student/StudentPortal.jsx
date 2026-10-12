@@ -14,6 +14,7 @@ import { ClassDetailSkeleton } from "../ui/Skeleton";
 import { updateUrlParams } from "../../utils/navigation";
 import { Modal } from "../ui/Modal";
 import { IconCamera, IconPlus, IconRefresh } from "../ui/Icons";
+import { formatClassDisplayName } from "../../utils/classFormatting";
 
 export function StudentPortal({
   activeNav = "classes",
@@ -254,7 +255,7 @@ export function StudentPortal({
       const res = await livenessApi.checkIn(cls.active_session_id, livenessResult);
       if (res.present) {
         await refreshAll(true);
-        showToast("success", `Attendance recorded as PRESENT for ${cls.name}!`);
+        showToast("success", `Attendance recorded as PRESENT for ${formatClassDisplayName(cls.name, cls.section)}!`);
       } else {
         showToast("error", res.message || "Face not recognized. Attendance not recorded.");
       }
@@ -308,10 +309,11 @@ export function StudentPortal({
           {activeTab === "history" && (
             <button
               type="button"
+              disabled={attendanceLoading}
               onClick={() => loadAttendance(false)}
-              className="px-3.5 py-2 bg-white hover:bg-[#f8f9fa] border border-[#dadce0] text-[#202124] text-xs font-semibold rounded-lg shadow-2xs transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+              className="px-3.5 py-2 bg-white hover:bg-[#f8f9fa] border border-[#dadce0] text-[#202124] text-xs font-semibold rounded-lg shadow-2xs transition-colors inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-70"
             >
-              <IconRefresh className="w-3.5 h-3.5 text-[#5f6368]" />
+              <IconRefresh className={`w-3.5 h-3.5 text-[#5f6368] ${attendanceLoading ? "animate-spin text-[#1a73e8]" : ""}`} />
               <span>Refresh</span>
             </button>
           )}
@@ -341,7 +343,7 @@ export function StudentPortal({
       {activeScanningClass && (
         <LivenessCamera
           mode="attendance"
-          title={`Check-In: ${activeScanningClass.name}`}
+          title={`Check-In: ${formatClassDisplayName(activeScanningClass.name, activeScanningClass.section)}`}
           onComplete={handleDirectScanSuccess}
           onCancel={() => setActiveScanningClassId(null)}
         />
@@ -393,6 +395,7 @@ export function StudentPortal({
               onSelectClass={handleSelectClass}
               onTakeAttendance={handleDirectTakeAttendance}
               onOpenJoin={() => setShowJoinModal(true)}
+              onRefresh={() => loadClasses(false)}
               loading={classesLoading}
             />
           </div>

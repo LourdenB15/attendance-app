@@ -12,7 +12,6 @@ import { SectionAttendanceHistory } from "./SectionAttendanceHistory";
 import { ClassDetailSkeleton } from "../ui/Skeleton";
 import { Modal } from "../ui/Modal";
 import {
-  IconChevronLeft,
   IconUsers,
   IconClock,
   IconCamera,
@@ -24,6 +23,7 @@ import {
   saveSessionState,
   getSessionState,
 } from "../../utils/navigation";
+import { formatClassDisplayName } from "../../utils/classFormatting";
 
 export function ProfessorPortal({
   activeNav,
@@ -260,7 +260,7 @@ export function ProfessorPortal({
               </button>
               <span className="text-[#9aa0a6]">/</span>
               <span className="font-bold text-[#202124] truncate max-w-[200px] sm:max-w-md">
-                {selectedClass.name}
+                {formatClassDisplayName(selectedClass.name, selectedClass.section)}
               </span>
               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 ml-1 rounded-full text-[10px] font-bold bg-[#e6f4ea] text-[#137333] border border-[#ceead6]">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#1e8e3e] animate-pulse" />
@@ -283,8 +283,8 @@ export function ProfessorPortal({
           )}
         </div>
 
-        <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-auto">
-          {!selectedClass ? (
+        {!selectedClass && (
+          <div className="flex items-center gap-2.5 shrink-0 self-start sm:self-auto">
             <button
               type="button"
               onClick={() => setShowCreateClassModal(true)}
@@ -293,17 +293,8 @@ export function ProfessorPortal({
               <IconPlus className="w-4 h-4" />
               <span>Create Class</span>
             </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleBackToClasses}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-[#f1f3f4] text-[#3c4043] border border-[#dadce0] font-semibold rounded-lg text-xs transition shadow-2xs cursor-pointer"
-            >
-              <IconChevronLeft className="w-4 h-4" />
-              <span>All Classes</span>
-            </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Create Class Modal */}
@@ -403,6 +394,8 @@ export function ProfessorPortal({
                   loadActiveSession(selectedClass.id);
                   loadClasses(true);
                 }}
+                onRefreshAttendance={() => activeSession && loadAttendance(activeSession.id, false)}
+                refreshingAttendance={attendanceLoading}
               />
 
               {activeSession && (

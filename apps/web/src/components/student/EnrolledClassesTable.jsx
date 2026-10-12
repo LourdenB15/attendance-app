@@ -6,10 +6,12 @@ import { EmptyState } from "../ui/EmptyState";
 import { useToast } from "../../context/useToast";
 import { useConfirm } from "../../context/useConfirm";
 import { TableSkeleton, ClassGridSkeleton } from "../ui/Skeleton";
+import { GoogleProgressBar } from "../ui/ProgressBar";
 import {
   getStudentArchivedIds,
   saveStudentArchivedIds,
 } from "../../utils/studentArchivedClasses";
+import { formatClassDisplayName } from "../../utils/classFormatting";
 import {
   IconBook,
   IconGrid,
@@ -33,6 +35,7 @@ export function EnrolledClassesTable({
   onTakeAttendance,
   isBiometricEnrolled = true,
   onOpenJoin,
+  onRefresh,
   loading = false,
 }) {
   const [viewMode, setViewMode] = useState("grid"); // "grid" | "table"
@@ -246,11 +249,31 @@ export function EnrolledClassesTable({
               <IconList className="w-4 h-4" />
             </button>
           </div>
+
+          {onRefresh && (
+            <button
+              type="button"
+              onClick={onRefresh}
+              disabled={loading}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-[#f1f3f4] border border-[#dadce0] rounded-lg text-xs font-semibold text-[#3c4043] transition shadow-2xs shrink-0 cursor-pointer disabled:opacity-70"
+              title="Refresh classes"
+            >
+              <IconRefresh className={`w-3.5 h-3.5 text-[#5f6368] ${loading ? "animate-spin text-[#1a73e8]" : ""}`} />
+              <span className="hidden sm:inline">Refresh</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Loading Skeleton */}
-      {loading ? (
+      {/* Pinned Google Indeterminate Progress Bar during background refresh */}
+      {loading && visibleClasses.length > 0 && (
+        <div className="rounded-xl overflow-hidden -mb-1 shadow-2xs">
+          <GoogleProgressBar height="h-1" />
+        </div>
+      )}
+
+      {/* Loading Skeleton on Cold Start (no existing data) */}
+      {loading && visibleClasses.length === 0 ? (
         viewMode === "grid" ? (
           <ClassGridSkeleton count={6} />
         ) : (
@@ -311,12 +334,12 @@ export function EnrolledClassesTable({
                   if (e.target.closest("[data-menu-dropdown]")) return;
                   if (onSelectClass) onSelectClass(c.class_id);
                 }}
-                className={`bg-white rounded-2xl border border-[#dadce0] transition-all duration-200 flex flex-col group relative ${
-                  openMenuId === c.class_id ? "z-30" : "z-0"
-                } ${
-                  isProfArchived
-                    ? "opacity-75"
-                    : "hover:shadow-md hover:border-[#bdc1c6] cursor-pointer"
+                className={`bg-white rounded-2xl border border-[#dadce0] flex flex-col group relative ${
+                  openMenuId === c.class_id
+                    ? "z-40 shadow-sm border-[#dadce0]"
+                    : isProfArchived
+                    ? "z-0 opacity-75"
+                    : "z-0 hover:shadow-md hover:border-[#bdc1c6] cursor-pointer transition-all duration-200"
                 }`}
               >
                 {/* Header Banner */}
@@ -330,13 +353,13 @@ export function EnrolledClassesTable({
                     </div>
                   </div>
 
-                  <div className="flex items-start justify-between gap-3 relative z-10">
+                  <div className={`flex items-start justify-between gap-3 relative ${openMenuId === c.class_id ? "z-40" : "z-10"}`}>
                     <div className="min-w-0 flex-1">
-                      <h3 className="font-bold text-lg sm:text-xl leading-tight truncate group-hover:underline">
-                        {c.name}
+                      <h3 className={`font-bold text-lg sm:text-xl leading-tight truncate ${openMenuId === c.class_id ? "" : "group-hover:underline"}`}>
+                        {formatClassDisplayName(c.name, c.section)}
                       </h3>
                       <p className="text-xs text-white/90 font-medium mt-0.5 truncate">
-                        Section {c.section}
+                        Section {c.section ? c.section.toUpperCase() : "—"}
                       </p>
                     </div>
 
@@ -348,7 +371,11 @@ export function EnrolledClassesTable({
                           e.stopPropagation();
                           setOpenMenuId(openMenuId === c.class_id ? null : c.class_id);
                         }}
-                        className="p-1.5 rounded-full text-white/80 hover:text-white hover:bg-white/15 transition cursor-pointer"
+                        className={`p-1.5 rounded-full transition-colors duration-75 cursor-pointer outline-none focus:outline-none ${
+                          openMenuId === c.class_id
+                            ? "bg-white/25 text-white shadow-xs"
+                            : "text-white/80 hover:text-white hover:bg-white/15"
+                        }`}
                         title="Class options"
                         aria-label="Class options"
                       >
@@ -357,43 +384,58 @@ export function EnrolledClassesTable({
 
                       {openMenuId === c.class_id && (
                         <div
-                          className="absolute right-0 top-full mt-1.5 w-40 bg-white rounded-xl shadow-xl border border-[#dadce0] py-1 z-50 text-[#202124] text-xs font-medium animate-in fade-in zoom-in-95 duration-100"
+                          className="absolute right-0 top-full mt-1.5 w-44 bg-white rounded-2xl shadow-xl border border-[#dadce0] p-1.5 z-50 text-[#202124] text-xs font-medium animate-in fade-in zoom-in-95 duration-75 outline-none select-none"
                           onClick={(e) => e.stopPropagation()}
                           onMouseDown={(e) => e.stopPropagation()}
                         >
                           <button
                             type="button"
                             disabled={copiedId === c.class_id}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleCopyCode(e, c.join_code, c.class_id);
+                            }}
                             onClick={(e) => handleCopyCode(e, c.join_code, c.class_id)}
-                            className="w-full text-left px-3 py-2 hover:bg-[#f1f3f4] flex items-center gap-2.5 transition disabled:opacity-60 cursor-pointer disabled:cursor-default"
+                            className="w-full text-left px-3 py-2 rounded-xl hover:bg-[#f1f3f4] active:bg-[#e8eaed] flex items-center gap-2.5 transition-colors duration-75 text-[#202124] cursor-pointer disabled:cursor-default disabled:opacity-60 outline-none focus:outline-none"
                           >
-                            <IconCopy className="w-3.5 h-3.5 text-[#5f6368]" />
+                            <IconCopy className="w-4 h-4 text-[#5f6368]" />
                             <span>{copiedId === c.class_id ? "Copied" : "Copy code"}</span>
                           </button>
                           {!isSelfArchived && !isProfArchived ? (
                             <button
                               type="button"
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleArchiveClass(c);
+                              }}
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
                                 handleArchiveClass(c);
                               }}
-                              className="w-full text-left px-3 py-2 hover:bg-[#fce8e6] flex items-center gap-2.5 transition text-[#d93025] hover:text-[#b3261e] cursor-pointer"
+                              className="w-full text-left px-3 py-2 rounded-xl hover:bg-[#fce8e6] active:bg-[#fad2cf] flex items-center gap-2.5 transition-colors duration-75 text-[#d93025] hover:text-[#b3261e] cursor-pointer outline-none focus:outline-none"
                             >
-                              <IconArchive className="w-3.5 h-3.5 text-[#d93025]" />
+                              <IconArchive className="w-4 h-4 text-[#d93025]" />
                               <span>Archive</span>
                             </button>
                           ) : isSelfArchived ? (
                             <button
                               type="button"
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleUnarchiveClass(c);
+                              }}
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
                                 handleUnarchiveClass(c);
                               }}
-                              className="w-full text-left px-3 py-2 hover:bg-[#e8f0fe] flex items-center gap-2.5 transition text-[#1a73e8] cursor-pointer"
+                              className="w-full text-left px-3 py-2 rounded-xl hover:bg-[#e8f0fe] active:bg-[#d2e3fc] flex items-center gap-2.5 transition-colors duration-75 text-[#1a73e8] cursor-pointer outline-none focus:outline-none"
                             >
-                              <IconRefresh className="w-3.5 h-3.5 text-[#1a73e8]" />
+                              <IconRefresh className="w-4 h-4 text-[#1a73e8]" />
                               <span>Restore</span>
                             </button>
                           ) : null}
@@ -402,7 +444,7 @@ export function EnrolledClassesTable({
                     </div>
                   </div>
 
-                  <div className="relative z-10 flex items-center justify-between text-xs text-white/90 pt-3">
+                  <div className="relative z-0 flex items-center justify-between text-xs text-white/90 pt-3">
                     <span className="font-medium truncate">
                       {c.professor_name || "Faculty Member"}
                     </span>
@@ -597,7 +639,7 @@ export function EnrolledClassesTable({
                       {/* Class Name column (frozen on md+ desktop only) */}
                       <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 font-semibold text-[#202124] group-hover:text-[#1a73e8] border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] whitespace-nowrap">
                         <div className="flex items-center gap-2">
-                          <span>{c.name}</span>
+                          <span>{formatClassDisplayName(c.name, c.section)}</span>
                           {isProfArchived && (
                             <Badge variant="default" size="xs">
                               Archived
@@ -616,7 +658,7 @@ export function EnrolledClassesTable({
                       </td>
 
                       <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed] whitespace-nowrap">
-                        {c.section} • {c.semester}
+                        {c.section ? c.section.toUpperCase() : "—"} • {c.semester}
                       </td>
 
                       <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] whitespace-nowrap">

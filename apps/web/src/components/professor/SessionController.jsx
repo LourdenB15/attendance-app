@@ -15,6 +15,7 @@ export function SessionController({
   onSessionOpened,
   onSessionClosed,
   onRefreshAttendance,
+  refreshingAttendance = false,
 }) {
   const [durationMinutes, setDurationMinutes] = useState(60);
   const [label, setLabel] = useState("");
@@ -152,10 +153,11 @@ export function SessionController({
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
             <button
               type="button"
+              disabled={refreshingAttendance}
               onClick={onRefreshAttendance}
-              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-white hover:bg-[#f1f3f4] text-[#3c4043] border border-[#dadce0] rounded-xl text-xs font-semibold transition shadow-2xs min-h-[40px]"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-white hover:bg-[#f1f3f4] text-[#3c4043] border border-[#dadce0] rounded-xl text-xs font-semibold transition shadow-2xs min-h-[40px] cursor-pointer disabled:opacity-70"
             >
-              <IconRefresh className="w-4 h-4 text-[#5f6368]" />
+              <IconRefresh className={`w-4 h-4 text-[#5f6368] ${refreshingAttendance ? "animate-spin text-[#1a73e8]" : ""}`} />
               <span>Refresh Attendance Roster</span>
             </button>
 

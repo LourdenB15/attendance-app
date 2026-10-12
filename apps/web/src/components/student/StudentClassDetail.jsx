@@ -7,6 +7,7 @@ import { LoadingOverlay } from "../ui/LoadingOverlay";
 import { Badge } from "../ui/Badge";
 import { getClassTheme } from "../ui/classroomThemes";
 import { TableSkeleton } from "../ui/Skeleton";
+import { formatClassDisplayName } from "../../utils/classFormatting";
 import {
   IconChevronLeft,
   IconCamera,
@@ -221,7 +222,7 @@ export function StudentClassDetail({
       const res = await livenessApi.checkIn(classItem.active_session_id, livenessResult);
       if (res.present) {
         if (onAttendanceMarked) await onAttendanceMarked();
-        showToast("success", `Attendance recorded as PRESENT for ${classItem.name}!`);
+        showToast("success", `Attendance recorded as PRESENT for ${formatClassDisplayName(classItem.name, classItem.section)}!`);
       } else {
         showToast("error", res.message || "Face not recognized. Attendance not recorded.");
       }
@@ -256,10 +257,10 @@ export function StudentClassDetail({
             </button>
 
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white leading-tight">
-              {classItem.name}
+              {formatClassDisplayName(classItem.name, classItem.section)}
             </h2>
             <p className={`text-sm ${theme.subText} font-medium mt-1`}>
-              Teacher: {classItem.professor_name || "Faculty Member"} • Section {classItem.section} ({classItem.semester})
+              Teacher: {classItem.professor_name || "Faculty Member"} • Section {classItem.section ? classItem.section.toUpperCase() : "—"} ({classItem.semester})
             </p>
           </div>
 
@@ -893,7 +894,7 @@ export function StudentClassDetail({
       {/* Liveness Scanner Modal */}
       {showScanner && (
         <LivenessCamera
-          title={`Attendance Check-In: ${classItem.name}`}
+          title={`Attendance Check-In: ${formatClassDisplayName(classItem.name, classItem.section)}`}
           onComplete={handleTakeAttendance}
           onCancel={() => setShowScanner(false)}
         />

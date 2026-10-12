@@ -14,6 +14,7 @@ import {
   IconCheck,
   IconSearch,
 } from "../ui/Icons";
+import { formatClassDisplayName } from "../../utils/classFormatting";
 
 export function SectionAttendanceHistory({ classId, className, section }) {
   const [historyTab, setHistoryTab] = useState("sessions"); // "sessions" | "students"
@@ -167,7 +168,7 @@ export function SectionAttendanceHistory({ classId, className, section }) {
       <div className="p-4 sm:p-5 border-b border-[#dadce0] flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <div>
           <h3 className="font-bold text-[#202124] text-base">
-            Attendance Analytics: {className} ({section})
+            Attendance Analytics: {formatClassDisplayName(className, section)}
           </h3>
           <p className="text-xs text-[#5f6368] mt-0.5">
             Review past attendance sessions, rate metrics, and student consistency.

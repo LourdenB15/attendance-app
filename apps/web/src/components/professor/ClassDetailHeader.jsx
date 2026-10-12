@@ -4,6 +4,7 @@ import { getClassTheme } from "../ui/classroomThemes";
 import { IconChevronLeft, IconCopy, IconCheck, IconExpand, IconClassroom } from "../ui/Icons";
 import { Modal } from "../ui/Modal";
 import { useToast } from "../../context/useToast";
+import { formatClassDisplayName } from "../../utils/classFormatting";
 
 export function ClassDetailHeader({ selectedClass, onBack }) {
   const [copied, setCopied] = useState(false);
@@ -47,11 +48,11 @@ export function ClassDetailHeader({ selectedClass, onBack }) {
 
             <div>
               <h2 className="text-xl sm:text-3xl font-extrabold tracking-tight text-white leading-tight">
-                {selectedClass.name}
+                {formatClassDisplayName(selectedClass.name, selectedClass.section)}
               </h2>
               <div className="flex flex-wrap items-center gap-2 mt-2">
                 <span className="bg-white/20 backdrop-blur-xs px-2.5 py-0.5 rounded-md text-xs font-semibold text-white/95">
-                  Section {selectedClass.section}
+                  Section {selectedClass.section ? selectedClass.section.toUpperCase() : "—"}
                 </span>
                 <span className="bg-white/20 backdrop-blur-xs px-2.5 py-0.5 rounded-md text-xs font-semibold text-white/95">
                   {selectedClass.semester}
@@ -121,7 +122,7 @@ export function ClassDetailHeader({ selectedClass, onBack }) {
         isOpen={showPresentModal}
         onClose={() => setShowPresentModal(false)}
         title="Class Join Code"
-        subtitle={`${selectedClass.name} • Section ${selectedClass.section}`}
+        subtitle={`${formatClassDisplayName(selectedClass.name, selectedClass.section)} • ${selectedClass.semester}`}
         maxWidth="max-w-lg"
       >
         <div className="text-center py-4 space-y-5">

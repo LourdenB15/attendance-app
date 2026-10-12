@@ -4,6 +4,7 @@ import { Badge } from "../ui/Badge";
 import { StatCard } from "../ui/StatCard";
 import { EmptyState } from "../ui/EmptyState";
 import { TableSkeleton, StatCardSkeleton } from "../ui/Skeleton";
+import { GoogleProgressBar } from "../ui/ProgressBar";
 import {
   IconClock,
   IconCheck,
@@ -11,6 +12,7 @@ import {
   IconRefresh,
   IconSearch,
 } from "../ui/Icons";
+import { formatClassDisplayName } from "../../utils/classFormatting";
 
 export function AttendanceHistoryTable({
   records = [],
@@ -173,17 +175,23 @@ export function AttendanceHistoryTable({
             <button
               type="button"
               onClick={onRefresh}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#3c4043] bg-white hover:bg-[#f1f3f4] border border-[#dadce0] rounded-lg transition shadow-2xs shrink-0 cursor-pointer"
+              disabled={loading}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#3c4043] bg-white hover:bg-[#f1f3f4] border border-[#dadce0] rounded-lg transition shadow-2xs shrink-0 cursor-pointer disabled:opacity-70"
               title="Refresh attendance records"
             >
-              <IconRefresh className="w-3.5 h-3.5 text-[#5f6368]" />
+              <IconRefresh className={`w-3.5 h-3.5 text-[#5f6368] ${loading ? "animate-spin text-[#1a73e8]" : ""}`} />
               <span className="hidden sm:inline">Refresh</span>
             </button>
           </div>
         </div>
 
+        {/* Pinned Google Indeterminate Progress Bar during background refresh */}
+        {loading && records.length > 0 && (
+          <GoogleProgressBar height="h-1" />
+        )}
+
         {/* Loading Skeleton */}
-        {loading ? (
+        {loading && records.length === 0 ? (
           <TableSkeleton
             rows={5}
             cols={7}
@@ -215,9 +223,9 @@ export function AttendanceHistoryTable({
                   <div key={rec.session_id || idx} className="p-4 space-y-2.5 hover:bg-[#f8f9fa] transition-colors">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="font-semibold text-sm text-[#202124]">{rec.class_name}</p>
+                        <p className="font-semibold text-sm text-[#202124]">{formatClassDisplayName(rec.class_name, rec.section)}</p>
                         <p className="text-xs text-[#5f6368] mt-0.5">
-                          Section {rec.section} • {rec.session_label || "Regular Session"}
+                          Section {rec.section ? rec.section.toUpperCase() : "—"} • {rec.session_label || "Regular Session"}
                         </p>
                       </div>
 
@@ -357,9 +365,9 @@ export function AttendanceHistoryTable({
                         >
                           {/* Class Name column (frozen on md+ desktop only) */}
                           <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 font-semibold text-[#202124] border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] whitespace-nowrap">
-                            {rec.class_name}
+                            {formatClassDisplayName(rec.class_name, rec.section)}
                           </td>
-                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed] whitespace-nowrap">
+                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed] whitespace-nowrap uppercase">
                             {rec.section}
                           </td>
                           <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-xs text-[#202124] font-medium border-r border-[#e8eaed] whitespace-nowrap">

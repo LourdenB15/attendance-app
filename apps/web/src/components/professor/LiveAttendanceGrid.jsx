@@ -7,6 +7,7 @@ import { Modal } from "../ui/Modal";
 import { EmptyState } from "../ui/EmptyState";
 import { UserAvatar } from "../ui/UserAvatar";
 import { TableSkeleton } from "../ui/Skeleton";
+import { GoogleProgressBar } from "../ui/ProgressBar";
 import {
   IconSearch,
   IconUsers,
@@ -232,8 +233,13 @@ export function LiveAttendanceGrid({
         </div>
       </div>
 
+      {/* Pinned Google Indeterminate Progress Bar during background refresh */}
+      {loading && attendance.length > 0 && (
+        <GoogleProgressBar height="h-1" />
+      )}
+
       {/* Loading Skeleton */}
-      {loading ? (
+      {loading && attendance.length === 0 ? (
         <TableSkeleton
           rows={5}
           cols={6}

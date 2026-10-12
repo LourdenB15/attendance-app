@@ -3,7 +3,7 @@
 export function Skeleton({ className = "" }) {
   return (
     <div
-      className={`animate-pulse bg-[#e8eaed] rounded-md ${className}`}
+      className={`animate-shimmer rounded-md ${className}`}
       aria-hidden="true"
     />
   );
@@ -102,7 +102,7 @@ export function ClassGridSkeleton({ count = 6 }) {
           key={i}
           className="bg-white rounded-2xl border border-[#dadce0] overflow-hidden shadow-xs flex flex-col"
         >
-          <div className="h-28 bg-[#e8eaed] animate-pulse p-4 flex flex-col justify-between">
+          <div className="h-28 animate-shimmer p-4 flex flex-col justify-between">
             <Skeleton className="h-5 w-3/4 bg-white/60" />
             <Skeleton className="h-3.5 w-1/2 bg-white/50" />
           </div>

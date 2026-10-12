@@ -8,6 +8,8 @@ import { getClassTheme } from "../ui/classroomThemes";
 import { Modal } from "../ui/Modal";
 import { EmptyState } from "../ui/EmptyState";
 import { TableSkeleton, ClassGridSkeleton } from "../ui/Skeleton";
+import { GoogleProgressBar } from "../ui/ProgressBar";
+import { formatClassDisplayName } from "../../utils/classFormatting";
 import {
   IconGrid,
   IconList,
@@ -126,7 +128,7 @@ export function ClassesTable({
     setEditingClass(cls);
     setEditName(cls.name || "");
     setEditSemester(cls.semester || "");
-    setEditSection(cls.section || "");
+    setEditSection((cls.section || "").toUpperCase());
     setOpenMenuId(null);
   };
 
@@ -134,16 +136,16 @@ export function ClassesTable({
     editingClass !== null &&
     (editName.trim() !== (editingClass.name || "") ||
       editSemester.trim() !== (editingClass.semester || "") ||
-      editSection.trim() !== (editingClass.section || ""));
+      editSection.trim().toUpperCase() !== (editingClass.section || ""));
 
   const handleUpdate = async (e) => {
     e.preventDefault();
     if (!editingClass || !hasEditChanges) return;
     try {
       await classesApi.updateClass(editingClass.id, {
-        name: editName,
-        semester: editSemester,
-        section: editSection,
+        name: editName.trim(),
+        semester: editSemester.trim(),
+        section: editSection.trim().toUpperCase(),
       });
       showToast("success", "Class updated successfully.");
       setEditingClass(null);
@@ -271,11 +273,31 @@ export function ClassesTable({
               <IconList className="w-4 h-4" />
             </button>
           </div>
+
+          {onRefresh && (
+            <button
+              type="button"
+              onClick={onRefresh}
+              disabled={loading}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-[#f1f3f4] border border-[#dadce0] rounded-lg text-xs font-semibold text-[#3c4043] transition shadow-2xs shrink-0 cursor-pointer disabled:opacity-70"
+              title="Refresh classes"
+            >
+              <IconRefresh className={`w-3.5 h-3.5 text-[#5f6368] ${loading ? "animate-spin text-[#1a73e8]" : ""}`} />
+              <span className="hidden sm:inline">Refresh</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Loading Skeleton */}
-      {loading ? (
+      {/* Pinned Google Indeterminate Progress Bar during background refresh */}
+      {loading && visibleClasses.length > 0 && (
+        <div className="rounded-xl overflow-hidden -mb-1 shadow-2xs">
+          <GoogleProgressBar height="h-1" />
+        </div>
+      )}
+
+      {/* Loading Skeleton on Cold Start (no existing data) */}
+      {loading && visibleClasses.length === 0 ? (
         viewMode === "grid" ? (
           <ClassGridSkeleton count={6} />
         ) : (
@@ -331,12 +353,12 @@ export function ClassesTable({
                   if (e.target.closest("[data-menu-dropdown]")) return;
                   if (!isArchived && onSelectClass) onSelectClass(cls);
                 }}
-                className={`bg-white rounded-2xl border border-[#dadce0] transition-all duration-200 flex flex-col group relative ${
-                  openMenuId === cls.id ? "z-30" : "z-0"
-                } ${
-                  isArchived
-                    ? "opacity-80"
-                    : "hover:shadow-md hover:border-[#bdc1c6] cursor-pointer"
+                className={`bg-white rounded-2xl border border-[#dadce0] flex flex-col group relative ${
+                  openMenuId === cls.id
+                    ? "z-40 shadow-sm border-[#dadce0]"
+                    : isArchived
+                    ? "z-0 opacity-80"
+                    : "z-0 hover:shadow-md hover:border-[#bdc1c6] cursor-pointer transition-all duration-200"
                 }`}
               >
                 {/* Colored Top Header Tile */}
@@ -350,13 +372,13 @@ export function ClassesTable({
                     </div>
                   </div>
 
-                  <div className="flex items-start justify-between gap-3 relative z-10">
+                  <div className={`flex items-start justify-between gap-3 relative ${openMenuId === cls.id ? "z-40" : "z-10"}`}>
                     <div className="min-w-0 flex-1">
-                      <h3 className="font-bold text-lg sm:text-xl leading-tight truncate group-hover:underline">
-                        {cls.name}
+                      <h3 className={`font-bold text-lg sm:text-xl leading-tight truncate ${openMenuId === cls.id ? "" : "group-hover:underline"}`}>
+                        {formatClassDisplayName(cls.name, cls.section)}
                       </h3>
                       <p className="text-xs text-white/90 font-medium mt-0.5 truncate">
-                        Section {cls.section}
+                        Section {cls.section ? cls.section.toUpperCase() : "—"}
                       </p>
                     </div>
 
@@ -368,7 +390,11 @@ export function ClassesTable({
                           e.stopPropagation();
                           setOpenMenuId(openMenuId === cls.id ? null : cls.id);
                         }}
-                        className="p-1.5 rounded-full text-white/80 hover:text-white hover:bg-white/15 transition cursor-pointer"
+                        className={`p-1.5 rounded-full transition-colors duration-75 cursor-pointer outline-none focus:outline-none ${
+                          openMenuId === cls.id
+                            ? "bg-white/25 text-white shadow-xs"
+                            : "text-white/80 hover:text-white hover:bg-white/15"
+                        }`}
                         title="Class options"
                         aria-label="Class options"
                       >
@@ -377,7 +403,7 @@ export function ClassesTable({
 
                       {openMenuId === cls.id && (
                         <div
-                          className="absolute right-0 top-full mt-1.5 w-40 bg-white rounded-xl shadow-xl border border-[#dadce0] py-1 z-50 text-[#202124] text-xs font-medium animate-in fade-in zoom-in-95 duration-100"
+                          className="absolute right-0 top-full mt-1.5 w-44 bg-white rounded-2xl shadow-xl border border-[#dadce0] p-1.5 z-50 text-[#202124] text-xs font-medium animate-in fade-in zoom-in-95 duration-75 outline-none select-none"
                           onClick={(e) => e.stopPropagation()}
                           onMouseDown={(e) => e.stopPropagation()}
                         >
@@ -385,49 +411,69 @@ export function ClassesTable({
                             <>
                               <button
                                 type="button"
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  startEdit(cls);
+                                }}
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
                                   startEdit(cls);
                                 }}
-                                className="w-full text-left px-3 py-2 hover:bg-[#f1f3f4] flex items-center gap-2.5 transition text-[#202124] cursor-pointer"
+                                className="w-full text-left px-3 py-2 rounded-xl hover:bg-[#f1f3f4] active:bg-[#e8eaed] flex items-center gap-2.5 transition-colors duration-75 text-[#202124] cursor-pointer outline-none focus:outline-none"
                               >
-                                <IconPencil className="w-3.5 h-3.5 text-[#5f6368]" />
+                                <IconPencil className="w-4 h-4 text-[#5f6368]" />
                                 <span>Edit details</span>
                               </button>
                               <button
                                 type="button"
                                 disabled={copiedId === cls.id}
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleCopyJoinCode(e, cls.join_code, cls.id);
+                                }}
                                 onClick={(e) => handleCopyJoinCode(e, cls.join_code, cls.id)}
-                                className="w-full text-left px-3 py-2 hover:bg-[#f1f3f4] flex items-center gap-2.5 transition text-[#202124] cursor-pointer disabled:cursor-default"
+                                className="w-full text-left px-3 py-2 rounded-xl hover:bg-[#f1f3f4] active:bg-[#e8eaed] flex items-center gap-2.5 transition-colors duration-75 text-[#202124] cursor-pointer disabled:cursor-default outline-none focus:outline-none"
                               >
-                                <IconCopy className="w-3.5 h-3.5 text-[#5f6368]" />
+                                <IconCopy className="w-4 h-4 text-[#5f6368]" />
                                 <span>{copiedId === cls.id ? "Copied" : "Copy code"}</span>
                               </button>
                               <button
                                 type="button"
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleArchive(cls);
+                                }}
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
                                   handleArchive(cls);
                                 }}
-                                className="w-full text-left px-3 py-2 hover:bg-[#fce8e6] flex items-center gap-2.5 transition text-[#d93025] hover:text-[#b3261e] cursor-pointer"
+                                className="w-full text-left px-3 py-2 rounded-xl hover:bg-[#fce8e6] active:bg-[#fad2cf] flex items-center gap-2.5 transition-colors duration-75 text-[#d93025] hover:text-[#b3261e] cursor-pointer outline-none focus:outline-none"
                               >
-                                <IconArchive className="w-3.5 h-3.5 text-[#d93025]" />
+                                <IconArchive className="w-4 h-4 text-[#d93025]" />
                                 <span>Archive</span>
                               </button>
                             </>
                           ) : (
                             <button
                               type="button"
+                              onMouseDown={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleUnarchive(cls.id);
+                              }}
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
                                 handleUnarchive(cls.id);
                               }}
-                              className="w-full text-left px-3 py-2 hover:bg-[#e8f0fe] flex items-center gap-2.5 transition text-[#1a73e8] cursor-pointer"
+                              className="w-full text-left px-3 py-2 rounded-xl hover:bg-[#e8f0fe] active:bg-[#d2e3fc] flex items-center gap-2.5 transition-colors duration-75 text-[#1a73e8] cursor-pointer outline-none focus:outline-none"
                             >
-                              <IconRefresh className="w-3.5 h-3.5 text-[#1a73e8]" />
+                              <IconRefresh className="w-4 h-4 text-[#1a73e8]" />
                               <span>Restore</span>
                             </button>
                           )}
@@ -436,7 +482,7 @@ export function ClassesTable({
                     </div>
                   </div>
 
-                  <div className="relative z-10 flex items-center justify-between text-xs text-white/90 pt-3">
+                  <div className="relative z-0 flex items-center justify-between text-xs text-white/90 pt-3">
                     <span className="font-medium truncate">{cls.semester}</span>
                     {isArchived ? (
                       <span className="bg-black/25 px-2 py-0.5 rounded text-[11px] font-semibold">
@@ -512,9 +558,9 @@ export function ClassesTable({
                         <span>Restore Class</span>
                       </button>
                     ) : (
-                      <div className="w-full flex items-center justify-between text-xs font-semibold text-[#1a73e8] group-hover:text-[#1557b0] transition">
+                      <div className={`w-full flex items-center justify-between text-xs font-semibold text-[#1a73e8] ${openMenuId === cls.id ? "" : "group-hover:text-[#1557b0]"} transition`}>
                         <span>Enter Teaching Hub</span>
-                        <span className="group-hover:translate-x-1 transition-transform">→</span>
+                        <span className={openMenuId === cls.id ? "" : "group-hover:translate-x-1 transition-transform"}>→</span>
                       </div>
                     )}
                   </div>
@@ -559,7 +605,7 @@ export function ClassesTable({
                     className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[80px] sm:min-w-[100px]"
                   >
                     <div className="flex items-center justify-between">
-                      <span>Section</span>
+                      <span>Section / Block</span>
                       {renderSortIndicator("section")}
                     </div>
                   </th>
@@ -597,12 +643,12 @@ export function ClassesTable({
                   >
                     {/* Class Name column (frozen on md+ desktop only) */}
                     <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 font-semibold text-[#202124] group-hover:text-[#1a73e8] border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] whitespace-nowrap">
-                      {cls.name}
+                      {formatClassDisplayName(cls.name, cls.section)}
                     </td>
                     <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-[#5f6368] border-r border-[#e8eaed] whitespace-nowrap">
                       {cls.semester}
                     </td>
-                    <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-[#5f6368] border-r border-[#e8eaed] whitespace-nowrap">
+                    <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-[#5f6368] border-r border-[#e8eaed] whitespace-nowrap uppercase">
                       {cls.section}
                     </td>
                     <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] whitespace-nowrap">
@@ -702,11 +748,12 @@ export function ClassesTable({
         <form onSubmit={handleUpdate} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-[#5f6368] mb-1.5">
-              Class Name
+              Class / Course Name
             </label>
             <input
               type="text"
               required
+              placeholder="e.g. CS101 Intro to Algorithms or Science 10"
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
               className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-lg text-sm text-[#202124] focus:border-[#1a73e8] focus:outline-none focus:ring-3 focus:ring-[#e8f0fe] transition-all"
@@ -714,11 +761,12 @@ export function ClassesTable({
           </div>
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-[#5f6368] mb-1.5">
-              Semester
+              Semester / Term
             </label>
             <input
               type="text"
               required
+              placeholder="e.g. 1st Sem 2026 or SY 2026-2027"
               value={editSemester}
               onChange={(e) => setEditSemester(e.target.value)}
               className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-lg text-sm text-[#202124] focus:border-[#1a73e8] focus:outline-none focus:ring-3 focus:ring-[#e8f0fe] transition-all"
@@ -726,16 +774,29 @@ export function ClassesTable({
           </div>
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-[#5f6368] mb-1.5">
-              Section
+              Section / Year & Block
             </label>
             <input
               type="text"
               required
+              placeholder="e.g. BSCS-3A, 10-Emerald, or 1A"
               value={editSection}
-              onChange={(e) => setEditSection(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-lg text-sm text-[#202124] focus:border-[#1a73e8] focus:outline-none focus:ring-3 focus:ring-[#e8f0fe] transition-all"
+              onChange={(e) => setEditSection(e.target.value.toUpperCase())}
+              className="w-full px-3.5 py-2.5 bg-white border border-[#dadce0] rounded-lg text-sm text-[#202124] uppercase focus:border-[#1a73e8] focus:outline-none focus:ring-3 focus:ring-[#e8f0fe] transition-all"
             />
+            <p className="text-[11px] text-[#5f6368] mt-1">
+              Supports college blocks (e.g. BSCS-3A) and high school sections (e.g. 10-Emerald).
+            </p>
           </div>
+
+          {editName.trim() && (
+            <div className="bg-[#f8f9fa] border border-[#dadce0] rounded-lg p-2.5 flex items-center justify-between text-xs animate-in fade-in duration-150">
+              <span className="text-[#5f6368] font-medium">Display Title:</span>
+              <span className="font-bold text-[#1a73e8] tracking-tight">
+                {formatClassDisplayName(editName, editSection)}
+              </span>
+            </div>
+          )}
 
           <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#e8eaed]">
             <button
@@ -763,7 +824,7 @@ export function ClassesTable({
         title="Class Join Code"
         subtitle={
           presentingClass
-            ? `${presentingClass.name} • Section ${presentingClass.section}`
+            ? `${formatClassDisplayName(presentingClass.name, presentingClass.section)} • ${presentingClass.semester}`
             : ""
         }
         maxWidth="max-w-lg"
