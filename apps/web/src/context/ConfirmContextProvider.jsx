@@ -1,6 +1,7 @@
 // apps/web/src/context/ConfirmContextProvider.jsx
 import { useState, useCallback, useRef, useEffect } from "react";
 import { ConfirmContext } from "./ConfirmContext";
+import { IconAlert } from "../components/ui/Icons";
 
 // Styled replacement for window.confirm(). confirm(options) resolves true when the
 // user confirms, false when they cancel, press Escape, or click outside the dialog.
@@ -30,6 +31,11 @@ export function ConfirmProvider({ children }) {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [dialog, close]);
 
+  const isDanger = Boolean(
+    dialog?.danger ||
+    /archive|drop|deactivate|delete|remove/i.test(dialog?.confirmLabel || dialog?.title || "")
+  );
+
   return (
     <ConfirmContext.Provider value={confirm}>
       {children}
@@ -45,6 +51,11 @@ export function ConfirmProvider({ children }) {
             className="bg-white w-full max-w-sm rounded-2xl shadow-xl border border-[#dadce0] p-6 animate-in zoom-in-95 duration-150"
             onClick={(e) => e.stopPropagation()}
           >
+            {isDanger && (
+              <div className="w-10 h-10 rounded-full bg-[#fce8e6] text-[#d93025] flex items-center justify-center shrink-0 mb-3.5">
+                <IconAlert className="w-5 h-5" />
+              </div>
+            )}
             <h3 id="confirm-dialog-title" className="text-base font-semibold text-[#202124]">
               {dialog.title}
             </h3>
@@ -58,15 +69,15 @@ export function ConfirmProvider({ children }) {
                 type="button"
                 autoFocus
                 onClick={() => close(false)}
-                className="px-4 py-2 text-sm font-medium text-[#5f6368] hover:bg-[#f1f3f4] hover:text-[#202124] rounded-lg transition-colors"
+                className="px-4 py-2 text-sm font-medium text-[#5f6368] hover:bg-[#f1f3f4] hover:text-[#202124] rounded-lg transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={() => close(true)}
-                className={`px-4 py-2 text-sm font-semibold rounded-lg transition shadow-xs ${
-                  dialog.danger
+                className={`px-4 py-2 text-sm font-semibold rounded-lg transition shadow-xs cursor-pointer ${
+                  isDanger
                     ? "bg-[#d93025] hover:bg-[#b3261e] text-white"
                     : "bg-[#1a73e8] hover:bg-[#1557b0] text-white"
                 }`}

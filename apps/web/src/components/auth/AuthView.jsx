@@ -47,16 +47,16 @@ export function AuthView() {
            <div className="lg:col-span-6 xl:col-span-5 flex flex-col justify-between p-6 sm:p-10 lg:p-12 bg-white">
               {/* Mobile-only Header */}
               <div className="block lg:hidden mb-6 text-center">
-                 <div className="flex justify-center mb-2">
-                    <AppLogo className="w-11 h-11 rounded-xl" />
+                 <div className="flex justify-center mb-2.5">
+                    <AppLogo className="w-12 h-12 rounded-xl shadow-xs" />
                  </div>
-                 <h1 className="text-lg font-bold text-[#202124] tracking-tight">
+                 <h1 className="text-xl font-bold text-[#202124] tracking-tight">
                     Attendance Live
                  </h1>
                  <p className="text-xs text-[#5f6368] mt-0.5">
                     Smart Classroom Attendance
                  </p>
-                 <hr className="m-3 border-t border-gray-200" />
+                 <hr className="my-4 border-t border-[#dadce0]/60" />
               </div>
 
               {/* Form Content Area */}

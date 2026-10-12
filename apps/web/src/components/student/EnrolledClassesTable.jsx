@@ -139,6 +139,7 @@ export function EnrolledClassesTable({
       title: "Archive this class?",
       message: `Are you sure you want to archive ${c.name}? You can find it under Archived Classes and restore it anytime.`,
       confirmLabel: "Archive Class",
+      danger: true,
     });
     if (!confirmed) return;
 
@@ -306,7 +307,10 @@ export function EnrolledClassesTable({
             return (
               <div
                 key={c.class_id}
-                onClick={() => onSelectClass && onSelectClass(c.class_id)}
+                onClick={(e) => {
+                  if (e.target.closest("[data-menu-dropdown]")) return;
+                  if (onSelectClass) onSelectClass(c.class_id);
+                }}
                 className={`bg-white rounded-2xl border border-[#dadce0] transition-all duration-200 flex flex-col group relative ${
                   openMenuId === c.class_id ? "z-30" : "z-0"
                 } ${
@@ -340,6 +344,7 @@ export function EnrolledClassesTable({
                       <button
                         type="button"
                         onClick={(e) => {
+                          e.preventDefault();
                           e.stopPropagation();
                           setOpenMenuId(openMenuId === c.class_id ? null : c.class_id);
                         }}
@@ -354,6 +359,7 @@ export function EnrolledClassesTable({
                         <div
                           className="absolute right-0 top-full mt-1.5 w-40 bg-white rounded-xl shadow-xl border border-[#dadce0] py-1 z-50 text-[#202124] text-xs font-medium animate-in fade-in zoom-in-95 duration-100"
                           onClick={(e) => e.stopPropagation()}
+                          onMouseDown={(e) => e.stopPropagation()}
                         >
                           <button
                             type="button"
@@ -367,19 +373,27 @@ export function EnrolledClassesTable({
                           {!isSelfArchived && !isProfArchived ? (
                             <button
                               type="button"
-                              onClick={() => handleArchiveClass(c)}
-                              className="w-full text-left px-3 py-2 hover:bg-[#f1f3f4] flex items-center gap-2.5 transition text-[#202124] cursor-pointer"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleArchiveClass(c);
+                              }}
+                              className="w-full text-left px-3 py-2 hover:bg-[#fce8e6] flex items-center gap-2.5 transition text-[#d93025] hover:text-[#b3261e] cursor-pointer"
                             >
-                              <IconArchive className="w-3.5 h-3.5 text-[#5f6368]" />
+                              <IconArchive className="w-3.5 h-3.5 text-[#d93025]" />
                               <span>Archive</span>
                             </button>
                           ) : isSelfArchived ? (
                             <button
                               type="button"
-                              onClick={() => handleUnarchiveClass(c)}
-                              className="w-full text-left px-3 py-2 hover:bg-[#f1f3f4] flex items-center gap-2.5 transition text-[#202124] cursor-pointer"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleUnarchiveClass(c);
+                              }}
+                              className="w-full text-left px-3 py-2 hover:bg-[#e8f0fe] flex items-center gap-2.5 transition text-[#1a73e8] cursor-pointer"
                             >
-                              <IconRefresh className="w-3.5 h-3.5 text-[#5f6368]" />
+                              <IconRefresh className="w-3.5 h-3.5 text-[#1a73e8]" />
                               <span>Restore</span>
                             </button>
                           ) : null}
@@ -688,7 +702,7 @@ export function EnrolledClassesTable({
                                   e.stopPropagation();
                                   handleArchiveClass(c);
                                 }}
-                                className="px-2.5 py-1 text-xs font-medium text-[#5f6368] hover:bg-[#fce8e6] hover:text-[#c5221f] rounded-md transition cursor-pointer"
+                                className="px-2.5 py-1 text-xs font-semibold text-[#d93025] hover:bg-[#fce8e6] hover:text-[#b3261e] rounded-md transition cursor-pointer"
                               >
                                 Archive
                               </button>

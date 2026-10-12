@@ -159,6 +159,7 @@ export function ClassesTable({
       title: "Archive this class?",
       message: `${cls.name} will move to the Archived section. Students won't be able to join and sessions cannot be opened until restored.`,
       confirmLabel: "Archive Class",
+      danger: true,
     });
     if (!confirmed) return;
     try {
@@ -326,7 +327,10 @@ export function ClassesTable({
             return (
               <div
                 key={cls.id}
-                onClick={isArchived ? undefined : () => onSelectClass && onSelectClass(cls)}
+                onClick={(e) => {
+                  if (e.target.closest("[data-menu-dropdown]")) return;
+                  if (!isArchived && onSelectClass) onSelectClass(cls);
+                }}
                 className={`bg-white rounded-2xl border border-[#dadce0] transition-all duration-200 flex flex-col group relative ${
                   openMenuId === cls.id ? "z-30" : "z-0"
                 } ${
@@ -360,6 +364,7 @@ export function ClassesTable({
                       <button
                         type="button"
                         onClick={(e) => {
+                          e.preventDefault();
                           e.stopPropagation();
                           setOpenMenuId(openMenuId === cls.id ? null : cls.id);
                         }}
@@ -374,12 +379,17 @@ export function ClassesTable({
                         <div
                           className="absolute right-0 top-full mt-1.5 w-40 bg-white rounded-xl shadow-xl border border-[#dadce0] py-1 z-50 text-[#202124] text-xs font-medium animate-in fade-in zoom-in-95 duration-100"
                           onClick={(e) => e.stopPropagation()}
+                          onMouseDown={(e) => e.stopPropagation()}
                         >
                           {!isArchived ? (
                             <>
                               <button
                                 type="button"
-                                onClick={() => startEdit(cls)}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  startEdit(cls);
+                                }}
                                 className="w-full text-left px-3 py-2 hover:bg-[#f1f3f4] flex items-center gap-2.5 transition text-[#202124] cursor-pointer"
                               >
                                 <IconPencil className="w-3.5 h-3.5 text-[#5f6368]" />
@@ -396,20 +406,28 @@ export function ClassesTable({
                               </button>
                               <button
                                 type="button"
-                                onClick={() => handleArchive(cls)}
-                                className="w-full text-left px-3 py-2 hover:bg-[#f1f3f4] flex items-center gap-2.5 transition text-[#202124] cursor-pointer"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleArchive(cls);
+                                }}
+                                className="w-full text-left px-3 py-2 hover:bg-[#fce8e6] flex items-center gap-2.5 transition text-[#d93025] hover:text-[#b3261e] cursor-pointer"
                               >
-                                <IconArchive className="w-3.5 h-3.5 text-[#5f6368]" />
+                                <IconArchive className="w-3.5 h-3.5 text-[#d93025]" />
                                 <span>Archive</span>
                               </button>
                             </>
                           ) : (
                             <button
                               type="button"
-                              onClick={() => handleUnarchive(cls.id)}
-                              className="w-full text-left px-3 py-2 hover:bg-[#f1f3f4] flex items-center gap-2.5 transition text-[#202124] cursor-pointer"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleUnarchive(cls.id);
+                              }}
+                              className="w-full text-left px-3 py-2 hover:bg-[#e8f0fe] flex items-center gap-2.5 transition text-[#1a73e8] cursor-pointer"
                             >
-                              <IconRefresh className="w-3.5 h-3.5 text-[#5f6368]" />
+                              <IconRefresh className="w-3.5 h-3.5 text-[#1a73e8]" />
                               <span>Restore</span>
                             </button>
                           )}
@@ -637,7 +655,7 @@ export function ClassesTable({
                             e.stopPropagation();
                             handleUnarchive(cls.id);
                           }}
-                          className="px-3 py-1 bg-[#f1f3f4] hover:bg-[#e8eaed] text-[#202124] rounded-lg text-xs font-semibold transition cursor-pointer"
+                          className="px-3 py-1 bg-[#e8f0fe] hover:bg-[#d2e3fc] text-[#1a73e8] rounded-lg text-xs font-semibold transition cursor-pointer"
                         >
                           Unarchive
                         </button>
@@ -659,7 +677,7 @@ export function ClassesTable({
                               e.stopPropagation();
                               handleArchive(cls);
                             }}
-                            className="px-2.5 py-1 text-[#c5221f] hover:bg-[#fce8e6] rounded-md text-xs font-medium transition cursor-pointer"
+                            className="px-2.5 py-1 text-[#d93025] hover:bg-[#fce8e6] rounded-md text-xs font-medium transition cursor-pointer"
                           >
                             Archive
                           </button>

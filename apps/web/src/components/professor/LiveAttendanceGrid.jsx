@@ -575,7 +575,13 @@ export function LiveAttendanceGrid({
             <button
               type="submit"
               disabled={saving}
-              className="px-5 py-2 bg-[#1a73e8] hover:bg-[#1557b0] disabled:opacity-50 text-white font-semibold rounded-lg text-xs shadow-xs transition cursor-pointer"
+              className={`px-5 py-2 disabled:opacity-50 text-white font-semibold rounded-lg text-xs shadow-xs transition cursor-pointer ${
+                pending?.status === "ABSENT"
+                  ? "bg-[#d93025] hover:bg-[#b3261e]"
+                  : pending?.status === "PRESENT"
+                  ? "bg-[#137333] hover:bg-[#0d652d]"
+                  : "bg-[#1a73e8] hover:bg-[#1557b0]"
+              }`}
             >
               {saving ? "Saving..." : "Confirm Override"}
             </button>

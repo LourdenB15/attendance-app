@@ -1,5 +1,11 @@
 // apps/web/src/components/ui/AppLogo.jsx
+import { useId } from "react";
+
 export function AppLogo({ className = "w-9 h-9" }) {
+  const uniqueId = useId().replace(/:/g, "");
+  const bgGradId = `logoBgGrad-${uniqueId}`;
+  const checkGradId = `logoCheckGrad-${uniqueId}`;
+
   return (
     <div className={`relative inline-flex items-center justify-center shrink-0 ${className}`}>
       <svg
@@ -9,18 +15,19 @@ export function AppLogo({ className = "w-9 h-9" }) {
         className="w-full h-full drop-shadow-xs"
       >
         <defs>
-          <linearGradient id="logoBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient id={bgGradId} x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#1a73e8" />
             <stop offset="100%" stopColor="#1557b0" />
           </linearGradient>
-          <linearGradient id="logoCheckGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient id={checkGradId} x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#34a853" />
             <stop offset="100%" stopColor="#137333" />
           </linearGradient>
         </defs>
 
-        {/* Squircle base */}
-        <rect width="64" height="64" rx="16" fill="url(#logoBgGrad)" />
+        {/* Squircle base with solid fallback and gradient fill */}
+        <rect width="64" height="64" rx="16" fill="#1a73e8" />
+        <rect width="64" height="64" rx="16" fill={`url(#${bgGradId})`} />
 
         {/* Biometric Viewfinder Corners */}
         <path
@@ -55,7 +62,8 @@ export function AppLogo({ className = "w-9 h-9" }) {
 
         {/* Verified Attendance Live Beacon (Bottom Right) */}
         <circle cx="45" cy="45" r="9.5" fill="#ffffff" />
-        <circle cx="45" cy="45" r="8" fill="url(#logoCheckGrad)" />
+        <circle cx="45" cy="45" r="8" fill="#137333" />
+        <circle cx="45" cy="45" r="8" fill={`url(#${checkGradId})`} />
         <path
           d="M41.5 45L43.8 47.3L48.5 42.5"
           stroke="#ffffff"
