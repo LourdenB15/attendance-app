@@ -2,6 +2,7 @@
 import { Router } from "express";
 import * as authController from "../controllers/auth.controller.js";
 import { authenticate } from "../middleware/auth.js";
+import { checkAccountStatus } from "../middleware/check-account-status.js";
 import { authLimiter, loginEmailLimiter, emailSendLimiter } from "../middleware/rate-limit.js";
 
 const router = Router();
@@ -14,8 +15,8 @@ router.post("/change-password", authenticate, authController.changePassword);
 router.post("/forgot-password", authLimiter, emailSendLimiter, authController.forgotPassword);
 router.post("/reset-password/validate", authLimiter, authController.validateResetToken);
 router.post("/reset-password", authLimiter, authController.resetPassword);
-router.get("/me", authenticate, authController.me);
-router.patch("/profile", authenticate, authController.updateProfile);
+router.get("/me", authenticate, checkAccountStatus, authController.me);
+router.patch("/profile", authenticate, checkAccountStatus, authController.updateProfile);
 router.post("/logout", authController.logout);
 router.post("/google", authLimiter, authController.loginWithGoogle);
 

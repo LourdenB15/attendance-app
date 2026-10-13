@@ -72,6 +72,22 @@ export function VerifyEmailView({ onSuccess, onBackToLogin, initialEmail = "" })
       return;
     }
 
+    // If user types over an existing single digit, take the newly entered digit
+    if (cleanVal.length === 2 && digits[index]) {
+      const char = cleanVal.charAt(cleanVal.length - 1);
+      const newDigits = [...digits];
+      newDigits[index] = char;
+      setDigits(newDigits);
+      if (index < 5) {
+        inputRefs.current[index + 1]?.focus();
+      }
+      const fullCode = newDigits.join("");
+      if (fullCode.length === 6) {
+        submitCode(fullCode);
+      }
+      return;
+    }
+
     if (cleanVal.length > 1) {
       const pasteDigits = cleanVal.slice(0, 6).split("");
       const newDigits = [...digits];
@@ -105,8 +121,44 @@ export function VerifyEmailView({ onSuccess, onBackToLogin, initialEmail = "" })
 
   const handleKeyDown = (index, e) => {
     if (hasError) setHasError(false);
-    if (e.key === "Backspace" && !digits[index] && index > 0) {
+
+    if (e.key === "Backspace") {
+      e.preventDefault();
+      if (digits[index]) {
+        // Populated: clear current input and keep focus here
+        const newDigits = [...digits];
+        newDigits[index] = "";
+        setDigits(newDigits);
+      } else if (index > 0) {
+        // Empty: move focus to previous input and clear it so the user can correct it immediately
+        const newDigits = [...digits];
+        newDigits[index - 1] = "";
+        setDigits(newDigits);
+        inputRefs.current[index - 1]?.focus();
+      }
+      return;
+    }
+
+    if (e.key === "ArrowLeft" && index > 0) {
+      e.preventDefault();
       inputRefs.current[index - 1]?.focus();
+      return;
+    }
+
+    if (e.key === "ArrowRight" && index < 5) {
+      e.preventDefault();
+      inputRefs.current[index + 1]?.focus();
+      return;
+    }
+
+    if (e.key === "Delete") {
+      e.preventDefault();
+      if (digits[index]) {
+        const newDigits = [...digits];
+        newDigits[index] = "";
+        setDigits(newDigits);
+      }
+      return;
     }
   };
 
@@ -227,12 +279,14 @@ export function VerifyEmailView({ onSuccess, onBackToLogin, initialEmail = "" })
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
-              maxLength={1}
+              autoComplete="one-time-code"
+              maxLength={2}
               value={digit}
-              aria-label={`Digit ${idx + 1}`}
+              aria-label={`Digit ${idx + 1} of 6`}
               aria-invalid={hasError ? "true" : undefined}
               onChange={(e) => handleDigitChange(idx, e.target.value)}
-              onKeyDown={(e) => handleKeyDown(idx, e.key)}
+              onKeyDown={(e) => handleKeyDown(idx, e)}
+              onFocus={(e) => e.target.select()}
               className={`w-11 h-13 sm:w-12 sm:h-14 text-center text-xl font-mono font-bold bg-white rounded-xl text-[#202124] focus:outline-none transition-all ${
                 hasError
                   ? "border border-[#d93025] ring-3 ring-[#d93025]/20 shadow-[0_0_12px_rgba(217,48,37,0.18)] focus:border-[#d93025] focus:ring-3 focus:ring-[#d93025]/30"

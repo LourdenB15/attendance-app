@@ -10,6 +10,12 @@ export function setAccountDeactivatedHandler(handler) {
   accountDeactivatedHandler = handler;
 }
 
+// Set by AuthProvider: signs the user out when an admin changes their role
+let roleChangedHandler = null;
+export function setRoleChangedHandler(handler) {
+  roleChangedHandler = handler;
+}
+
 async function request(path, options = {}) {
   const url = `${API_BASE}${path}`;
   const config = {
@@ -46,9 +52,12 @@ async function request(path, options = {}) {
       `Request failed with status ${response.status}`;
     const error = new Error(message);
     error.status = response.status;
-    error.code = data?.code; // e.g. "EMAIL_NOT_VERIFIED"
+    error.code = data?.code; // e.g. "EMAIL_NOT_VERIFIED", "ROLE_CHANGED"
     if (error.code === "ACCOUNT_DEACTIVATED" && accountDeactivatedHandler) {
       accountDeactivatedHandler(message);
+    }
+    if (error.code === "ROLE_CHANGED" && roleChangedHandler) {
+      roleChangedHandler(message);
     }
     throw error;
   }

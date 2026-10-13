@@ -162,6 +162,7 @@ export function AppLayout() {
       <Header
         onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
         onOpenSettings={() => handleNavSelect("settings")}
+        onNavigateHome={() => handleNavSelect(defaultNav)}
       />
 
       <div className="flex-1 flex flex-col">

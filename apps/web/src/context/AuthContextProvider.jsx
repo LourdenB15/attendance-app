@@ -1,6 +1,6 @@
 // apps/web/src/context/AuthContextProvider.jsx
 import { useState, useEffect, useCallback, useRef } from "react";
-import { authApi, setAccountDeactivatedHandler } from "../api";
+import { authApi, setAccountDeactivatedHandler, setRoleChangedHandler } from "../api";
 import { useToast } from "./useToast";
 import { AuthContext } from "./AuthContext";
 
@@ -9,7 +9,7 @@ export function AuthProvider({ children }) {
   const [authLoading, setAuthLoading] = useState(true);
   const { showToast } = useToast();
 
-  // Sign out as soon as any request says this account was deactivated by an admin.
+  // Sign out as soon as any request says this account was deactivated or role changed by an admin.
   // The ref makes sure several failing requests only produce one sign-out and one toast.
   const currentUserRef = useRef(currentUser);
   useEffect(() => {
@@ -27,6 +27,28 @@ export function AuthProvider({ children }) {
   }, [showToast]);
 
   useEffect(() => {
+    setRoleChangedHandler((message) => {
+      if (!currentUserRef.current) return;
+      currentUserRef.current = null;
+      if (typeof window !== "undefined") {
+        window.history.replaceState(null, "", window.location.pathname);
+        try {
+          Object.keys(sessionStorage).forEach((key) => {
+            if (key.startsWith("attend_nav_") || key.startsWith("layout_")) {
+              sessionStorage.removeItem(key);
+            }
+          });
+        } catch {
+          // ignore
+        }
+      }
+      setCurrentUser(null);
+      showToast("info", message || "Your account role has changed. Please sign in again.");
+    });
+    return () => setRoleChangedHandler(null);
+  }, [showToast]);
+
+  useEffect(() => {
     let ignore = false;
     async function checkSession() {
       try {
@@ -38,8 +60,13 @@ export function AuthProvider({ children }) {
           }
           setCurrentUser(user);
         }
-      } catch {
-        if (!ignore) setCurrentUser(null);
+      } catch (err) {
+        if (!ignore) {
+          setCurrentUser(null);
+          if (err?.code === "ROLE_CHANGED") {
+            showToast("info", err.message || "Your account role has changed. Please sign in again.");
+          }
+        }
       } finally {
         if (!ignore) setAuthLoading(false);
       }
@@ -48,7 +75,35 @@ export function AuthProvider({ children }) {
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [showToast]);
+
+  // Proactively check session when switching tabs or window focuses
+  useEffect(() => {
+    if (!currentUser) return;
+
+    let checking = false;
+    const revalidate = async () => {
+      if (checking || document.visibilityState !== "visible") return;
+      checking = true;
+      try {
+        await authApi.getMe();
+      } catch {
+        // Handled by roleChangedHandler or accountDeactivatedHandler
+      } finally {
+        checking = false;
+      }
+    };
+
+    window.addEventListener("focus", revalidate);
+    document.addEventListener("visibilitychange", revalidate);
+    const interval = setInterval(revalidate, 30000);
+
+    return () => {
+      window.removeEventListener("focus", revalidate);
+      document.removeEventListener("visibilitychange", revalidate);
+      clearInterval(interval);
+    };
+  }, [currentUser]);
 
   const login = async ({ email, password }) => {
     try {

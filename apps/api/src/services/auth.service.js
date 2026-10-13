@@ -18,13 +18,23 @@ const VERIFY_CODE_TTL_MS = 15 * 60 * 1000; // 15 minutes for 6-digit code
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 
 function issueToken(user) {
-  return jwt.sign({ sub: user.id, role: user.role }, JWT_SECRET, {
-    expiresIn: "24h",
-  });
+  return jwt.sign(
+    {
+      sub: user.id,
+      role: user.role,
+      token_version: user.token_version ?? 0,
+    },
+    JWT_SECRET,
+    {
+      expiresIn: "24h",
+    },
+  );
 }
 
 async function toSafeUser(user) {
   const { password_hash, ...safeUser } = user;
+  safeUser.avatar = user.avatar_url || user.avatar || null;
+  safeUser.avatar_url = user.avatar_url || null;
   // Google-only accounts have no password; the client offers "Set a password" for them.
   // Full rows carry password_hash; some update queries return has_password instead.
   safeUser.has_password = user.has_password ?? Boolean(password_hash);
@@ -261,7 +271,7 @@ export async function loginWithGoogle(idToken) {
     throw httpError(403, "Google account email is not verified");
   }
 
-  const { sub: googleId, name } = payload;
+  const { sub: googleId, name, picture } = payload;
   const email = normalizeEmail(payload.email);
 
   let user = await usersRepository.findByGoogleId(googleId);
@@ -269,15 +279,17 @@ export async function loginWithGoogle(idToken) {
   if (!user) {
     const existing = await usersRepository.findByEmail(email);
     if (existing) {
-      user = await usersRepository.linkGoogleAccount(existing.id, googleId);
+      user = await usersRepository.linkGoogleAccount(existing.id, googleId, picture);
     } else {
       const adminEmail = process.env.ADMIN_EMAIL;
       const initialRole =
         adminEmail && email.toLowerCase() === adminEmail.toLowerCase()
           ? "ADMIN"
           : "STUDENT";
-      user = await usersRepository.createGoogleUser(name, email, googleId, initialRole);
+      user = await usersRepository.createGoogleUser(name, email, googleId, initialRole, picture);
     }
+  } else if (picture && user.avatar_url !== picture) {
+    user = await usersRepository.updateAvatar(user.id, picture);
   }
 
   if (!user.is_active) {
