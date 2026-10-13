@@ -53,6 +53,8 @@ A modern, full-stack classroom attendance management system powered by AI-driven
 - [Roadmap](#roadmap)
 - [Contributing](#contributing)
 - [License and Acknowledgments](#license-and-acknowledments)
+- [Authors and Contributors](#authors-and-contributors)
+- [Project Links](#project-links)
 
 ---
 
@@ -760,8 +762,17 @@ This project is configured under the **ISC License** as specified in [`package.j
 
 ---
 
-## Author and Project Links
+## Authors and Contributors
 
-- **Repository:** [https://github.com/LourdenB15/attendance-app](https://github.com/LourdenB15/attendance-app)
-- **Author / Maintainer:** [@LourdenB15](https://github.com/LourdenB15)
-- **Official Liveness Service Documentation:** [https://liveness.cloud/](https://liveness.cloud/)
+This project is developed and maintained by:
+
+- **LourdenB15** ([@LourdenB15](https://github.com/LourdenB15)) — Project Owner & Developer
+- **Carl Aviso** ([@carlotata](https://github.com/carlotata)) — Developer & Contributor
+- **John Paul Patigas** ([@johnpaulpatigas](https://github.com/johnpaulpatigas)) — Developer & Contributor
+
+---
+
+## Project Links
+
+- **GitHub Repository:** [https://github.com/LourdenB15/attendance-app](https://github.com/LourdenB15/attendance-app)
+- **Liveness Cloud Service:** [https://liveness.cloud/](https://liveness.cloud/)
