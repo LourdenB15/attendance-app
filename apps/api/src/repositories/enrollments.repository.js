@@ -34,7 +34,7 @@ export async function findActiveEnrollment(classId, studentId) {
 export async function findClassesByStudent(studentId) {
   const result = await pool.query(
     `SELECT c.id AS class_id, c.name, c.semester, c.section, c.join_code, c.is_archived, e.enrolled_at,
-            u.full_name AS professor_name,
+            u.full_name AS professor_name, u.email AS professor_email, u.avatar_url AS professor_avatar_url,
             s.id AS active_session_id, s.label AS active_session_label, s.expires_at AS active_session_expires_at,
             att.status AS my_attendance_status, att.source AS my_attendance_source,
             att.recorded_at AS my_checked_in_at

@@ -8,6 +8,7 @@ import { Badge } from "../ui/Badge";
 import { getClassTheme } from "../ui/classroomThemes";
 import { TableSkeleton } from "../ui/Skeleton";
 import { formatClassDisplayName } from "../../utils/classFormatting";
+import { UserAvatar } from "../ui/UserAvatar";
 import {
   IconChevronLeft,
   IconCamera,
@@ -588,9 +589,15 @@ export function StudentClassDetail({
 
             <div className="bg-white rounded-2xl border border-[#dadce0] p-4 sm:p-5 flex items-center justify-between shadow-2xs hover:shadow-xs transition">
               <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-full bg-[#1a73e8] text-white flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
-                  {(classItem.professor_name || "T")[0].toUpperCase()}
-                </div>
+                <UserAvatar
+                  user={{
+                    full_name: classItem.professor_name || "Faculty Member",
+                    email: classItem.professor_email || "",
+                    avatar_url: classItem.professor_avatar_url,
+                  }}
+                  className="w-10 h-10 shadow-xs shrink-0"
+                  textClassName="text-sm font-bold"
+                />
                 <div>
                   <h4 className="text-sm font-bold text-[#202124]">
                     {classItem.professor_name || "Faculty Member"}
@@ -717,15 +724,11 @@ export function StudentClassDetail({
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div
-                          className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0 shadow-xs ${
-                            isCurrentUser
-                              ? "bg-[#1a73e8] text-white"
-                              : "bg-[#e8f0fe] text-[#1967d2]"
-                          }`}
-                        >
-                          {initial}
-                        </div>
+                        <UserAvatar
+                          user={c}
+                          className="w-9 h-9 shadow-xs shrink-0"
+                          textClassName="text-xs font-bold"
+                        />
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5">
                             <span className="text-xs font-bold text-[#202124] truncate">
@@ -825,15 +828,11 @@ export function StudentClassDetail({
                             {/* Classmate Name column (frozen on md+ desktop only) */}
                             <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)] whitespace-nowrap">
                               <div className="flex items-center gap-2.5 sm:gap-3">
-                                <div
-                                  className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${
-                                    isCurrentUser
-                                      ? "bg-[#1a73e8] text-white"
-                                      : "bg-[#e8f0fe] text-[#1967d2]"
-                                  }`}
-                                >
-                                  {initial}
-                                </div>
+                                <UserAvatar
+                                  user={c}
+                                  className="w-7 h-7 shadow-xs shrink-0"
+                                  textClassName="text-[10px] font-bold"
+                                />
                                 <span className="font-semibold text-xs text-[#202124]">
                                   {c.full_name}
                                 </span>

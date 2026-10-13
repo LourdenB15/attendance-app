@@ -61,7 +61,6 @@ export function UserAvatar({
         src={avatarSrc}
         alt={user?.full_name || "User Avatar"}
         referrerPolicy="no-referrer"
-        crossOrigin="anonymous"
         onError={() => setImgFailed(true)}
         className={`${className} rounded-full object-cover shrink-0 border border-black/10 shadow-2xs`}
       />
