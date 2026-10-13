@@ -25,9 +25,8 @@ test("Email Service Template & Branding Verification", async (t) => {
     assert.doesNotMatch(emailServiceContent, /BRAND_COLOR = "#4f46e5"/);
   });
 
-  await t.test("Renders consistent card header with brand gradient and logo", () => {
+  await t.test("Renders consistent card header with brand gradient and typography", () => {
     assert.match(emailServiceContent, /linear-gradient\(135deg,#1a73e8 0%,#1557b0 100%\)/);
-    assert.match(emailServiceContent, /favicon\.svg/);
     assert.match(emailServiceContent, /Attendance Live/);
     assert.match(emailServiceContent, /Classroom/);
   });

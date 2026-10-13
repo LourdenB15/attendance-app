@@ -1,24 +1,5 @@
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+// apps/api/src/services/email.service.js
 import { Resend } from "resend";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const LOGO_PNG_PATH = path.resolve(__dirname, "../../../web/public/logo-192.png");
-
-let logoAttachment = null;
-try {
-  if (fs.existsSync(LOGO_PNG_PATH)) {
-    logoAttachment = {
-      filename: "logo.png",
-      content: fs.readFileSync(LOGO_PNG_PATH),
-      content_id: "app-logo",
-    };
-  }
-} catch (err) {
-  console.warn("Notice: Could not pre-cache logo image for email:", err.message);
-}
 
 const APP_URL = process.env.APP_URL || "http://localhost:5173";
 const FROM_ADDRESS = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
@@ -48,15 +29,7 @@ async function send({ label, to, subject, html, text }) {
   }
 
   try {
-    const attachments = logoAttachment ? [logoAttachment] : undefined;
-    const { error } = await resend.emails.send({
-      from: FROM,
-      to,
-      subject,
-      html,
-      text,
-      ...(attachments ? { attachments } : {}),
-    });
+    const { error } = await resend.emails.send({ from: FROM, to, subject, html, text });
     if (error) {
       console.error(`Failed to send ${label} via Resend:`, error);
     }
@@ -73,11 +46,6 @@ async function send({ label, to, subject, html, text }) {
 function layout({ preheader, heading, content }) {
   const safePreheader = escapeHtml(preheader);
   const safeHeading = escapeHtml(heading);
-  const safeAppUrl = escapeHtml(APP_URL);
-
-  const logoSrc = safeAppUrl.startsWith("https://")
-    ? `${safeAppUrl}/logo-192.png`
-    : "cid:app-logo";
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -97,20 +65,9 @@ function layout({ preheader, heading, content }) {
             <td style="background-color:#1a73e8;background:linear-gradient(135deg,#1a73e8 0%,#1557b0 100%);padding:24px 32px;">
               <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td style="vertical-align:middle;padding-right:12px;">
-                    <!-- Exact Attendance Live Biometric Logo from the app (viewfinder + scan + verified badge) -->
-                    <!-- Brand asset reference: ${safeAppUrl}/favicon.svg -->
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border-radius:10px;width:38px;height:38px;box-shadow:0 1px 3px rgba(0,0,0,0.15);overflow:hidden;">
-                      <tr>
-                        <td align="center" valign="middle" style="width:38px;height:38px;text-align:center;padding:0;">
-                          <img src="${logoSrc}" width="32" height="32" alt="Attendance Live" style="display:block;margin:0 auto;border:0;outline:none;width:32px;height:32px;border-radius:6px;" />
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
                   <td style="vertical-align:middle;">
-                    <div style="color:#ffffff;font-size:18px;font-weight:700;letter-spacing:-0.2px;line-height:1.2;">Attendance Live</div>
-                    <div style="color:#d2e3fc;font-size:11px;font-weight:500;letter-spacing:0.3px;text-transform:uppercase;">Classroom</div>
+                    <div style="color:#ffffff;font-size:20px;font-weight:700;letter-spacing:-0.2px;line-height:1.2;">Attendance Live</div>
+                    <div style="color:#d2e3fc;font-size:11px;font-weight:500;letter-spacing:0.5px;text-transform:uppercase;margin-top:2px;">Classroom</div>
                   </td>
                 </tr>
               </table>
