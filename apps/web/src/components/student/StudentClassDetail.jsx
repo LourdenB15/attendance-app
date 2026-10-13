@@ -624,8 +624,8 @@ export function StudentClassDetail({
               </div>
 
               {/* Search & Layout Controls */}
-              <div className="flex items-center gap-2.5">
-                <div className="relative w-full sm:w-56">
+              <div className="flex items-center gap-2.5 w-full sm:w-auto justify-between sm:justify-end">
+                <div className="relative flex-1 min-w-0 sm:w-56">
                   <IconSearch className="w-4 h-4 text-[#5f6368] absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"

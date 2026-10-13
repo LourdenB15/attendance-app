@@ -159,12 +159,12 @@ export function EnrolledStudentsTable({
       </div>
 
       {/* Roster Controls: Tabs, Search & Mobile Switcher */}
-      <div className="p-4 sm:p-5 border-b border-[#dadce0] flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <div className="flex bg-[#f1f3f4] p-1 rounded-lg text-xs font-semibold overflow-x-auto scrollbar-none whitespace-nowrap shrink-0">
+      <div className="p-3.5 sm:p-5 border-b border-[#dadce0] flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="grid grid-cols-2 md:flex bg-[#f1f3f4] p-1 rounded-lg text-xs font-semibold w-full md:w-auto shrink-0">
           <button
             type="button"
             onClick={() => setListTab("active")}
-            className={`px-3.5 py-1.5 rounded-md transition-all whitespace-nowrap cursor-pointer ${
+            className={`flex-1 md:flex-initial px-2 sm:px-3.5 py-1.5 rounded-md transition-all text-center truncate cursor-pointer ${
               listTab === "active"
                 ? "bg-white text-[#1a73e8] shadow-xs font-bold"
                 : "text-[#5f6368] hover:text-[#202124]"
@@ -175,7 +175,7 @@ export function EnrolledStudentsTable({
           <button
             type="button"
             onClick={() => setListTab("dropped")}
-            className={`px-3.5 py-1.5 rounded-md transition-all whitespace-nowrap cursor-pointer ${
+            className={`flex-1 md:flex-initial px-2 sm:px-3.5 py-1.5 rounded-md transition-all text-center truncate cursor-pointer ${
               listTab === "dropped"
                 ? "bg-white text-[#1a73e8] shadow-xs font-bold"
                 : "text-[#5f6368] hover:text-[#202124]"
@@ -186,7 +186,7 @@ export function EnrolledStudentsTable({
         </div>
 
         <div className="flex items-center gap-2.5 w-full md:w-auto justify-between md:justify-end">
-          <div className="relative flex-1 sm:w-60">
+          <div className="relative flex-1 min-w-0 sm:w-60">
             <IconSearch className="w-4 h-4 text-[#5f6368] absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"

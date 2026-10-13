@@ -126,7 +126,7 @@ export function AttendanceHistoryTable({
           </div>
 
           <div className="flex items-center gap-2.5 justify-between md:justify-end w-full md:w-auto">
-            <div className="relative flex-1 sm:w-60">
+            <div className="relative flex-1 min-w-0 sm:w-60">
               <IconSearch className="w-4 h-4 text-[#5f6368] absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"

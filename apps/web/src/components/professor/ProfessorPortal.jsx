@@ -344,23 +344,24 @@ export function ProfessorPortal({
 
             return (
               <>
-                <div className="flex border-b border-[#dadce0] gap-6 text-xs sm:text-sm font-semibold overflow-x-auto scrollbar-none">
+                <div className="flex border-b border-[#dadce0] gap-3.5 sm:gap-6 text-xs sm:text-sm font-semibold overflow-x-auto scrollbar-none">
                   <button
                     type="button"
                     onClick={() => setClassViewTab("live")}
-                    className={`pb-3 transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                    className={`pb-3 transition-colors border-b-2 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap cursor-pointer ${
                       currentViewTab === "live"
                         ? "border-[#1a73e8] text-[#1a73e8] font-bold"
                         : "border-transparent text-[#5f6368] hover:text-[#202124]"
                     }`}
                   >
                     <IconCamera className="w-4 h-4" />
-                    <span>Live Attendance & Controller</span>
+                    <span className="hidden sm:inline">Live Attendance & Controller</span>
+                    <span className="sm:hidden">Live Session</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setClassViewTab("roster")}
-                    className={`pb-3 transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                    className={`pb-3 transition-colors border-b-2 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap cursor-pointer ${
                       currentViewTab === "roster"
                         ? "border-[#1a73e8] text-[#1a73e8] font-bold"
                         : "border-transparent text-[#5f6368] hover:text-[#202124]"
@@ -372,14 +373,15 @@ export function ProfessorPortal({
                   <button
                     type="button"
                     onClick={() => setClassViewTab("history")}
-                    className={`pb-3 transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                    className={`pb-3 transition-colors border-b-2 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap cursor-pointer ${
                       currentViewTab === "history"
                         ? "border-[#1a73e8] text-[#1a73e8] font-bold"
                         : "border-transparent text-[#5f6368] hover:text-[#202124]"
                     }`}
                   >
                     <IconClock className="w-4 h-4" />
-                    <span>Attendance History</span>
+                    <span className="hidden sm:inline">Attendance History</span>
+                    <span className="sm:hidden">History</span>
                   </button>
                 </div>
 
