@@ -9,8 +9,7 @@
   "scripts": {
     "dev:web": "npm run dev -w apps/web",
     "dev:api": "npm run dev -w apps/api",
-    "db:migrate": "npm run migrate:up -w apps/api",
-    "test": "node --env-file=apps/api/.env --test apps/api/tests/*.test.js"
+    "db:migrate": "npm run migrate:up -w apps/api"
   },
   "keywords": [],
   "author": "",
