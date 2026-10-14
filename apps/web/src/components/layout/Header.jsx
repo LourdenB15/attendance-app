@@ -11,7 +11,7 @@ import {
   IconChevronDown,
 } from "../ui/Icons";
 
-export function Header({ onToggleSidebar, onOpenSettings }) {
+export function Header({ onToggleSidebar, onOpenSettings, onNavigateHome }) {
   const { currentUser, logout } = useAuth();
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
@@ -25,6 +25,15 @@ export function Header({ onToggleSidebar, onOpenSettings }) {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleHomeClick = (e) => {
+    if (e.button === 0 && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) {
+      e.preventDefault();
+      if (onNavigateHome) {
+        onNavigateHome();
+      }
+    }
+  };
 
   if (!currentUser) return null;
 
@@ -51,7 +60,12 @@ export function Header({ onToggleSidebar, onOpenSettings }) {
             <IconMenu className="w-5 h-5" />
           </button>
 
-          <div className="flex items-center gap-2.5">
+          <a
+            href="/"
+            onClick={handleHomeClick}
+            aria-label="Attendance Live Home"
+            className="flex items-center gap-2.5 cursor-pointer rounded-xl p-1 -m-1 hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1a73e8] transition-opacity"
+          >
             <AppLogo className="w-9 h-9" />
             <div className="flex items-center gap-2">
               <span className="text-base sm:text-lg font-bold text-[#202124] tracking-tight leading-none">
@@ -61,7 +75,7 @@ export function Header({ onToggleSidebar, onOpenSettings }) {
                 Classroom
               </span>
             </div>
-          </div>
+          </a>
         </div>
 
         {/* Right: User Profile Dropdown */}
@@ -125,7 +139,7 @@ export function Header({ onToggleSidebar, onOpenSettings }) {
                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-semibold text-[#3c4043] hover:bg-[#f1f3f4] transition-colors cursor-pointer"
                     >
                       <IconSettings className="w-4 h-4 text-[#5f6368]" />
-                      <span>Account Settings & Password</span>
+                      <span>Account Settings</span>
                     </button>
                   )}
 

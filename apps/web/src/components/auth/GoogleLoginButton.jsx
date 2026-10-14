@@ -26,7 +26,7 @@ export function GoogleLoginButton() {
       try {
         await loginWithGoogle(response.credential);
       } catch {
-        // error toast handled in auth context
+        // Error toast handled in auth context
       } finally {
         setLoading(false);
       }
@@ -40,8 +40,7 @@ export function GoogleLoginButton() {
     let timeout;
     let observer;
 
-    // Google renders a fixed-width iframe (200–400px), so match the container
-    // width and redraw only when it actually changes
+    // Google renders an iframe (200–400px), match container width
     function drawButton() {
       if (!buttonRef.current) return;
       const width = Math.min(400, Math.max(200, buttonRef.current.offsetWidth));
@@ -51,7 +50,7 @@ export function GoogleLoginButton() {
         theme: "outline",
         size: "large",
         width,
-        shape: "pill",
+        shape: "rectangular",
         text: "signin_with",
       });
     }
@@ -70,7 +69,6 @@ export function GoogleLoginButton() {
           }
 
           drawButton();
-          // Redraw on window resize / phone rotation
           observer = new ResizeObserver(drawButton);
           observer.observe(buttonRef.current);
         } catch (e) {
@@ -94,15 +92,16 @@ export function GoogleLoginButton() {
   }
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center w-full">
       <div
         ref={buttonRef}
-        className="w-full flex justify-center min-h-[44px]"
-      ></div>
+        className="w-full flex justify-center min-h-11"
+      />
       {loading && (
-        <span className="text-xs text-indigo-600 mt-2 font-medium animate-pulse">
-          Authenticating with Google...
-        </span>
+        <div className="flex items-center gap-2 mt-2.5 text-xs text-[#1a73e8] font-medium animate-pulse">
+          <div className="w-3.5 h-3.5 border-2 border-[#1a73e8] border-t-transparent rounded-full animate-spin" />
+          <span>Authenticating with Google...</span>
+        </div>
       )}
     </div>
   );

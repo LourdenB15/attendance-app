@@ -10,20 +10,31 @@ import { BiometricEnrollmentCard } from "./BiometricEnrollmentCard";
 import { AttendanceHistoryTable } from "./AttendanceHistoryTable";
 import { LivenessCamera } from "../liveness/LivenessCamera";
 import { LoadingOverlay } from "../ui/LoadingOverlay";
+import { ClassDetailSkeleton } from "../ui/Skeleton";
+import { updateUrlParams } from "../../utils/navigation";
 import { Modal } from "../ui/Modal";
 import { IconCamera, IconPlus, IconRefresh } from "../ui/Icons";
+import { formatClassDisplayName } from "../../utils/classFormatting";
 
 export function StudentPortal({
   activeNav = "classes",
   navKey = 0,
   onNavSelect,
   targetClassId,
+  onClearTargetClass,
 }) {
   const { currentUser, setBiometricEnrolled } = useAuth();
   const { showToast } = useToast();
-  const [studentTab, setStudentTab] = useState(activeNav || "classes");
+  const normalizeTab = (raw) => {
+    if (raw === "enroll-face" || raw === "history") return raw;
+    return "classes";
+  };
+
+  const [studentTab, setStudentTab] = useState(() => normalizeTab(activeNav));
   const [classes, setClasses] = useState([]);
+  const [classesLoading, setClassesLoading] = useState(true);
   const [attendance, setAttendance] = useState([]);
+  const [attendanceLoading, setAttendanceLoading] = useState(true);
   const [selectedClassId, setSelectedClassId] = useState(null);
   const [activeScanningClassId, setActiveScanningClassId] = useState(null);
   const [verifying, setVerifying] = useState(false); // check-in sent, waiting for the server
@@ -38,14 +49,21 @@ export function StudentPortal({
     if (targetClassId) {
       setSelectedClassId(targetClassId);
       setStudentTab("classes");
+    } else {
+      setSelectedClassId(null);
     }
   }
 
-  // Synchronize state when navigation triggers arrive from sidebar without cascading effect renders
+  // Synchronize state when navigation triggers arrive from sidebar
   const [prevNavKey, setPrevNavKey] = useState(navKey);
   if (navKey !== prevNavKey) {
     setPrevNavKey(navKey);
     if (activeNav === "archived-classes") {
+      setStudentTab("classes");
+      if (!targetClassId) setSelectedClassId(null);
+    } else if (activeNav === "enroll-face" || activeNav === "history") {
+      setStudentTab(activeNav);
+    } else {
       setStudentTab("classes");
       if (!targetClassId) setSelectedClassId(null);
     } else {
@@ -56,7 +74,7 @@ export function StudentPortal({
     }
   }
 
-  const activeTab = studentTab;
+  const activeTab = normalizeTab(studentTab);
 
   const studentTabRef = useRef(activeTab);
   useEffect(() => {
@@ -68,29 +86,40 @@ export function StudentPortal({
       setStudentTab(tab);
       if (tab === "classes") {
         setSelectedClassId(null);
+        if (onClearTargetClass) {
+          onClearTargetClass();
+        } else {
+          updateUrlParams({ classId: null }, false);
+        }
       }
       if (onNavSelect) {
         onNavSelect(tab);
       }
     },
-    [onNavSelect],
+    [onNavSelect, onClearTargetClass],
   );
 
   const loadClasses = useCallback(async (silent = false) => {
+    if (!silent) setClassesLoading(true);
     try {
       const list = await studentApi.getMyClasses();
       setClasses(list);
     } catch (err) {
       if (!silent) showToast("error", err.message);
+    } finally {
+      if (!silent) setClassesLoading(false);
     }
   }, [showToast]);
 
   const loadAttendance = useCallback(async (silent = false) => {
+    if (!silent) setAttendanceLoading(true);
     try {
       const att = await studentApi.getMyAttendance();
       setAttendance(att);
     } catch (err) {
       if (!silent) showToast("error", err.message);
+    } finally {
+      if (!silent) setAttendanceLoading(false);
     }
   }, [showToast]);
 
@@ -102,6 +131,8 @@ export function StudentPortal({
   useEffect(() => {
     let ignore = false;
     async function fetchInitial() {
+      setClassesLoading(true);
+      setAttendanceLoading(true);
       try {
         const [list, att, statusRes] = await Promise.allSettled([
           studentApi.getMyClasses(),
@@ -109,7 +140,19 @@ export function StudentPortal({
           livenessApi.getEnrollmentStatus(),
         ]);
         if (!ignore) {
-          if (list.status === "fulfilled") setClasses(list.value);
+          if (list.status === "fulfilled") {
+            setClasses(list.value);
+            if (targetClassId) {
+              const found = list.value.find(
+                (c) => c.class_id === targetClassId || c.id === targetClassId
+              );
+              if (found) {
+                setSelectedClassId(found.class_id || found.id);
+              } else {
+                if (onClearTargetClass) onClearTargetClass();
+              }
+            }
+          }
           if (att.status === "fulfilled") setAttendance(att.value);
           if (statusRes.status === "fulfilled" && statusRes.value.isEnrolled) {
             setBiometricEnrolled(true);
@@ -117,6 +160,11 @@ export function StudentPortal({
         }
       } catch (err) {
         if (!ignore) showToast("error", err.message);
+      } finally {
+        if (!ignore) {
+          setClassesLoading(false);
+          setAttendanceLoading(false);
+        }
       }
     }
     fetchInitial();
@@ -135,7 +183,7 @@ export function StudentPortal({
       window.removeEventListener("focus", handleFocus);
       document.removeEventListener("visibilitychange", handleFocus);
     };
-  }, [refreshAll, showToast, setBiometricEnrolled]);
+  }, [refreshAll, showToast, setBiometricEnrolled, targetClassId, onClearTargetClass]);
 
   // Poll My Classes every 30 seconds to pick up newly opened sessions
   useEffect(() => {
@@ -152,23 +200,40 @@ export function StudentPortal({
 
   const selectedClass = useMemo(() => {
     if (!selectedClassId) return null;
-    return classes.find((c) => c.class_id === selectedClassId) || null;
+    return (
+      classes.find(
+        (c) => c.class_id === selectedClassId || c.id === selectedClassId
+      ) || null
+    );
   }, [classes, selectedClassId]);
 
   const activeScanningClass = useMemo(() => {
     if (!activeScanningClassId) return null;
-    return classes.find((c) => c.class_id === activeScanningClassId) || null;
+    return (
+      classes.find(
+        (c) => c.class_id === activeScanningClassId || c.id === activeScanningClassId
+      ) || null
+    );
   }, [classes, activeScanningClassId]);
 
   const handleSelectClass = (classId) => {
     setSelectedClassId(classId);
+    updateUrlParams({ classId }, false);
   };
 
   const handleBackToClasses = () => {
     setSelectedClassId(null);
     loadClasses(true);
+    if (onClearTargetClass) {
+      onClearTargetClass();
+    } else {
+      updateUrlParams({ classId: null }, false);
+    }
     if (onNavSelect) onNavSelect("classes");
   };
+
+  // If a targetClassId is waiting to be resolved and classes are loading, show Skeleton
+  const isResolvingTargetClass = Boolean(targetClassId && !selectedClass && classesLoading);
 
   const handleDirectTakeAttendance = (classId) => {
     if (!isBiometricEnrolled) {
@@ -195,7 +260,7 @@ export function StudentPortal({
       const res = await livenessApi.checkIn(cls.active_session_id, livenessResult);
       if (res.present) {
         await refreshAll(true);
-        showToast("success", `Attendance recorded as PRESENT for ${cls.name}!`);
+        showToast("success", `Attendance recorded as PRESENT for ${formatClassDisplayName(cls.name, cls.section)}!`);
       } else {
         showToast("error", res.message || "Face not recognized. Attendance not recorded.");
       }
@@ -249,10 +314,11 @@ export function StudentPortal({
           {activeTab === "history" && (
             <button
               type="button"
+              disabled={attendanceLoading}
               onClick={() => loadAttendance(false)}
-              className="px-3.5 py-2 bg-white hover:bg-[#f8f9fa] border border-[#dadce0] text-[#202124] text-xs font-semibold rounded-lg shadow-2xs transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+              className="px-3.5 py-2 bg-white hover:bg-[#f8f9fa] border border-[#dadce0] text-[#202124] text-xs font-semibold rounded-lg shadow-2xs transition-colors inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-70"
             >
-              <IconRefresh className="w-3.5 h-3.5 text-[#5f6368]" />
+              <IconRefresh className={`w-3.5 h-3.5 text-[#5f6368] ${attendanceLoading ? "animate-spin text-[#1a73e8]" : ""}`} />
               <span>Refresh</span>
             </button>
           )}
@@ -282,7 +348,7 @@ export function StudentPortal({
       {activeScanningClass && (
         <LivenessCamera
           mode="attendance"
-          title={`Check-In: ${activeScanningClass.name}`}
+          title={`Check-In: ${formatClassDisplayName(activeScanningClass.name, activeScanningClass.section)}`}
           onComplete={handleDirectScanSuccess}
           onCancel={() => setActiveScanningClassId(null)}
         />
@@ -290,7 +356,9 @@ export function StudentPortal({
 
       {/* TAB 1: CLASSES VIEW */}
       {activeTab === "classes" && (
-        selectedClass ? (
+        isResolvingTargetClass ? (
+          <ClassDetailSkeleton />
+        ) : selectedClass ? (
           <StudentClassDetail
             classItem={selectedClass}
             onBack={handleBackToClasses}
@@ -332,6 +400,8 @@ export function StudentPortal({
               onSelectClass={handleSelectClass}
               onTakeAttendance={handleDirectTakeAttendance}
               onOpenJoin={() => setShowJoinModal(true)}
+              onRefresh={() => loadClasses(false)}
+              loading={classesLoading}
             />
           </div>
         )
@@ -353,6 +423,7 @@ export function StudentPortal({
       {activeTab === "history" && (
         <AttendanceHistoryTable
           records={attendance}
+          loading={attendanceLoading}
           onRefresh={() => loadAttendance(false)}
         />
       )}

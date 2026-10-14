@@ -7,6 +7,7 @@ import {
   forgotPasswordSchema,
   resetPasswordSchema,
   googleLoginSchema,
+  updateProfileSchema,
 } from "../schemas/auth.schema.js";
 
 export async function register(req, res) {
@@ -226,5 +227,23 @@ export async function loginWithGoogle(req, res) {
     }
     console.error("Google login error:", error);
     res.status(500).json({ error: "Failed to sign in with Google" });
+  }
+}
+
+export async function updateProfile(req, res) {
+  const validation = updateProfileSchema.safeParse(req.body);
+  if (!validation.success) {
+    return res.status(400).json({ error: validation.error.issues[0].message });
+  }
+
+  try {
+    const user = await authService.updateProfile(req.user.sub, validation.data.fullName);
+    res.status(200).json({ user, message: "Profile updated successfully" });
+  } catch (error) {
+    if (error.status) {
+      return res.status(error.status).json({ error: error.message, code: error.code });
+    }
+    console.error("Update profile error:", error);
+    res.status(500).json({ error: "Failed to update profile" });
   }
 }

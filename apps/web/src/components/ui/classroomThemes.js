@@ -3,8 +3,10 @@
 export const CLASSROOM_THEMES = [
   {
     id: "blue",
-    name: "Sapphire Blue",
-    bannerBg: "bg-linear-to-r from-[#1967d2] to-[#1a73e8]",
+    name: "Google Sapphire Blue",
+    bannerBg: "bg-[#1967d2]",
+    headerBg: "bg-[#1967d2]",
+    gradient: "linear-gradient(135deg, #1967d2 0%, #1557b0 100%)",
     bannerText: "text-white",
     subText: "text-[#d2e3fc]",
     chipBg: "bg-white/20 text-white",
@@ -13,8 +15,10 @@ export const CLASSROOM_THEMES = [
   },
   {
     id: "green",
-    name: "Classroom Green",
-    bannerBg: "bg-linear-to-r from-[#137333] to-[#1e8e3e]",
+    name: "Classroom Emerald",
+    bannerBg: "bg-[#137333]",
+    headerBg: "bg-[#137333]",
+    gradient: "linear-gradient(135deg, #137333 0%, #0d652d 100%)",
     bannerText: "text-white",
     subText: "text-[#ceead6]",
     chipBg: "bg-white/20 text-white",
@@ -23,53 +27,192 @@ export const CLASSROOM_THEMES = [
   },
   {
     id: "purple",
-    name: "Mulberry Purple",
-    bannerBg: "bg-linear-to-r from-[#7627bb] to-[#8430ce]",
+    name: "Royal Violet",
+    bannerBg: "bg-[#6200ea]",
+    headerBg: "bg-[#6200ea]",
+    gradient: "linear-gradient(135deg, #6200ea 0%, #7c4dff 100%)",
     bannerText: "text-white",
-    subText: "text-[#e9d2fd]",
+    subText: "text-[#ede7f6]",
     chipBg: "bg-white/20 text-white",
     badgeVariant: "purple",
-    accentHex: "#7627bb",
+    accentHex: "#7c4dff",
   },
   {
     id: "teal",
     name: "Ocean Teal",
-    bannerBg: "bg-linear-to-r from-[#007b83] to-[#0097a7]",
+    bannerBg: "bg-[#00796b]",
+    headerBg: "bg-[#00796b]",
+    gradient: "linear-gradient(135deg, #00796b 0%, #004d40 100%)",
+    bannerText: "text-white",
+    subText: "text-[#b2dfdb]",
+    chipBg: "bg-white/20 text-white",
+    badgeVariant: "sky",
+    accentHex: "#00796b",
+  },
+  {
+    id: "orange",
+    name: "Sunset Tangerine",
+    bannerBg: "bg-[#e65100]",
+    headerBg: "bg-[#e65100]",
+    gradient: "linear-gradient(135deg, #e65100 0%, #bf360c 100%)",
+    bannerText: "text-white",
+    subText: "text-[#ffe0b2]",
+    chipBg: "bg-white/20 text-white",
+    badgeVariant: "warning",
+    accentHex: "#e65100",
+  },
+  {
+    id: "crimson",
+    name: "Ruby Crimson",
+    bannerBg: "bg-[#b71c1c]",
+    headerBg: "bg-[#b71c1c]",
+    gradient: "linear-gradient(135deg, #b71c1c 0%, #880e4f 100%)",
+    bannerText: "text-white",
+    subText: "text-[#ffcdd2]",
+    chipBg: "bg-white/20 text-white",
+    badgeVariant: "danger",
+    accentHex: "#c5221f",
+  },
+  {
+    id: "indigo",
+    name: "Deep Midnight Indigo",
+    bannerBg: "bg-[#1a237e]",
+    headerBg: "bg-[#1a237e]",
+    gradient: "linear-gradient(135deg, #1a237e 0%, #283593 100%)",
+    bannerText: "text-white",
+    subText: "text-[#c5cae9]",
+    chipBg: "bg-white/20 text-white",
+    badgeVariant: "primary",
+    accentHex: "#283593",
+  },
+  {
+    id: "cyan",
+    name: "Peacock Turquoise",
+    bannerBg: "bg-[#00838f]",
+    headerBg: "bg-[#00838f]",
+    gradient: "linear-gradient(135deg, #00838f 0%, #006064 100%)",
     bannerText: "text-white",
     subText: "text-[#b2ebf2]",
     chipBg: "bg-white/20 text-white",
     badgeVariant: "sky",
-    accentHex: "#007b83",
+    accentHex: "#00838f",
+  },
+  {
+    id: "plum",
+    name: "Mulberry Plum",
+    bannerBg: "bg-[#7b1fa2]",
+    headerBg: "bg-[#7b1fa2]",
+    gradient: "linear-gradient(135deg, #7b1fa2 0%, #4a148c 100%)",
+    bannerText: "text-white",
+    subText: "text-[#e1bee7]",
+    chipBg: "bg-white/20 text-white",
+    badgeVariant: "purple",
+    accentHex: "#7b1fa2",
   },
   {
     id: "amber",
-    name: "Warm Ochre",
-    bannerBg: "bg-linear-to-r from-[#b06000] to-[#e37400]",
+    name: "Warm Gold Ochre",
+    bannerBg: "bg-[#b06000]",
+    headerBg: "bg-[#b06000]",
+    gradient: "linear-gradient(135deg, #b06000 0%, #8c4500 100%)",
     bannerText: "text-white",
-    subText: "text-[#feefc3]",
+    subText: "text-[#ffe082]",
     chipBg: "bg-white/20 text-white",
     badgeVariant: "warning",
     accentHex: "#b06000",
   },
   {
-    id: "coral",
-    name: "Coral Rose",
-    bannerBg: "bg-linear-to-r from-[#b3261e] to-[#c5221f]",
+    id: "terracotta",
+    name: "Terracotta Earth",
+    bannerBg: "bg-[#a04000]",
+    headerBg: "bg-[#a04000]",
+    gradient: "linear-gradient(135deg, #a04000 0%, #78281f 100%)",
     bannerText: "text-white",
-    subText: "text-[#fad2cf]",
+    subText: "text-[#edbb99]",
+    chipBg: "bg-white/20 text-white",
+    badgeVariant: "warning",
+    accentHex: "#a04000",
+  },
+  {
+    id: "forest",
+    name: "Pine Forest Jade",
+    bannerBg: "bg-[#1b5e20]",
+    headerBg: "bg-[#1b5e20]",
+    gradient: "linear-gradient(135deg, #1b5e20 0%, #0d3813 100%)",
+    bannerText: "text-white",
+    subText: "text-[#c8e6c9]",
+    chipBg: "bg-white/20 text-white",
+    badgeVariant: "success",
+    accentHex: "#1b5e20",
+  },
+  {
+    id: "slate",
+    name: "Charcoal Slate",
+    bannerBg: "bg-[#37474f]",
+    headerBg: "bg-[#37474f]",
+    gradient: "linear-gradient(135deg, #37474f 0%, #263238 100%)",
+    bannerText: "text-white",
+    subText: "text-[#cfd8dc]",
+    chipBg: "bg-white/20 text-white",
+    badgeVariant: "default",
+    accentHex: "#37474f",
+  },
+  {
+    id: "cobalt",
+    name: "Cobalt Azure",
+    bannerBg: "bg-[#0d47a1]",
+    headerBg: "bg-[#0d47a1]",
+    gradient: "linear-gradient(135deg, #0d47a1 0%, #1565c0 100%)",
+    bannerText: "text-white",
+    subText: "text-[#bbdefb]",
+    chipBg: "bg-white/20 text-white",
+    badgeVariant: "primary",
+    accentHex: "#0d47a1",
+  },
+  {
+    id: "rose",
+    name: "Berry Rose",
+    bannerBg: "bg-[#880e4f]",
+    headerBg: "bg-[#880e4f]",
+    gradient: "linear-gradient(135deg, #880e4f 0%, #ad1457 100%)",
+    bannerText: "text-white",
+    subText: "text-[#f8bbd0]",
     chipBg: "bg-white/20 text-white",
     badgeVariant: "danger",
-    accentHex: "#c5221f",
+    accentHex: "#880e4f",
+  },
+  {
+    id: "sage",
+    name: "Olive Sage",
+    bannerBg: "bg-[#33691e]",
+    headerBg: "bg-[#33691e]",
+    gradient: "linear-gradient(135deg, #33691e 0%, #1b5e20 100%)",
+    bannerText: "text-white",
+    subText: "text-[#dcedc8]",
+    chipBg: "bg-white/20 text-white",
+    badgeVariant: "success",
+    accentHex: "#33691e",
   },
 ];
 
 export function getClassTheme(identifier = "") {
-  const str = String(identifier || "");
-  let hash = 0;
+  const str =
+    identifier && typeof identifier === "object"
+      ? String(identifier.id || identifier.class_id || identifier.join_code || identifier.name || "")
+      : String(identifier || "");
+
+  // FNV-1a 32-bit hash with Murmur-style avalanche mixer for high dispersion
+  let hash = 2166136261;
   for (let i = 0; i < str.length; i++) {
-    hash = (hash << 5) - hash + str.charCodeAt(i);
-    hash |= 0;
+    hash ^= str.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
   }
+  hash ^= hash >>> 16;
+  hash = Math.imul(hash, 0x85ebca6b);
+  hash ^= hash >>> 13;
+  hash = Math.imul(hash, 0xc2b2ae35);
+  hash ^= hash >>> 16;
+
   const index = Math.abs(hash) % CLASSROOM_THEMES.length;
   return CLASSROOM_THEMES[index];
 }
