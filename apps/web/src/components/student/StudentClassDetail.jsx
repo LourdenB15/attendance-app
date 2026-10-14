@@ -505,7 +505,7 @@ export function StudentClassDetail({
                     <tr>
                       <th
                         onClick={() => handleSort("session_label")}
-                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition"
+                        className="px-4 sm:px-6 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[220px] sm:min-w-[320px]"
                       >
                         <div className="flex items-center justify-between">
                           <span>Session Topic / Label</span>
@@ -514,7 +514,7 @@ export function StudentClassDetail({
                       </th>
                       <th
                         onClick={() => handleSort("recorded_at")}
-                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[130px] sm:min-w-[160px]"
+                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[140px] sm:min-w-[170px]"
                       >
                         <div className="flex items-center justify-between">
                           <span>Check-in Time</span>
@@ -544,8 +544,13 @@ export function StudentClassDetail({
                     ) : (
                       filteredRecords.map((r, i) => (
                         <tr key={r.session_id || i} className="hover:bg-[#f8f9fa] transition-colors">
-                          <td className="px-5 py-3.5 font-medium text-[#202124] border-r border-[#e8eaed]">
-                            {r.session_label || "Standard Class Session"}
+                          <td className="px-4 sm:px-6 py-3 sm:py-3.5 border-r border-[#e8eaed] min-w-[220px] sm:min-w-[320px]">
+                            <p
+                              className="font-medium text-xs sm:text-sm text-[#202124] break-words leading-relaxed max-w-sm sm:max-w-md"
+                              title={r.session_label || "Standard Class Session"}
+                            >
+                              {r.session_label || "Standard Class Session"}
+                            </p>
                           </td>
                           <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed] whitespace-nowrap">
                             {r.recorded_at ? new Date(r.recorded_at).toLocaleString() : "—"}
