@@ -72,23 +72,51 @@ export function VerifyEmailView({ onSuccess, onBackToLogin, initialEmail = "" })
       return;
     }
 
-    if (cleanVal.length > 1) {
-      const pasteDigits = cleanVal.slice(0, 6).split("");
-      const newDigits = [...digits];
-      pasteDigits.forEach((d, i) => {
-        if (index + i < 6) newDigits[index + i] = d;
-      });
-      setDigits(newDigits);
-      const nextFocus = Math.min(index + pasteDigits.length, 5);
-      inputRefs.current[nextFocus]?.focus();
+    // Full 6-digit code autofilled or pasted via input change
+    if (cleanVal.length >= 6) {
+      const six = cleanVal.slice(0, 6).split("");
+      setDigits(six);
+      inputRefs.current[5]?.focus();
+      submitCode(six.join(""));
+      return;
+    }
 
-      const fullCode = newDigits.join("");
-      if (fullCode.length === 6) {
-        submitCode(fullCode);
+    // Overwriting a box when single digit was already present (e.g. "3" -> "35" or "53")
+    if (cleanVal.length === 2 && digits[index]) {
+      const charToUse = cleanVal[0] === digits[index] ? cleanVal[1] : cleanVal[0];
+      const newDigits = [...digits];
+      newDigits[index] = charToUse;
+      setDigits(newDigits);
+      if (index < 5) {
+        inputRefs.current[index + 1]?.focus();
+      }
+      if (newDigits.join("").length === 6) {
+        submitCode(newDigits.join(""));
       }
       return;
     }
 
+    // Multiple digits entered (e.g. partial paste without onPaste triggering)
+    if (cleanVal.length > 1) {
+      const chars = cleanVal.split("");
+      const newDigits = [...digits];
+      let lastFilled = index;
+      chars.forEach((c, i) => {
+        if (index + i < 6) {
+          newDigits[index + i] = c;
+          lastFilled = index + i;
+        }
+      });
+      setDigits(newDigits);
+      const nextIdx = Math.min(lastFilled + 1, 5);
+      inputRefs.current[nextIdx]?.focus();
+      if (newDigits.join("").length === 6) {
+        submitCode(newDigits.join(""));
+      }
+      return;
+    }
+
+    // Standard single digit entry
     const newDigits = [...digits];
     newDigits[index] = cleanVal;
     setDigits(newDigits);
@@ -105,26 +133,77 @@ export function VerifyEmailView({ onSuccess, onBackToLogin, initialEmail = "" })
 
   const handleKeyDown = (index, e) => {
     if (hasError) setHasError(false);
-    if (e.key === "Backspace" && !digits[index] && index > 0) {
+
+    if (e.key === "Backspace") {
+      e.preventDefault();
+      const newDigits = [...digits];
+      if (digits[index]) {
+        // If current box has a value, clear it
+        newDigits[index] = "";
+        setDigits(newDigits);
+      } else if (index > 0) {
+        // If current box is already empty, move to previous box and clear its value
+        newDigits[index - 1] = "";
+        setDigits(newDigits);
+        inputRefs.current[index - 1]?.focus();
+      }
+      return;
+    }
+
+    if (e.key === "Delete") {
+      e.preventDefault();
+      if (digits[index]) {
+        const newDigits = [...digits];
+        newDigits[index] = "";
+        setDigits(newDigits);
+      }
+      return;
+    }
+
+    if (e.key === "ArrowLeft" && index > 0) {
+      e.preventDefault();
       inputRefs.current[index - 1]?.focus();
+      return;
+    }
+
+    if (e.key === "ArrowRight" && index < 5) {
+      e.preventDefault();
+      inputRefs.current[index + 1]?.focus();
+      return;
     }
   };
 
-  const handlePaste = (e) => {
+  const handlePaste = (e, index = 0) => {
     e.preventDefault();
     if (hasError) setHasError(false);
-    const pasteData = e.clipboardData.getData("text").replace(/\D/g, "");
-    if (!pasteData) return;
+    const pasteData = e.clipboardData ? e.clipboardData.getData("text") : "";
+    const cleanVal = pasteData.replace(/\D/g, "");
+    if (!cleanVal) return;
 
-    const pasteDigits = pasteData.slice(0, 6).split("");
-    const newDigits = ["", "", "", "", "", ""];
-    pasteDigits.forEach((d, i) => {
-      newDigits[i] = d;
+    // If 6 or more digits pasted, populate all 6 boxes from the start
+    if (cleanVal.length >= 6) {
+      const six = cleanVal.slice(0, 6).split("");
+      setDigits(six);
+      inputRefs.current[5]?.focus();
+      submitCode(six.join(""));
+      return;
+    }
+
+    // Partial paste: populate starting from current box
+    const chars = cleanVal.split("");
+    const newDigits = [...digits];
+    let lastFilled = index;
+    chars.forEach((c, i) => {
+      if (index + i < 6) {
+        newDigits[index + i] = c;
+        lastFilled = index + i;
+      }
     });
     setDigits(newDigits);
-    inputRefs.current[Math.min(pasteDigits.length, 5)]?.focus();
+    const nextIdx = Math.min(lastFilled + 1, 5);
+    inputRefs.current[nextIdx]?.focus();
 
-    if (pasteDigits.length === 6) {
+    if (newDigits.join("").length === 6) {
       submitCode(newDigits.join(""));
     }
   };
@@ -219,7 +298,7 @@ export function VerifyEmailView({ onSuccess, onBackToLogin, initialEmail = "" })
 
       {/* 6-digit boxes */}
       <form onSubmit={handleManualSubmit} className="space-y-4">
-        <div className="flex justify-between items-center gap-2" onPaste={handlePaste}>
+        <div className="flex justify-between items-center gap-2" onPaste={(e) => handlePaste(e, 0)}>
           {digits.map((digit, idx) => (
             <input
               key={idx}
@@ -227,12 +306,15 @@ export function VerifyEmailView({ onSuccess, onBackToLogin, initialEmail = "" })
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
-              maxLength={1}
+              maxLength={6}
+              autoComplete={idx === 0 ? "one-time-code" : "off"}
               value={digit}
               aria-label={`Digit ${idx + 1}`}
               aria-invalid={hasError ? "true" : undefined}
+              onFocus={(e) => e.target.select()}
               onChange={(e) => handleDigitChange(idx, e.target.value)}
-              onKeyDown={(e) => handleKeyDown(idx, e.key)}
+              onKeyDown={(e) => handleKeyDown(idx, e)}
+              onPaste={(e) => handlePaste(e, idx)}
               className={`w-11 h-13 sm:w-12 sm:h-14 text-center text-xl font-mono font-bold bg-white rounded-xl text-[#202124] focus:outline-none transition-all ${
                 hasError
                   ? "border border-[#d93025] ring-3 ring-[#d93025]/20 shadow-[0_0_12px_rgba(217,48,37,0.18)] focus:border-[#d93025] focus:ring-3 focus:ring-[#d93025]/30"
