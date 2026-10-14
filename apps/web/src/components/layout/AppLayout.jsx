@@ -156,12 +156,24 @@ export function AppLayout() {
     setNavKey((k) => k + 1);
   }, []);
 
+  const handleGoHome = useCallback(() => {
+    const homeNav = role === "ADMIN" ? "users" : "classes";
+    setTargetClassId(null);
+    setActiveNav(homeNav);
+    updateUrlParams({ nav: homeNav, classId: null }, false);
+    setNavKey((k) => k + 1);
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [role]);
+
   return (
     <div className="min-h-screen bg-[#f8f9fa] text-[#202124] flex flex-col font-sans">
       {/* App Header */}
       <Header
         onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
         onOpenSettings={() => handleNavSelect("settings")}
+        onGoHome={handleGoHome}
       />
 
       <div className="flex-1 flex flex-col">
@@ -175,6 +187,7 @@ export function AppLayout() {
           onSelectClass={handleSelectClass}
           onOpenSettings={() => handleNavSelect("settings")}
           onLogout={logout}
+          onGoHome={handleGoHome}
         />
 
         {/* Main Content Area (smoothly offsets by w-72 when sidebar is open on desktop) */}

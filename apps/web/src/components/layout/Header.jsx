@@ -11,7 +11,7 @@ import {
   IconChevronDown,
 } from "../ui/Icons";
 
-export function Header({ onToggleSidebar, onOpenSettings }) {
+export function Header({ onToggleSidebar, onOpenSettings, onGoHome }) {
   const { currentUser, logout } = useAuth();
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
@@ -51,8 +51,15 @@ export function Header({ onToggleSidebar, onOpenSettings }) {
             <IconMenu className="w-5 h-5" />
           </button>
 
-          <div className="flex items-center gap-2.5">
-            <AppLogo className="w-9 h-9" />
+          {/* Brand Logo & Name (Click to navigate Home) */}
+          <button
+            type="button"
+            onClick={onGoHome || (() => window.scrollTo({ top: 0, behavior: "smooth" }))}
+            className="flex items-center gap-2.5 px-2 py-1.5 -ml-1.5 rounded-xl hover:bg-[#f1f3f4] active:bg-[#e8eaed] transition-colors cursor-pointer text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1a73e8]"
+            title="Attendance Live Home"
+            aria-label="Attendance Live Home"
+          >
+            <AppLogo className="w-9 h-9 shrink-0" />
             <div className="flex items-center gap-2">
               <span className="text-base sm:text-lg font-bold text-[#202124] tracking-tight leading-none">
                 Attendance Live
@@ -61,7 +68,7 @@ export function Header({ onToggleSidebar, onOpenSettings }) {
                 Classroom
               </span>
             </div>
-          </div>
+          </button>
         </div>
 
         {/* Right: User Profile Dropdown */}
