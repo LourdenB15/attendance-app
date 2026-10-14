@@ -248,21 +248,23 @@ export function ProfessorPortal({
     <div className="space-y-6">
       {/* Top Banner & Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#dadce0]">
-        <div>
+        <div className="w-full">
           {selectedClass ? (
-            <div className="flex items-center gap-2 text-xs font-medium text-[#5f6368]">
-              <button
-                type="button"
-                onClick={handleBackToClasses}
-                className="hover:text-[#1a73e8] transition cursor-pointer flex items-center gap-1 font-semibold"
-              >
-                <span>Teaching Hub</span>
-              </button>
-              <span className="text-[#9aa0a6]">/</span>
-              <span className="font-bold text-[#202124] truncate max-w-[200px] sm:max-w-md">
-                {formatClassDisplayName(selectedClass.name, selectedClass.section)}
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 ml-1 rounded-full text-[10px] font-bold bg-[#e6f4ea] text-[#137333] border border-[#ceead6]">
+            <div className="flex items-center justify-between gap-2 text-xs font-medium text-[#5f6368] w-full min-w-0">
+              <div className="flex items-center gap-1.5 min-w-0 truncate">
+                <button
+                  type="button"
+                  onClick={handleBackToClasses}
+                  className="hover:text-[#1a73e8] transition cursor-pointer font-semibold whitespace-nowrap shrink-0"
+                >
+                  Teaching Hub
+                </button>
+                <span className="text-[#9aa0a6] shrink-0">/</span>
+                <span className="font-bold text-[#202124] truncate">
+                  {formatClassDisplayName(selectedClass.name, selectedClass.section)}
+                </span>
+              </div>
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#e6f4ea] text-[#137333] border border-[#ceead6] shrink-0">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#1e8e3e] animate-pulse" />
                 Live Sync
               </span>
@@ -344,11 +346,11 @@ export function ProfessorPortal({
 
             return (
               <>
-                <div className="flex border-b border-[#dadce0] gap-2 sm:gap-6 text-xs sm:text-sm font-semibold w-full justify-between sm:justify-start">
+                <div className="flex border-b border-[#dadce0] gap-4 sm:gap-6 text-xs sm:text-sm font-semibold w-full justify-start overflow-x-auto no-scrollbar">
                   <button
                     type="button"
                     onClick={() => setClassViewTab("live")}
-                    className={`pb-3 transition-colors border-b-2 flex items-center gap-1.5 sm:gap-2 cursor-pointer ${
+                    className={`pb-3 transition-colors border-b-2 flex items-center gap-1.5 sm:gap-2 cursor-pointer shrink-0 ${
                       currentViewTab === "live"
                         ? "border-[#1a73e8] text-[#1a73e8] font-bold"
                         : "border-transparent text-[#5f6368] hover:text-[#202124]"
@@ -361,7 +363,7 @@ export function ProfessorPortal({
                   <button
                     type="button"
                     onClick={() => setClassViewTab("roster")}
-                    className={`pb-3 transition-colors border-b-2 flex items-center gap-1.5 sm:gap-2 cursor-pointer ${
+                    className={`pb-3 transition-colors border-b-2 flex items-center gap-1.5 sm:gap-2 cursor-pointer shrink-0 ${
                       currentViewTab === "roster"
                         ? "border-[#1a73e8] text-[#1a73e8] font-bold"
                         : "border-transparent text-[#5f6368] hover:text-[#202124]"
@@ -374,7 +376,7 @@ export function ProfessorPortal({
                   <button
                     type="button"
                     onClick={() => setClassViewTab("history")}
-                    className={`pb-3 transition-colors border-b-2 flex items-center gap-1.5 sm:gap-2 cursor-pointer ${
+                    className={`pb-3 transition-colors border-b-2 flex items-center gap-1.5 sm:gap-2 cursor-pointer shrink-0 ${
                       currentViewTab === "history"
                         ? "border-[#1a73e8] text-[#1a73e8] font-bold"
                         : "border-transparent text-[#5f6368] hover:text-[#202124]"

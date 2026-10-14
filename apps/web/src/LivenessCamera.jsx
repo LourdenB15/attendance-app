@@ -83,8 +83,8 @@ export function LivenessCamera({
       basePath: "",
       headTurnThreshold: 0.4,
       challengeTimeout: 10000,
-      minFaceSize: 0.15,
-      maxFaceSize: 0.70,
+      minFaceSize: 0.10,
+      maxFaceSize: 0.75,
     });
     sdkRef.current = sdk;
 
@@ -248,8 +248,8 @@ export function LivenessCamera({
     sdkRef.current.updateConfig({
       sessionToken,
       challenges: selectedChallenges,
-      minFaceSize: 0.15,
-      maxFaceSize: 0.70,
+      minFaceSize: 0.10,
+      maxFaceSize: 0.75,
     });
 
     try {
@@ -263,14 +263,13 @@ export function LivenessCamera({
 
       let stream = null;
       if (isPortrait) {
-        // Phone/Portrait: Request native 3:4 uncropped camera sensor stream matching the viewport
+        // Phone/Portrait: Request wide uncropped camera sensor stream without artificial zoom
         try {
           stream = await navigator.mediaDevices.getUserMedia({
             video: {
               facingMode: "user",
-              width: { ideal: 720, max: 1080 },
-              height: { ideal: 960, max: 1440 },
-              aspectRatio: { ideal: 3 / 4 },
+              width: { ideal: 1080, max: 1920 },
+              height: { ideal: 1920, max: 1920 },
             },
             audio: false,
           });
@@ -280,7 +279,7 @@ export function LivenessCamera({
               video: {
                 facingMode: "user",
                 width: { ideal: 720 },
-                height: { ideal: 960 },
+                height: { ideal: 1280 },
               },
               audio: false,
             });
@@ -380,7 +379,7 @@ export function LivenessCamera({
           <div
             className={`relative w-full overflow-hidden rounded-xl bg-slate-950 shadow-inner border border-slate-800 transition-all duration-200 ${
               isPortraitMode
-                ? "aspect-[3/4] max-h-[62vh]"
+                ? "aspect-[4/5] max-h-[60vh]"
                 : "aspect-[4/3] max-h-[68vh]"
             }`}
           >
@@ -401,7 +400,7 @@ export function LivenessCamera({
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                 <div
                   className={`rounded-[50%] border-2 border-dashed border-white/70 animate-pulse transition-all shadow-sm ${
-                    isPortraitMode ? "w-36 h-48 sm:w-42 sm:h-56" : "w-48 h-64"
+                    isPortraitMode ? "w-44 h-60 sm:w-48 sm:h-64" : "w-52 h-68"
                   }`}
                 />
               </div>
@@ -426,7 +425,11 @@ export function LivenessCamera({
             <div className="absolute top-1/2 inset-x-0 z-10 flex justify-center pointer-events-none -translate-y-1/2 px-4">
               <div className="rounded-full border border-amber-300/40 bg-[#b06000]/90 px-4 py-2 text-xs font-bold text-white shadow-lg backdrop-blur-md animate-bounce flex items-center gap-1.5">
                 <IconAlert className="w-4 h-4 text-amber-200" />
-                <span>Move {distanceHint.toLowerCase()} to camera</span>
+                <span>
+                  {distanceHint === "FURTHER"
+                    ? "Move farther back from camera"
+                    : "Move closer to camera"}
+                </span>
               </div>
             </div>
           )}
