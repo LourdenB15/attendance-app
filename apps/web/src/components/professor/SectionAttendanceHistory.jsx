@@ -570,7 +570,7 @@ export function SectionAttendanceHistory({ classId, className, section }) {
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-center gap-3 min-w-0">
                             <UserAvatar
-                              user={{ full_name: st.full_name, email: st.email }}
+                              user={st}
                               className="w-10 h-10"
                               textClassName="text-sm font-bold"
                             />
@@ -708,7 +708,7 @@ export function SectionAttendanceHistory({ classId, className, section }) {
                               <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] whitespace-nowrap">
                                 <div className="flex items-center gap-3">
                                   <UserAvatar
-                                    user={{ full_name: st.full_name, email: st.email }}
+                                    user={st}
                                     className="w-8 h-8"
                                     textClassName="text-xs font-bold"
                                   />
@@ -800,7 +800,7 @@ export function SectionAttendanceHistory({ classId, className, section }) {
                       <td className="px-4 py-3 border-r border-[#e8eaed]">
                         <div className="flex items-center gap-2.5">
                           <UserAvatar
-                            user={{ full_name: rec.full_name, email: rec.email }}
+                            user={rec}
                             className="w-7 h-7"
                             textClassName="text-[10px] font-bold"
                           />

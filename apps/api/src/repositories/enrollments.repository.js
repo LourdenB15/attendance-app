@@ -12,7 +12,7 @@ export async function createEnrollment(classId, studentId, enrolledVia) {
 
 export async function findStudentsByClass(classId) {
   const result = await pool.query(
-    `SELECT u.id AS student_id, u.full_name, u.email,
+    `SELECT u.id AS student_id, u.full_name, u.email, u.avatar_url,
             e.status, e.enrolled_via, e.enrolled_at
      FROM enrollments e
      JOIN users u ON u.id = e.student_id
@@ -34,7 +34,7 @@ export async function findActiveEnrollment(classId, studentId) {
 export async function findClassesByStudent(studentId) {
   const result = await pool.query(
     `SELECT c.id AS class_id, c.name, c.semester, c.section, c.join_code, c.is_archived, e.enrolled_at,
-            u.full_name AS professor_name,
+            u.full_name AS professor_name, u.avatar_url AS professor_avatar_url,
             s.id AS active_session_id, s.label AS active_session_label, s.expires_at AS active_session_expires_at,
             att.status AS my_attendance_status, att.source AS my_attendance_source,
             att.recorded_at AS my_checked_in_at

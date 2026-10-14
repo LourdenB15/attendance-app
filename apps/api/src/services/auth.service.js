@@ -28,6 +28,7 @@ async function toSafeUser(user) {
   // Google-only accounts have no password; the client offers "Set a password" for them.
   // Full rows carry password_hash; some update queries return has_password instead.
   safeUser.has_password = user.has_password ?? Boolean(password_hash);
+  safeUser.avatar_url = user.avatar_url || null;
   if (safeUser.role === "STUDENT") {
     const biometric = await biometricEnrollmentsRepository.findActiveByStudent(safeUser.id);
     safeUser.has_biometric_enrolled = Boolean(biometric);
@@ -261,22 +262,28 @@ export async function loginWithGoogle(idToken) {
     throw httpError(403, "Google account email is not verified");
   }
 
-  const { sub: googleId, name } = payload;
+  const { sub: googleId, name, picture } = payload;
   const email = normalizeEmail(payload.email);
+  const avatarUrl = typeof picture === "string" && picture.trim().length > 0 ? picture.trim() : null;
 
   let user = await usersRepository.findByGoogleId(googleId);
 
   if (!user) {
     const existing = await usersRepository.findByEmail(email);
     if (existing) {
-      user = await usersRepository.linkGoogleAccount(existing.id, googleId);
+      user = await usersRepository.linkGoogleAccount(existing.id, googleId, avatarUrl);
     } else {
       const adminEmail = process.env.ADMIN_EMAIL;
       const initialRole =
         adminEmail && email.toLowerCase() === adminEmail.toLowerCase()
           ? "ADMIN"
           : "STUDENT";
-      user = await usersRepository.createGoogleUser(name, email, googleId, initialRole);
+      user = await usersRepository.createGoogleUser(name, email, googleId, initialRole, avatarUrl);
+    }
+  } else {
+    // Existing Google account: update picture if a new one is supplied, preserve previously valid if omitted
+    if (avatarUrl && user.avatar_url !== avatarUrl) {
+      user = await usersRepository.updateAvatar(user.id, avatarUrl);
     }
   }
 
