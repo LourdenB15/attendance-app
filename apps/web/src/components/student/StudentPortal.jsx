@@ -66,11 +66,6 @@ export function StudentPortal({
     } else {
       setStudentTab("classes");
       if (!targetClassId) setSelectedClassId(null);
-    } else {
-      setStudentTab(activeNav);
-      if (activeNav === "classes") {
-        if (!targetClassId) setSelectedClassId(null);
-      }
     }
   }
 

@@ -169,34 +169,6 @@ export function EnrolledClassesTable({
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const handleArchiveClass = async (c) => {
-    const confirmed = await confirm({
-      title: "Archive this class?",
-      message: `Are you sure you want to archive ${c.name}? You can find it under Archived Classes and restore it anytime.`,
-      confirmLabel: "Archive Class",
-    });
-    if (!confirmed) return;
-
-    const next = [...new Set([...studentArchivedIds, c.class_id])];
-    setStudentArchivedIds(next);
-    saveStudentArchivedIds(studentId, next);
-    showToast("success", `${c.name} moved to Archived Classes.`);
-  };
-
-  const handleUnarchiveClass = (c) => {
-    const next = studentArchivedIds.filter((id) => id !== c.class_id);
-    setStudentArchivedIds(next);
-    saveStudentArchivedIds(studentId, next);
-    showToast("success", `${c.name} restored to Enrolled Classes.`);
-  };
-
-  const handleCopyJoinCode = (e, code) => {
-    e.stopPropagation();
-    navigator.clipboard.writeText(code);
-    setOpenMenuId(null);
-    showToast("info", `Class code "${code}" copied to clipboard!`);
-  };
-
   return (
     <div className="space-y-4">
       {/* Top Filter & View Controls */}
