@@ -567,14 +567,14 @@ export function SectionAttendanceHistory({ classId, className, section }) {
                         key={st.student_id}
                         className="p-4 space-y-3 hover:bg-[#f8f9fa] transition-colors"
                       >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex items-center gap-3 min-w-0">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3 min-w-0 flex-1">
                             <UserAvatar
                               user={st}
-                              className="w-10 h-10"
+                              className="w-10 h-10 shrink-0"
                               textClassName="text-sm font-bold"
                             />
-                            <div className="min-w-0">
+                            <div className="min-w-0 flex-1">
                               <p className="font-semibold text-sm text-[#202124] truncate">
                                 {st.full_name}
                               </p>
@@ -584,19 +584,21 @@ export function SectionAttendanceHistory({ classId, className, section }) {
                             </div>
                           </div>
 
-                          {pct >= 80 ? (
-                            <Badge variant="success" size="xs">
-                              Good Standing
-                            </Badge>
-                          ) : pct >= 60 ? (
-                            <Badge variant="warning" size="xs">
-                              Warning
-                            </Badge>
-                          ) : (
-                            <Badge variant="danger" size="xs">
-                              At Risk
-                            </Badge>
-                          )}
+                          <div className="shrink-0">
+                            {pct >= 80 ? (
+                              <Badge variant="success" size="xs">
+                                Good Standing
+                              </Badge>
+                            ) : pct >= 60 ? (
+                              <Badge variant="warning" size="xs">
+                                Warning
+                              </Badge>
+                            ) : (
+                              <Badge variant="danger" size="xs">
+                                At Risk
+                              </Badge>
+                            )}
+                          </div>
                         </div>
 
                         <div className="grid grid-cols-3 gap-2 bg-[#f8f9fa] p-2.5 rounded-xl border border-[#dadce0]/60 text-center">
@@ -801,7 +803,7 @@ export function SectionAttendanceHistory({ classId, className, section }) {
                         <div className="flex items-center gap-2.5">
                           <UserAvatar
                             user={rec}
-                            className="w-7 h-7"
+                            className="w-7 h-7 shrink-0"
                             textClassName="text-[10px] font-bold"
                           />
                           <div className="min-w-0">
@@ -814,7 +816,7 @@ export function SectionAttendanceHistory({ classId, className, section }) {
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 border-r border-[#e8eaed]">
+                      <td className="px-4 py-3 border-r border-[#e8eaed] whitespace-nowrap">
                         {rec.status === "PRESENT" ? (
                           <Badge variant="success" size="xs" dot>
                             Present

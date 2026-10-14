@@ -35,13 +35,13 @@ export function Badge({
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border transition-colors ${
+      className={`inline-flex items-center gap-1.5 rounded-full border transition-colors whitespace-nowrap shrink-0 ${
         variantStyles[variant] || variantStyles.default
       } ${sizeStyles[size] || sizeStyles.sm} ${className}`}
     >
       {dot && (
         <span
-          className={`w-1.5 h-1.5 rounded-full ${dotStyles[variant] || dotStyles.default}`}
+          className={`w-1.5 h-1.5 rounded-full shrink-0 ${dotStyles[variant] || dotStyles.default}`}
         />
       )}
       {children}
