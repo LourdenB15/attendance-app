@@ -83,8 +83,8 @@ export function LivenessCamera({
       basePath: "",
       headTurnThreshold: 0.4,
       challengeTimeout: 10000,
-      minFaceSize: 0.08,
-      maxFaceSize: 0.85,
+      minFaceSize: 0.10,
+      maxFaceSize: 0.75,
     });
     sdkRef.current = sdk;
 
@@ -248,8 +248,8 @@ export function LivenessCamera({
     sdkRef.current.updateConfig({
       sessionToken,
       challenges: selectedChallenges,
-      minFaceSize: 0.08,
-      maxFaceSize: 0.85,
+      minFaceSize: 0.10,
+      maxFaceSize: 0.75,
     });
 
     try {
@@ -270,7 +270,6 @@ export function LivenessCamera({
               facingMode: "user",
               width: { ideal: 1080, max: 1920 },
               height: { ideal: 1920, max: 1920 },
-              aspectRatio: { ideal: 9 / 16 },
             },
             audio: false,
           });
@@ -281,7 +280,6 @@ export function LivenessCamera({
                 facingMode: "user",
                 width: { ideal: 720 },
                 height: { ideal: 1280 },
-                aspectRatio: { ideal: 9 / 16 },
               },
               audio: false,
             });
@@ -379,10 +377,10 @@ export function LivenessCamera({
         {/* Video Viewport Container */}
         <div className="p-3 sm:p-4">
           <div
-            className={`relative overflow-hidden rounded-2xl bg-slate-950 shadow-inner border border-slate-800 transition-all duration-200 ${
+            className={`relative w-full overflow-hidden rounded-xl bg-slate-950 shadow-inner border border-slate-800 transition-all duration-200 ${
               isPortraitMode
-                ? "aspect-[9/16] max-h-[52vh] max-w-[280px] sm:max-w-xs mx-auto"
-                : "w-full aspect-[4/3] max-h-[68vh]"
+                ? "aspect-[4/5] max-h-[60vh]"
+                : "aspect-[4/3] max-h-[68vh]"
             }`}
           >
             <video
@@ -402,7 +400,7 @@ export function LivenessCamera({
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                 <div
                   className={`rounded-[50%] border-2 border-dashed border-white/70 animate-pulse transition-all shadow-sm ${
-                    isPortraitMode ? "w-36 h-50 sm:w-42 sm:h-58" : "w-52 h-68"
+                    isPortraitMode ? "w-44 h-60 sm:w-48 sm:h-64" : "w-52 h-68"
                   }`}
                 />
               </div>
