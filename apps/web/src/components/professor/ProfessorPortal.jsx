@@ -196,9 +196,11 @@ export function ProfessorPortal({
 
   // Live polling interval
   useEffect(() => {
+    let tick = 0;
     const timer = setInterval(() => {
       if (document.hidden) return; // don't poll if backgrounded
 
+      tick += 1;
       if (selectedClassRef.current) {
         const session = activeSessionRef.current;
         if (session && new Date(session.expires_at) <= new Date()) {
@@ -207,6 +209,10 @@ export function ProfessorPortal({
         } else if (session) {
           // Poll attendance roster in real-time
           loadAttendance(session.id, true);
+          // Every 3rd cycle (~9s), also verify session hasn't been closed on server
+          if (tick % 3 === 0) {
+            loadActiveSession(selectedClassRef.current.id);
+          }
         } else {
           // Check if session opened
           loadActiveSession(selectedClassRef.current.id);
@@ -395,8 +401,28 @@ export function ProfessorPortal({
                 classId={selectedClass.id}
                 className={selectedClass.name}
                 activeSession={activeSession}
-                onSessionChanged={() => {
-                  loadActiveSession(selectedClass.id);
+                onSessionOpened={(newSession) => {
+                  setActiveSession(newSession);
+                  if (newSession?.id) {
+                    loadAttendance(newSession.id, true);
+                  }
+                  loadClasses(true);
+                }}
+                onSessionClosed={() => {
+                  setActiveSession(null);
+                  setSessionAttendance([]);
+                  loadClasses(true);
+                }}
+                onSessionChanged={(session) => {
+                  if (session) {
+                    setActiveSession(session);
+                    if (session.id) {
+                      loadAttendance(session.id, true);
+                    }
+                  } else {
+                    setActiveSession(null);
+                    setSessionAttendance([]);
+                  }
                   loadClasses(true);
                 }}
                 onRefreshAttendance={() => activeSession && loadAttendance(activeSession.id, false)}

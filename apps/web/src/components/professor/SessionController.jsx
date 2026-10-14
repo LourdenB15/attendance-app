@@ -14,6 +14,7 @@ export function SessionController({
   activeSession,
   onSessionOpened,
   onSessionClosed,
+  onSessionChanged,
   onRefreshAttendance,
   refreshingAttendance = false,
 }) {
@@ -61,6 +62,7 @@ export function SessionController({
       showToast("success", "Attendance session opened successfully.");
       setLabel("");
       if (onSessionOpened) onSessionOpened(session);
+      if (onSessionChanged) onSessionChanged(session);
     } catch (err) {
       showToast("error", err.message);
     } finally {
@@ -75,8 +77,16 @@ export function SessionController({
       await sessionsApi.closeSession(activeSession.id);
       showToast("success", "Attendance session closed.");
       if (onSessionClosed) onSessionClosed();
+      if (onSessionChanged) onSessionChanged(null);
     } catch (err) {
-      showToast("error", err.message);
+      // If the session was already closed or expired on the server, gracefully sync UI state
+      if (err.message && err.message.toLowerCase().includes("no open session")) {
+        showToast("info", "Session was already closed.");
+        if (onSessionClosed) onSessionClosed();
+        if (onSessionChanged) onSessionChanged(null);
+      } else {
+        showToast("error", err.message);
+      }
     } finally {
       setLoading(false);
     }
