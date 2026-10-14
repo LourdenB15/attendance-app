@@ -162,7 +162,7 @@ export function LiveAttendanceGrid({
 
         {/* Filter Chips, Search Input & Mobile Switcher */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-2 border-t border-[#f1f3f4]">
-          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none shrink-0">
+          <div className="grid grid-cols-3 md:flex items-center gap-1.5 w-full md:w-auto shrink-0">
             {[
               { id: "ALL", label: `All (${totalCount})` },
               { id: "PRESENT", label: `Present (${presentCount})` },
@@ -172,7 +172,7 @@ export function LiveAttendanceGrid({
                 key={chip.id}
                 type="button"
                 onClick={() => setStatusFilter(chip.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer whitespace-nowrap ${
+                className={`flex-1 md:flex-initial px-1.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer text-center truncate ${
                   statusFilter === chip.id
                     ? "bg-[#1a73e8] text-white shadow-2xs font-bold"
                     : "bg-[#f1f3f4] text-[#5f6368] hover:bg-[#e8eaed] hover:text-[#202124]"
@@ -184,7 +184,7 @@ export function LiveAttendanceGrid({
           </div>
 
           <div className="flex items-center gap-2.5 justify-between md:justify-end w-full md:w-auto">
-            <div className="relative flex-1 sm:w-60">
+            <div className="relative flex-1 min-w-0 sm:w-60">
               <IconSearch className="w-4 h-4 text-[#5f6368] absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"

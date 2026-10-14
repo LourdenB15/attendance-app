@@ -344,42 +344,45 @@ export function ProfessorPortal({
 
             return (
               <>
-                <div className="flex border-b border-[#dadce0] gap-6 text-xs sm:text-sm font-semibold overflow-x-auto scrollbar-none">
+                <div className="flex border-b border-[#dadce0] gap-2 sm:gap-6 text-xs sm:text-sm font-semibold w-full justify-between sm:justify-start">
                   <button
                     type="button"
                     onClick={() => setClassViewTab("live")}
-                    className={`pb-3 transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                    className={`pb-3 transition-colors border-b-2 flex items-center gap-1.5 sm:gap-2 cursor-pointer ${
                       currentViewTab === "live"
                         ? "border-[#1a73e8] text-[#1a73e8] font-bold"
                         : "border-transparent text-[#5f6368] hover:text-[#202124]"
                     }`}
                   >
-                    <IconCamera className="w-4 h-4" />
-                    <span>Live Attendance & Controller</span>
+                    <IconCamera className="w-4 h-4 shrink-0" />
+                    <span className="hidden sm:inline">Live Attendance & Controller</span>
+                    <span className="sm:hidden">Live</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setClassViewTab("roster")}
-                    className={`pb-3 transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                    className={`pb-3 transition-colors border-b-2 flex items-center gap-1.5 sm:gap-2 cursor-pointer ${
                       currentViewTab === "roster"
                         ? "border-[#1a73e8] text-[#1a73e8] font-bold"
                         : "border-transparent text-[#5f6368] hover:text-[#202124]"
                     }`}
                   >
-                    <IconUsers className="w-4 h-4" />
-                    <span>Class Roster ({classStudents.filter((s) => s.status === "ACTIVE").length})</span>
+                    <IconUsers className="w-4 h-4 shrink-0" />
+                    <span className="hidden sm:inline">Class Roster ({classStudents.filter((s) => s.status === "ACTIVE").length})</span>
+                    <span className="sm:hidden">Roster ({classStudents.filter((s) => s.status === "ACTIVE").length})</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setClassViewTab("history")}
-                    className={`pb-3 transition-colors border-b-2 flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                    className={`pb-3 transition-colors border-b-2 flex items-center gap-1.5 sm:gap-2 cursor-pointer ${
                       currentViewTab === "history"
                         ? "border-[#1a73e8] text-[#1a73e8] font-bold"
                         : "border-transparent text-[#5f6368] hover:text-[#202124]"
                     }`}
                   >
-                    <IconClock className="w-4 h-4" />
-                    <span>Attendance History</span>
+                    <IconClock className="w-4 h-4 shrink-0" />
+                    <span className="hidden sm:inline">Attendance History</span>
+                    <span className="sm:hidden">History</span>
                   </button>
                 </div>
 

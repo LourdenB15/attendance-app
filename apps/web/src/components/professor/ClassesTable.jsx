@@ -198,34 +198,36 @@ export function ClassesTable({
       {/* Top Filter & View Controls */}
       <div className="bg-white border border-[#dadce0] rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shadow-xs">
         {/* Segmented Tab Toggle: Active vs Archived */}
-        <div className="flex bg-[#f1f3f4] p-1 rounded-lg text-xs font-semibold overflow-x-auto scrollbar-none whitespace-nowrap shrink-0">
+        <div className="grid grid-cols-2 sm:flex bg-[#f1f3f4] p-1 rounded-lg text-xs font-semibold w-full sm:w-auto shrink-0">
           <button
             type="button"
             onClick={() => setListTab("active")}
-            className={`px-3.5 py-1.5 rounded-md transition-all whitespace-nowrap cursor-pointer ${
+            className={`flex-1 sm:flex-initial px-2 sm:px-3.5 py-1.5 rounded-md transition-all text-center truncate cursor-pointer ${
               listTab === "active"
                 ? "bg-white text-[#1a73e8] shadow-xs font-bold"
                 : "text-[#5f6368] hover:text-[#202124]"
             }`}
           >
-            Active Classes ({activeClasses.length})
+            <span className="hidden sm:inline">Active Classes ({activeClasses.length})</span>
+            <span className="sm:hidden">Active ({activeClasses.length})</span>
           </button>
           <button
             type="button"
             onClick={() => setListTab("archived")}
-            className={`px-3.5 py-1.5 rounded-md transition-all whitespace-nowrap cursor-pointer ${
+            className={`flex-1 sm:flex-initial px-2 sm:px-3.5 py-1.5 rounded-md transition-all text-center truncate cursor-pointer ${
               listTab === "archived"
                 ? "bg-white text-[#1a73e8] shadow-xs font-bold"
                 : "text-[#5f6368] hover:text-[#202124]"
             }`}
           >
-            Archived ({archivedClasses.length})
+            <span className="hidden sm:inline">Archived ({archivedClasses.length})</span>
+            <span className="sm:hidden">Archived ({archivedClasses.length})</span>
           </button>
         </div>
 
         {/* Search & Grid/Table View Switcher */}
         <div className="flex items-center gap-2.5 w-full sm:w-auto">
-          <div className="relative flex-1 sm:w-64">
+          <div className="relative flex-1 min-w-0 sm:w-64">
             <IconSearch className="w-4 h-4 text-[#5f6368] absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"

@@ -175,7 +175,7 @@ export function SectionAttendanceHistory({ classId, className, section }) {
           </p>
         </div>
 
-        <div className="flex bg-[#f1f3f4] p-1 rounded-xl text-xs font-semibold overflow-x-auto scrollbar-none shrink-0">
+        <div className="grid grid-cols-2 md:flex bg-[#f1f3f4] p-1 rounded-xl text-xs font-semibold w-full md:w-auto shrink-0">
           <button
             type="button"
             onClick={() => {
@@ -184,13 +184,14 @@ export function SectionAttendanceHistory({ classId, className, section }) {
               setSortField("opened_at");
               setSortAsc(false);
             }}
-            className={`px-3.5 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${
+            className={`flex-1 md:flex-initial px-2 sm:px-3.5 py-1.5 rounded-lg transition-all text-center truncate cursor-pointer ${
               historyTab === "sessions"
                 ? "bg-white text-[#1a73e8] shadow-xs font-bold"
                 : "text-[#5f6368] hover:text-[#202124]"
             }`}
           >
-            Session Logs ({totalSessions})
+            <span className="hidden sm:inline">Session Logs ({totalSessions})</span>
+            <span className="sm:hidden">Sessions ({totalSessions})</span>
           </button>
           <button
             type="button"
@@ -200,13 +201,14 @@ export function SectionAttendanceHistory({ classId, className, section }) {
               setSortField("full_name");
               setSortAsc(true);
             }}
-            className={`px-3.5 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer ${
+            className={`flex-1 md:flex-initial px-2 sm:px-3.5 py-1.5 rounded-lg transition-all text-center truncate cursor-pointer ${
               historyTab === "students"
                 ? "bg-white text-[#1a73e8] shadow-xs font-bold"
                 : "text-[#5f6368] hover:text-[#202124]"
             }`}
           >
-            Student Summary ({studentSummary.length})
+            <span className="hidden sm:inline">Student Summary ({studentSummary.length})</span>
+            <span className="sm:hidden">Students ({studentSummary.length})</span>
           </button>
         </div>
       </div>
@@ -244,7 +246,7 @@ export function SectionAttendanceHistory({ classId, className, section }) {
 
       {/* Search & Mobile Mode Bar */}
       <div className="p-3 sm:p-4 border-b border-[#dadce0] flex items-center justify-between gap-3 bg-white">
-        <div className="relative flex-1 sm:w-64 max-w-sm">
+        <div className="relative flex-1 min-w-0 sm:w-64 max-w-sm">
           <IconSearch className="w-4 h-4 text-[#5f6368] absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"

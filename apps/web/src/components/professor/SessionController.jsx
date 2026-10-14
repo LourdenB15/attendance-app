@@ -209,7 +209,7 @@ export function SessionController({
 
           {/* Quick Preset Buttons */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-[#e8eaed]">
-            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1 sm:pb-0">
+            <div className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap pb-1 sm:pb-0">
               <span className="text-[11px] text-[#70757a] font-semibold uppercase tracking-wider mr-1 shrink-0">
                 Presets:
               </span>
