@@ -83,9 +83,8 @@ export function LivenessCamera({
       basePath: "",
       headTurnThreshold: 0.4,
       challengeTimeout: 10000,
-      minFaceSize: 0.08,
-      maxFaceSize: 0.85,
-      targetFPS: 24,
+      minFaceSize: 0.10,
+      maxFaceSize: 0.75,
     });
     sdkRef.current = sdk;
 
@@ -249,9 +248,8 @@ export function LivenessCamera({
     sdkRef.current.updateConfig({
       sessionToken,
       challenges: selectedChallenges,
-      minFaceSize: 0.08,
-      maxFaceSize: 0.85,
-      targetFPS: 24,
+      minFaceSize: 0.10,
+      maxFaceSize: 0.75,
     });
 
     try {
@@ -265,15 +263,13 @@ export function LivenessCamera({
 
       let stream = null;
       if (isPortrait) {
-        // Phone/Portrait: 720p portrait stream with 9:16 aspect ratio and 30fps target
+        // Phone/Portrait: Request wide uncropped camera sensor stream without artificial zoom
         try {
           stream = await navigator.mediaDevices.getUserMedia({
             video: {
               facingMode: "user",
-              width: { ideal: 720, max: 720 },
-              height: { ideal: 1280, max: 1280 },
-              aspectRatio: { ideal: 9 / 16 },
-              frameRate: { ideal: 30, min: 20 },
+              width: { ideal: 1080, max: 1920 },
+              height: { ideal: 1920, max: 1920 },
             },
             audio: false,
           });
@@ -282,10 +278,8 @@ export function LivenessCamera({
             stream = await navigator.mediaDevices.getUserMedia({
               video: {
                 facingMode: "user",
-                width: { ideal: 480, max: 480 },
-                height: { ideal: 640, max: 640 },
-                aspectRatio: { ideal: 9 / 16 },
-                frameRate: { ideal: 30, min: 15 },
+                width: { ideal: 720 },
+                height: { ideal: 1280 },
               },
               audio: false,
             });
@@ -294,42 +288,26 @@ export function LivenessCamera({
           }
         }
       } else {
-        // Desktop/Landscape: 720p webcam stream with 30fps target
+        // Desktop/Landscape: Standard landscape webcam constraints
         try {
           stream = await navigator.mediaDevices.getUserMedia({
             video: {
               facingMode: "user",
-              width: { ideal: 1280, max: 1280 },
-              height: { ideal: 720, max: 720 },
-              frameRate: { ideal: 30, min: 20 },
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
               aspectRatio: { ideal: 16 / 9 },
             },
             audio: false,
           });
         } catch {
-          try {
-            stream = await navigator.mediaDevices.getUserMedia({
-              video: {
-                facingMode: "user",
-                width: { ideal: 640, max: 640 },
-                height: { ideal: 480, max: 480 },
-                frameRate: { ideal: 30, min: 15 },
-              },
-              audio: false,
-            });
-          } catch {
-            // will fallback below
-          }
+          // will fallback below
         }
       }
 
       // Universal fallback if strict resolution constraints were rejected
       if (!stream) {
         stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: "user",
-            frameRate: { ideal: 30 },
-          },
+          video: { facingMode: "user" },
           audio: false,
         });
       }
@@ -399,10 +377,10 @@ export function LivenessCamera({
         {/* Video Viewport Container */}
         <div className="p-3 sm:p-4">
           <div
-            className={`relative overflow-hidden rounded-2xl bg-slate-950 shadow-inner border border-slate-800 transition-all duration-200 ${
+            className={`relative w-full overflow-hidden rounded-xl bg-slate-950 shadow-inner border border-slate-800 transition-all duration-200 ${
               isPortraitMode
-                ? "aspect-[9/16] max-h-[52vh] max-w-[280px] sm:max-w-xs mx-auto"
-                : "w-full aspect-[4/3] max-h-[68vh]"
+                ? "aspect-[4/5] max-h-[60vh]"
+                : "aspect-[4/3] max-h-[68vh]"
             }`}
           >
             <video
@@ -410,11 +388,11 @@ export function LivenessCamera({
               playsInline
               muted
               autoPlay
-              className="absolute inset-0 h-full w-full scale-x-[-1] object-cover transform-gpu"
+              className="absolute inset-0 h-full w-full scale-x-[-1] object-cover"
             />
             <canvas
               ref={canvasRef}
-              className="pointer-events-none absolute inset-0 h-full w-full object-cover transform-gpu"
+              className="pointer-events-none absolute inset-0 h-full w-full object-cover"
             />
 
             {/* Oval Face Guide Overlay during active checking */}
@@ -422,7 +400,7 @@ export function LivenessCamera({
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                 <div
                   className={`rounded-[50%] border-2 border-dashed border-white/70 animate-pulse transition-all shadow-sm ${
-                    isPortraitMode ? "w-36 h-50 sm:w-42 sm:h-58" : "w-52 h-68"
+                    isPortraitMode ? "w-44 h-60 sm:w-48 sm:h-64" : "w-52 h-68"
                   }`}
                 />
               </div>
