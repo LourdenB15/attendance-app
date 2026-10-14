@@ -95,7 +95,12 @@ export function UserDirectoryTable({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-xs border border-[#dadce0] overflow-hidden">
+    <div className="bg-white rounded-2xl shadow-xs border border-[#dadce0] overflow-hidden relative">
+      {loading && users.length > 0 && (
+        <div className="absolute top-0 left-0 right-0 z-10">
+          <GoogleProgressBar height="h-0.5" />
+        </div>
+      )}
       {/* Directory Filter & Search Header */}
       <div className="p-4 sm:p-5 border-b border-[#dadce0] flex flex-col md:flex-row md:items-center justify-between gap-3">
         {/* Role Filter Tabs */}
@@ -182,11 +187,6 @@ export function UserDirectoryTable({
           </button>
         </div>
       </div>
-
-      {/* Pinned Google Indeterminate Progress Bar during background refresh */}
-      {loading && users.length > 0 && (
-        <GoogleProgressBar height="h-1" />
-      )}
 
       {/* Loading Skeleton */}
       {loading && users.length === 0 ? (

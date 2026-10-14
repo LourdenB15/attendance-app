@@ -196,8 +196,14 @@ export function ClassesTable({
   return (
     <div className="space-y-4">
       {/* Top Filter & View Controls */}
-      <div className="bg-white border border-[#dadce0] rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shadow-xs">
-        {/* Segmented Tab Toggle: Active vs Archived */}
+      <div className="bg-white border border-[#dadce0] rounded-xl relative overflow-hidden shadow-xs">
+        {loading && visibleClasses.length > 0 && (
+          <div className="absolute top-0 left-0 right-0 z-10">
+            <GoogleProgressBar height="h-0.5" />
+          </div>
+        )}
+        <div className="p-3 sm:p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          {/* Segmented Tab Toggle: Active vs Archived */}
         <div className="grid grid-cols-2 sm:flex bg-[#f1f3f4] p-1 rounded-lg text-xs font-semibold w-full sm:w-auto shrink-0">
           <button
             type="button"
@@ -290,13 +296,7 @@ export function ClassesTable({
           )}
         </div>
       </div>
-
-      {/* Pinned Google Indeterminate Progress Bar during background refresh */}
-      {loading && visibleClasses.length > 0 && (
-        <div className="rounded-xl overflow-hidden -mb-1 shadow-2xs">
-          <GoogleProgressBar height="h-1" />
-        </div>
-      )}
+    </div>
 
       {/* Loading Skeleton on Cold Start (no existing data) */}
       {loading && visibleClasses.length === 0 ? (
