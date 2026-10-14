@@ -141,7 +141,7 @@ export function Sidebar({
               if (onGoHome) onGoHome();
               if (onClose) onClose();
             }}
-            className="flex items-center gap-2.5 px-2 py-1.5 -ml-2 rounded-xl hover:bg-[#f1f3f4] active:bg-[#e8eaed] transition-colors cursor-pointer text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1a73e8]"
+            className="flex items-center gap-2.5 cursor-pointer text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1a73e8] rounded-lg"
             title="Attendance Live Home"
             aria-label="Attendance Live Home"
           >
