@@ -85,6 +85,7 @@ export function LivenessCamera({
       challengeTimeout: 10000,
       minFaceSize: 0.10,
       maxFaceSize: 0.75,
+      targetFPS: 24,
     });
     sdkRef.current = sdk;
 
@@ -250,6 +251,7 @@ export function LivenessCamera({
       challenges: selectedChallenges,
       minFaceSize: 0.10,
       maxFaceSize: 0.75,
+      targetFPS: 24,
     });
 
     try {
@@ -263,13 +265,14 @@ export function LivenessCamera({
 
       let stream = null;
       if (isPortrait) {
-        // Phone/Portrait: Request wide uncropped camera sensor stream without artificial zoom
+        // Phone/Portrait: 720p portrait stream with 30fps target for smooth, low-latency video feed
         try {
           stream = await navigator.mediaDevices.getUserMedia({
             video: {
               facingMode: "user",
-              width: { ideal: 1080, max: 1920 },
-              height: { ideal: 1920, max: 1920 },
+              width: { ideal: 720, max: 720 },
+              height: { ideal: 1280, max: 1280 },
+              frameRate: { ideal: 30, min: 20 },
             },
             audio: false,
           });
@@ -278,8 +281,9 @@ export function LivenessCamera({
             stream = await navigator.mediaDevices.getUserMedia({
               video: {
                 facingMode: "user",
-                width: { ideal: 720 },
-                height: { ideal: 1280 },
+                width: { ideal: 480, max: 480 },
+                height: { ideal: 640, max: 640 },
+                frameRate: { ideal: 30, min: 15 },
               },
               audio: false,
             });
@@ -288,26 +292,42 @@ export function LivenessCamera({
           }
         }
       } else {
-        // Desktop/Landscape: Standard landscape webcam constraints
+        // Desktop/Landscape: 720p webcam stream with 30fps target
         try {
           stream = await navigator.mediaDevices.getUserMedia({
             video: {
               facingMode: "user",
-              width: { ideal: 1280 },
-              height: { ideal: 720 },
+              width: { ideal: 1280, max: 1280 },
+              height: { ideal: 720, max: 720 },
+              frameRate: { ideal: 30, min: 20 },
               aspectRatio: { ideal: 16 / 9 },
             },
             audio: false,
           });
         } catch {
-          // will fallback below
+          try {
+            stream = await navigator.mediaDevices.getUserMedia({
+              video: {
+                facingMode: "user",
+                width: { ideal: 640, max: 640 },
+                height: { ideal: 480, max: 480 },
+                frameRate: { ideal: 30, min: 15 },
+              },
+              audio: false,
+            });
+          } catch {
+            // will fallback below
+          }
         }
       }
 
       // Universal fallback if strict resolution constraints were rejected
       if (!stream) {
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "user" },
+          video: {
+            facingMode: "user",
+            frameRate: { ideal: 30 },
+          },
           audio: false,
         });
       }
@@ -388,11 +408,11 @@ export function LivenessCamera({
               playsInline
               muted
               autoPlay
-              className="absolute inset-0 h-full w-full scale-x-[-1] object-cover"
+              className="absolute inset-0 h-full w-full scale-x-[-1] object-cover transform-gpu"
             />
             <canvas
               ref={canvasRef}
-              className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+              className="pointer-events-none absolute inset-0 h-full w-full object-cover transform-gpu"
             />
 
             {/* Oval Face Guide Overlay during active checking */}
