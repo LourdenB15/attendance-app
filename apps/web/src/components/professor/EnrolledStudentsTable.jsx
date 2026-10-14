@@ -360,13 +360,13 @@ export function EnrolledStudentsTable({
               <span className="text-[10px] font-semibold text-[#1a73e8]">Spreadsheet View</span>
             </div>
 
-            <div className="overflow-x-auto overscroll-x-contain relative">
+            <div className="overflow-x-auto overscroll-x-contain relative touch-pan-x">
               <table className="w-full text-left text-xs sm:text-sm border-collapse">
                 <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[10px] sm:text-[11px] tracking-wider border-b border-[#dadce0] font-semibold">
                   <tr>
                     <th
                       onClick={() => handleSort("full_name")}
-                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[140px] sm:min-w-[180px]"
+                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition sticky left-0 bg-[#f8f9fa] z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[130px] max-w-[160px] sm:min-w-[180px] sm:max-w-none"
                     >
                       <div className="flex items-center justify-between">
                         <span>Student Name</span>
@@ -442,8 +442,8 @@ export function EnrolledStudentsTable({
                         key={s.student_id}
                         className="hover:bg-[#f8f9fa] transition-colors group"
                       >
-                        {/* Student Name column (frozen on md+ desktop only) */}
-                        <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">
+                        {/* Student Name column (frozen on both mobile and desktop) */}
+                        <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] sticky left-0 bg-white group-hover:bg-[#f8f9fa] z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[130px] max-w-[160px] sm:min-w-[180px] sm:max-w-none">
                           <div className="flex items-center gap-3">
                             <UserAvatar
                               user={s}
