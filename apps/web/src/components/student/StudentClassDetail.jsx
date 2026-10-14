@@ -260,9 +260,16 @@ export function StudentClassDetail({
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white leading-tight">
               {formatClassDisplayName(classItem.name, classItem.section)}
             </h2>
-            <p className={`text-sm ${theme.subText} font-medium mt-1`}>
-              Teacher: {classItem.professor_name || "Faculty Member"} • Section {classItem.section ? classItem.section.toUpperCase() : "—"} ({classItem.semester ? classItem.semester.toUpperCase() : "—"})
-            </p>
+            <div className={`text-sm ${theme.subText} font-medium mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1`}>
+              <span>Teacher: {classItem.professor_name || "Faculty Member"}</span>
+              <span className="opacity-60 hidden sm:inline">•</span>
+              <span className="inline-flex items-center gap-1.5 bg-black/15 px-2.5 py-0.5 rounded-full text-xs font-semibold backdrop-blur-xs">
+                <span>Section {classItem.section ? classItem.section.toUpperCase() : "—"}</span>
+                {classItem.semester && (
+                  <span className="opacity-80">({classItem.semester.toUpperCase()})</span>
+                )}
+              </span>
+            </div>
           </div>
 
           <div className="bg-white/15 backdrop-blur-md border border-white/25 rounded-2xl px-4 py-3 self-start md:self-auto min-w-[170px]">
@@ -294,20 +301,27 @@ export function StudentClassDetail({
       </div>
 
       {/* Google Classroom Style Sub-Tab Bar */}
-      <div className="flex items-center gap-1 border-b border-[#dadce0] bg-white rounded-xl px-2 shadow-2xs">
+      <div className="flex border-b border-[#dadce0] gap-4 sm:gap-6 text-xs sm:text-sm font-semibold w-full justify-start overflow-x-auto no-scrollbar">
         <button
           type="button"
           onClick={() => setDetailTab("attendance")}
-          className={`px-4 py-3 text-xs font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+          className={`pb-3 transition-colors border-b-2 flex items-center gap-1.5 sm:gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
             detailTab === "attendance"
               ? "border-[#1a73e8] text-[#1a73e8] font-bold"
               : "border-transparent text-[#5f6368] hover:text-[#202124]"
           }`}
         >
-          <IconClock className="w-4 h-4" />
-          <span>Attendance & Sessions</span>
+          <IconClock className="w-4 h-4 shrink-0" />
+          <span className="hidden sm:inline">Attendance & Sessions</span>
+          <span className="sm:hidden">Attendance</span>
           {classRecords.length > 0 && (
-            <span className="px-1.5 py-0.2 rounded-full bg-[#f1f3f4] text-[#5f6368] text-[10px] font-bold">
+            <span
+              className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
+                detailTab === "attendance"
+                  ? "bg-[#e8f0fe] text-[#1a73e8]"
+                  : "bg-[#f1f3f4] text-[#5f6368]"
+              }`}
+            >
               {classRecords.length}
             </span>
           )}
@@ -316,16 +330,22 @@ export function StudentClassDetail({
         <button
           type="button"
           onClick={() => setDetailTab("classmates")}
-          className={`px-4 py-3 text-xs font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+          className={`pb-3 transition-colors border-b-2 flex items-center gap-1.5 sm:gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
             detailTab === "classmates"
               ? "border-[#1a73e8] text-[#1a73e8] font-bold"
               : "border-transparent text-[#5f6368] hover:text-[#202124]"
           }`}
         >
-          <IconUsers className="w-4 h-4" />
+          <IconUsers className="w-4 h-4 shrink-0" />
           <span>Classmates</span>
           {classmates.length > 0 && (
-            <span className="px-1.5 py-0.2 rounded-full bg-[#e8f0fe] text-[#1a73e8] text-[10px] font-bold">
+            <span
+              className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
+                detailTab === "classmates"
+                  ? "bg-[#e8f0fe] text-[#1a73e8]"
+                  : "bg-[#f1f3f4] text-[#5f6368]"
+              }`}
+            >
               {classmates.length}
             </span>
           )}
