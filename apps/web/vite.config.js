@@ -16,11 +16,9 @@ export default defineConfig(({ mode }) => {
       {
         name: 'html-transform-og-meta',
         transformIndexHtml(html) {
-          if (!appUrl) return html
+          if (!appUrl || appUrl.replace(/\/$/, '') === 'https://attendance-app.online') return html
           const cleanUrl = appUrl.replace(/\/$/, '')
-          return html
-            .replace(/content="\/og-image\.png"/g, `content="${cleanUrl}/og-image.png"`)
-            .replace(/content="\/"/g, `content="${cleanUrl}/"`)
+          return html.replace(/https:\/\/attendance-app\.online/g, cleanUrl)
         },
       },
     ],
