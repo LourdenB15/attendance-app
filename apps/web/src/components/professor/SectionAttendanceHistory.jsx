@@ -411,13 +411,13 @@ export function SectionAttendanceHistory({ classId, className, section }) {
                   <span className="text-[10px] font-semibold text-[#1a73e8]">Spreadsheet View</span>
                 </div>
 
-                <div className="overflow-x-auto overscroll-x-contain relative touch-pan-x">
+                <div className="overflow-x-auto overscroll-x-contain relative">
                   <table className="w-full text-left text-xs sm:text-sm border-collapse">
                     <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[10px] sm:text-[11px] tracking-wider border-b border-[#dadce0] font-semibold">
                       <tr>
                         <th
                           onClick={() => handleSort("opened_at")}
-                          className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition sticky left-0 bg-[#f8f9fa] z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[120px] max-w-[150px] sm:min-w-[170px] sm:max-w-none"
+                          className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[140px] sm:min-w-[170px]"
                         >
                           <div className="flex items-center justify-between">
                             <span>Session Date & Time</span>
@@ -472,8 +472,8 @@ export function SectionAttendanceHistory({ classId, className, section }) {
 
                           return (
                             <tr key={s.id} className="hover:bg-[#f8f9fa] transition-colors group">
-                              {/* Session Date column (frozen on both mobile and desktop) */}
-                              <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] sticky left-0 bg-white group-hover:bg-[#f8f9fa] z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] whitespace-nowrap min-w-[120px] max-w-[150px] sm:min-w-[170px] sm:max-w-none">
+                              {/* Session Date column (frozen on md+ desktop only) */}
+                              <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] whitespace-nowrap min-w-[140px] sm:min-w-[170px]">
                                 <p className="font-semibold text-[#202124]">
                                   {new Date(s.opened_at).toLocaleDateString(undefined, {
                                     weekday: "short",
@@ -638,13 +638,13 @@ export function SectionAttendanceHistory({ classId, className, section }) {
                   <span className="text-[10px] font-semibold text-[#1a73e8]">Spreadsheet View</span>
                 </div>
 
-                <div className="overflow-x-auto overscroll-x-contain relative touch-pan-x">
+                <div className="overflow-x-auto overscroll-x-contain relative">
                   <table className="w-full text-left text-xs sm:text-sm border-collapse">
                     <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[10px] sm:text-[11px] tracking-wider border-b border-[#dadce0] font-semibold">
                       <tr>
                         <th
                           onClick={() => handleSort("full_name")}
-                          className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition sticky left-0 bg-[#f8f9fa] z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[130px] max-w-[160px] sm:min-w-[180px] sm:max-w-none"
+                          className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[150px] sm:min-w-[180px]"
                         >
                           <div className="flex items-center justify-between">
                             <span>Student Name</span>
@@ -704,8 +704,8 @@ export function SectionAttendanceHistory({ classId, className, section }) {
 
                           return (
                             <tr key={st.student_id} className="hover:bg-[#f8f9fa] transition-colors group">
-                              {/* Student Name column (frozen on both mobile and desktop) */}
-                              <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] sticky left-0 bg-white group-hover:bg-[#f8f9fa] z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] whitespace-nowrap min-w-[130px] max-w-[160px] sm:min-w-[180px] sm:max-w-none">
+                              {/* Student Name column (frozen on md+ desktop only) */}
+                              <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] whitespace-nowrap min-w-[150px] sm:min-w-[180px]">
                                 <div className="flex items-center gap-3">
                                   <UserAvatar
                                     user={st}
@@ -776,11 +776,11 @@ export function SectionAttendanceHistory({ classId, className, section }) {
             <TableSkeleton rows={4} cols={5} headers={["Student Name", "Status", "Source", "Time", "Notes"]} />
           </div>
         ) : (
-          <div className="overflow-x-auto touch-pan-x">
+          <div className="overflow-x-auto">
             <table className="w-full text-left text-xs sm:text-sm border-collapse">
               <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[10px] sm:text-[11px] tracking-wider border-b border-[#dadce0] font-semibold">
                 <tr>
-                  <th className="px-3 sm:px-4 py-2.5 border-r border-[#dadce0]/70 sticky left-0 bg-[#f8f9fa] z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[130px] max-w-[160px] sm:min-w-[180px] sm:max-w-none">Student Name</th>
+                  <th className="px-3 sm:px-4 py-2.5 border-r border-[#dadce0]/70 min-w-[150px] sm:min-w-[180px]">Student Name</th>
                   <th className="px-4 py-2.5 border-r border-[#dadce0]/70">Status</th>
                   <th className="px-4 py-2.5 border-r border-[#dadce0]/70">Source</th>
                   <th className="px-4 py-2.5 border-r border-[#dadce0]/70">Time</th>
@@ -797,7 +797,7 @@ export function SectionAttendanceHistory({ classId, className, section }) {
                 ) : (
                   sessionRoster.map((rec) => (
                     <tr key={rec.student_id} className="hover:bg-[#f8f9fa] transition-colors group">
-                      <td className="px-3 sm:px-4 py-3 border-r border-[#e8eaed] sticky left-0 bg-white group-hover:bg-[#f8f9fa] z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[130px] max-w-[160px] sm:min-w-[180px] sm:max-w-none">
+                      <td className="px-3 sm:px-4 py-3 border-r border-[#e8eaed] min-w-[150px] sm:min-w-[180px]">
                         <div className="flex items-center gap-2.5">
                           <UserAvatar
                             user={rec}

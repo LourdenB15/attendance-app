@@ -276,13 +276,13 @@ export function AttendanceHistoryTable({
                 <span className="text-[10px] font-semibold text-[#1a73e8]">Spreadsheet View</span>
               </div>
 
-              <div className="overflow-x-auto overscroll-x-contain relative touch-pan-x">
+              <div className="overflow-x-auto overscroll-x-contain relative">
                 <table className="w-full text-left text-xs sm:text-sm border-collapse">
                   <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[10px] sm:text-[11px] tracking-wider border-b border-[#dadce0] font-semibold">
                     <tr>
                       <th
                         onClick={() => handleSort("class_name")}
-                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition sticky left-0 bg-[#f8f9fa] z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[120px] max-w-[150px] sm:min-w-[160px] sm:max-w-none"
+                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[130px] sm:min-w-[160px]"
                       >
                         <div className="flex items-center justify-between">
                           <span>Class</span>
@@ -363,8 +363,8 @@ export function AttendanceHistoryTable({
                           key={rec.session_id || idx}
                           className="hover:bg-[#f8f9fa] transition-colors group"
                         >
-                          {/* Class Name column (frozen on mobile & desktop) */}
-                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 font-semibold text-[#202124] border-r border-[#e8eaed] sticky left-0 bg-white group-hover:bg-[#f8f9fa] z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[120px] max-w-[150px] sm:min-w-[160px] sm:max-w-none truncate sm:whitespace-nowrap">
+                          {/* Class Name column (frozen on md+ desktop only) */}
+                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 font-semibold text-[#202124] border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] whitespace-nowrap min-w-[130px] sm:min-w-[160px]">
                             {formatClassDisplayName(rec.class_name, rec.section)}
                           </td>
                           <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed] whitespace-nowrap uppercase">

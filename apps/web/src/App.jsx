@@ -24,12 +24,9 @@ function RootContent() {
         {/* Centered Brand Presentation */}
         <div className="flex-1 flex flex-col items-center justify-center p-6 relative z-10 animate-in fade-in duration-200">
           <div className="flex flex-col items-center text-center max-w-sm">
-            {/* Logo with gentle ambient backdrop */}
-            <div className="relative mb-5">
-              <div className="absolute -inset-2 rounded-2xl bg-[#e8f0fe] opacity-60 blur-sm animate-pulse" />
-              <div className="relative bg-white p-3.5 rounded-2xl border border-[#dadce0] shadow-2xs">
-                <AppLogo className="w-12 h-12" />
-              </div>
+            {/* Brand Logo */}
+            <div className="mb-5">
+              <AppLogo className="w-12 h-12" />
             </div>
 
             {/* Google Material Circular Spinner */}

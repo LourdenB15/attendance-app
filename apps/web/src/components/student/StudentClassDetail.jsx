@@ -499,13 +499,13 @@ export function StudentClassDetail({
             {loading ? (
               <TableSkeleton rows={4} cols={3} headers={["Session Topic / Label", "Check-in Time", "Status"]} />
             ) : (
-              <div className="overflow-x-auto overscroll-x-contain relative touch-pan-x">
+              <div className="overflow-x-auto overscroll-x-contain">
                 <table className="w-full text-left text-xs sm:text-sm border-collapse">
                   <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[10px] sm:text-[11px] tracking-wider border-b border-[#dadce0] font-semibold">
                     <tr>
                       <th
                         onClick={() => handleSort("session_label")}
-                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition sticky left-0 bg-[#f8f9fa] z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[130px] max-w-[160px] sm:min-w-[180px] sm:max-w-none"
+                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition"
                       >
                         <div className="flex items-center justify-between">
                           <span>Session Topic / Label</span>
@@ -543,8 +543,8 @@ export function StudentClassDetail({
                       </tr>
                     ) : (
                       filteredRecords.map((r, i) => (
-                        <tr key={r.session_id || i} className="hover:bg-[#f8f9fa] transition-colors group">
-                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 font-medium text-[#202124] border-r border-[#e8eaed] sticky left-0 bg-white group-hover:bg-[#f8f9fa] z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[130px] max-w-[160px] sm:min-w-[180px] sm:max-w-none truncate sm:whitespace-nowrap">
+                        <tr key={r.session_id || i} className="hover:bg-[#f8f9fa] transition-colors">
+                          <td className="px-5 py-3.5 font-medium text-[#202124] border-r border-[#e8eaed]">
                             {r.session_label || "Standard Class Session"}
                           </td>
                           <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed] whitespace-nowrap">
@@ -776,13 +776,13 @@ export function StudentClassDetail({
                   <span className="text-[10px] font-semibold text-[#1a73e8]">Spreadsheet View</span>
                 </div>
 
-                <div className="overflow-x-auto overscroll-x-contain relative touch-pan-x">
+                <div className="overflow-x-auto overscroll-x-contain relative">
                   <table className="w-full text-left text-xs sm:text-sm border-collapse">
                     <thead className="bg-[#f8f9fa] text-[#5f6368] uppercase text-[10px] sm:text-[11px] tracking-wider border-b border-[#dadce0] font-semibold">
                       <tr>
                         <th
                           onClick={() => handleClassmateSort("full_name")}
-                          className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition sticky left-0 bg-[#f8f9fa] z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)] min-w-[130px] max-w-[160px] sm:min-w-[180px] sm:max-w-none"
+                          className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)] min-w-[140px] sm:min-w-[180px]"
                         >
                           <div className="flex items-center justify-between">
                             <span>Classmate Name</span>
@@ -823,8 +823,8 @@ export function StudentClassDetail({
                               isCurrentUser ? "bg-[#f8fafd]" : ""
                             }`}
                           >
-                            {/* Classmate Name column (frozen on mobile & desktop) */}
-                            <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] sticky left-0 bg-white group-hover:bg-[#f8f9fa] z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)] min-w-[130px] max-w-[160px] sm:min-w-[180px] sm:max-w-none truncate sm:whitespace-nowrap">
+                            {/* Classmate Name column (frozen on md+ desktop only) */}
+                            <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)] whitespace-nowrap min-w-[140px] sm:min-w-[180px]">
                               <div className="flex items-center gap-2.5 sm:gap-3">
                                 <UserAvatar
                                   user={c}
