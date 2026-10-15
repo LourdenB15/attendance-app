@@ -75,9 +75,9 @@ export function BiometricEnrollmentCard({ onEnrollmentComplete }) {
             <IconCheck className="w-3.5 h-3.5" />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-bold text-sm text-[#137333]">Face Profile Active & Verified</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#137333] text-white uppercase tracking-wider">Ready</span>
+            <div className="flex items-center justify-between gap-1.5 flex-wrap">
+              <span className="font-bold text-xs sm:text-sm text-[#137333] leading-tight">Face Profile Active & Verified</span>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#137333] text-white uppercase tracking-wider shrink-0">Ready</span>
             </div>
             <p className="font-normal text-xs text-[#1e8e3e] mt-1 leading-relaxed">
               Your biometric descriptor is active for instant 1-click check-ins across all your classes. You can re-scan anytime below if your lighting or appearance changes.
@@ -149,10 +149,10 @@ export function BiometricEnrollmentCard({ onEnrollmentComplete }) {
           <button
             type="button"
             onClick={() => setShowCamera(true)}
-            className="w-full sm:w-auto px-8 py-3.5 sm:py-3 min-h-11 bg-[#1a73e8] hover:bg-[#1557b0] text-white font-bold rounded-xl shadow-xs text-sm transition inline-flex items-center justify-center gap-2 hover:scale-102 active:scale-98"
+            className="w-full sm:w-auto px-4 sm:px-8 py-3 min-h-11 bg-[#1a73e8] hover:bg-[#1557b0] text-white font-bold rounded-xl shadow-xs text-xs sm:text-sm transition inline-flex items-center justify-center gap-2 hover:scale-102 active:scale-98"
           >
-            <IconCamera className="w-4 h-4" />
-            <span>
+            <IconCamera className="w-4 h-4 shrink-0" />
+            <span className="leading-tight">
               {isEnrolled ? "Update Facial Biometric Profile" : "Launch Camera for Face Enrollment"}
             </span>
           </button>

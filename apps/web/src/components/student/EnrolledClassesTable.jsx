@@ -25,6 +25,7 @@ import {
   IconRefresh,
   IconDotsVertical,
   IconCopy,
+  IconClassroom,
 } from "../ui/Icons";
 
 export function EnrolledClassesTable({
@@ -347,11 +348,11 @@ export function EnrolledClassesTable({
                 {/* Header Banner */}
                 <div
                   style={{ background: theme.gradient, backgroundColor: theme.accentHex }}
-                  className={`p-5 text-white flex flex-col justify-between min-h-30tive rounded-t-2xl ${theme.headerBg || theme.bannerBg}`}
+                  className={`p-5 text-white flex flex-col justify-between min-h-30 relative rounded-t-2xl ${theme.headerBg || theme.bannerBg}`}
                 >
                   <div className="absolute inset-0 overflow-hidden rounded-t-2xl pointer-events-none">
                     <div className="absolute right-0 bottom-0 translate-x-3 translate-y-3 opacity-15">
-                      <IconBook className="w-28 h-28" />
+                      <IconClassroom className="w-28 h-28" />
                     </div>
                   </div>
 

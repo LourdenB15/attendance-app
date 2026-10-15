@@ -257,9 +257,9 @@ export function AppLayout() {
       </div>
 
       {/* Educational Footer */}
-      <footer className="bg-white border-t border-[#dadce0] py-4 text-center text-xs text-[#70757a]">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>Attendance Live • AI-Powered Biometric Liveness Verification</span>
+      <footer className="bg-white border-t border-[#dadce0] py-3 sm:py-3.5 text-center text-[#70757a]">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-1.5 sm:gap-2 text-[11px] sm:text-xs leading-normal">
+          <span className="font-medium">Attendance Live • Biometric Verification</span>
           <span>© {new Date().getFullYear()} Attendance Live. All rights reserved.</span>
         </div>
       </footer>

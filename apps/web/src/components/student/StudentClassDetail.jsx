@@ -22,6 +22,7 @@ import {
   IconList,
   IconGrid,
   IconAlert,
+  IconClassroom,
 } from "../ui/Icons";
 
 export function StudentClassDetail({
@@ -244,7 +245,11 @@ export function StudentClassDetail({
         style={{ background: theme.gradient, backgroundColor: theme.accentHex }}
         className={`${theme.bannerBg} rounded-2xl p-6 sm:p-8 text-white shadow-sm relative overflow-hidden`}
       >
-        <div className="absolute -right-8 -bottom-12 w-48 h-48 rounded-full bg-white/10 pointer-events-none" />
+        {/* Subtle decorative elements */}
+        <div className="absolute right-0 bottom-0 translate-x-4 translate-y-4 opacity-15 pointer-events-none">
+          <IconClassroom className="w-40 h-40 sm:w-48 sm:h-48" />
+        </div>
+        <div className="absolute right-36 -top-10 w-28 h-28 rounded-full bg-white/5 pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
@@ -257,10 +262,10 @@ export function StudentClassDetail({
               <span>Back to My Classes</span>
             </button>
 
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white leading-tight">
+            <h2 className="text-xl sm:text-3xl font-bold tracking-tight text-white leading-tight">
               {formatClassDisplayName(classItem.name, classItem.section)}
             </h2>
-            <div className={`text-sm ${theme.subText} font-medium mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1`}>
+            <div className={`text-xs sm:text-sm ${theme.subText} font-medium mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1`}>
               <span>Teacher: {classItem.professor_name || "Faculty Member"}</span>
               <span className="opacity-60 hidden sm:inline">•</span>
               <span className="inline-flex items-center gap-1.5 bg-black/15 px-2.5 py-0.5 rounded-full text-xs font-semibold backdrop-blur-xs">
@@ -272,7 +277,7 @@ export function StudentClassDetail({
             </div>
           </div>
 
-          <div className="bg-white/15 backdrop-blur-md border border-white/25 rounded-2xl px-4 py-3 self-start md:self-auto min-w-42.5">
+          <div className="bg-white/15 backdrop-blur-md border border-white/25 rounded-2xl px-4 py-3 w-full sm:w-auto self-stretch sm:self-auto min-w-42.5">
             <span className="block text-[10px] font-bold uppercase tracking-wider text-white/80 mb-0.5">
               {classItem.is_archived ? "Status" : "Class Code"}
             </span>
@@ -461,7 +466,7 @@ export function StudentClassDetail({
                     type="button"
                     disabled={checkingIn}
                     onClick={handleTakeAttendanceClick}
-                    className="px-6 py-3 bg-[#1a73e8] hover:bg-[#1557b0] disabled:opacity-50 text-white font-bold rounded-xl shadow-md text-xs transition shrink-0 inline-flex items-center gap-2 hover:scale-102 active:scale-98 cursor-pointer"
+                    className="w-full sm:w-auto px-6 py-3 bg-[#1a73e8] hover:bg-[#1557b0] disabled:opacity-50 text-white font-bold rounded-xl shadow-md text-xs sm:text-sm transition shrink-0 inline-flex items-center justify-center gap-2 hover:scale-102 active:scale-98 cursor-pointer"
                   >
                     <IconCamera className="w-4 h-4" />
                     <span>Verify Face & Check In</span>

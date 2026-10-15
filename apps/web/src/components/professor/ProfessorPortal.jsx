@@ -277,9 +277,9 @@ export function ProfessorPortal({
             </div>
           ) : (
             <div>
-              <div className="flex items-center gap-2.5">
-                <h2 className="text-xl font-bold text-[#202124]">Teaching Hub</h2>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#e6f4ea] text-[#137333] border border-[#ceead6]">
+              <div className="flex items-center justify-between sm:justify-start gap-2 flex-wrap">
+                <h2 className="text-lg sm:text-xl font-bold text-[#202124] leading-tight">Teaching Hub</h2>
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-[#e6f4ea] text-[#137333] border border-[#ceead6] shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#1e8e3e] animate-pulse" />
                   Live Sync
                 </span>
