@@ -196,9 +196,11 @@ export function ProfessorPortal({
 
   // Live polling interval
   useEffect(() => {
+    let tick = 0;
     const timer = setInterval(() => {
       if (document.hidden) return; // don't poll if backgrounded
 
+      tick += 1;
       if (selectedClassRef.current) {
         const session = activeSessionRef.current;
         if (session && new Date(session.expires_at) <= new Date()) {
@@ -207,6 +209,10 @@ export function ProfessorPortal({
         } else if (session) {
           // Poll attendance roster in real-time
           loadAttendance(session.id, true);
+          // Every 3rd cycle (~9s), also verify session hasn't been closed on server
+          if (tick % 3 === 0) {
+            loadActiveSession(selectedClassRef.current.id);
+          }
         } else {
           // Check if session opened
           loadActiveSession(selectedClassRef.current.id);
@@ -248,30 +254,32 @@ export function ProfessorPortal({
     <div className="space-y-6">
       {/* Top Banner & Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#dadce0]">
-        <div>
+        <div className="w-full">
           {selectedClass ? (
-            <div className="flex items-center gap-2 text-xs font-medium text-[#5f6368]">
-              <button
-                type="button"
-                onClick={handleBackToClasses}
-                className="hover:text-[#1a73e8] transition cursor-pointer flex items-center gap-1 font-semibold"
-              >
-                <span>Teaching Hub</span>
-              </button>
-              <span className="text-[#9aa0a6]">/</span>
-              <span className="font-bold text-[#202124] truncate max-w-[200px] sm:max-w-md">
-                {formatClassDisplayName(selectedClass.name, selectedClass.section)}
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 ml-1 rounded-full text-[10px] font-bold bg-[#e6f4ea] text-[#137333] border border-[#ceead6]">
+            <div className="flex items-center justify-between gap-2 text-xs font-medium text-[#5f6368] w-full min-w-0">
+              <div className="flex items-center gap-1.5 min-w-0 truncate">
+                <button
+                  type="button"
+                  onClick={handleBackToClasses}
+                  className="hover:text-[#1a73e8] transition cursor-pointer font-semibold whitespace-nowrap shrink-0"
+                >
+                  Teaching Hub
+                </button>
+                <span className="text-[#9aa0a6] shrink-0">/</span>
+                <span className="font-bold text-[#202124] truncate">
+                  {formatClassDisplayName(selectedClass.name, selectedClass.section)}
+                </span>
+              </div>
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#e6f4ea] text-[#137333] border border-[#ceead6] shrink-0">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#1e8e3e] animate-pulse" />
                 Live Sync
               </span>
             </div>
           ) : (
             <div>
-              <div className="flex items-center gap-2.5">
-                <h2 className="text-xl font-bold text-[#202124]">Teaching Hub</h2>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#e6f4ea] text-[#137333] border border-[#ceead6]">
+              <div className="flex items-center justify-between sm:justify-start gap-2 flex-wrap">
+                <h2 className="text-lg sm:text-xl font-bold text-[#202124] leading-tight">Teaching Hub</h2>
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-[#e6f4ea] text-[#137333] border border-[#ceead6] shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#1e8e3e] animate-pulse" />
                   Live Sync
                 </span>
@@ -344,42 +352,43 @@ export function ProfessorPortal({
 
             return (
               <>
-                <div className="flex border-b border-[#dadce0] gap-3.5 sm:gap-6 text-xs sm:text-sm font-semibold overflow-x-auto scrollbar-none">
+                <div className="flex border-b border-[#dadce0] gap-3.5 sm:gap-6 text-xs sm:text-sm font-semibold w-full justify-start overflow-x-auto no-scrollbar">
                   <button
                     type="button"
                     onClick={() => setClassViewTab("live")}
-                    className={`pb-3 transition-colors border-b-2 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap cursor-pointer ${
+                    className={`pb-3 transition-colors border-b-2 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap cursor-pointer shrink-0 ${
                       currentViewTab === "live"
                         ? "border-[#1a73e8] text-[#1a73e8] font-bold"
                         : "border-transparent text-[#5f6368] hover:text-[#202124]"
                     }`}
                   >
-                    <IconCamera className="w-4 h-4" />
+                    <IconCamera className="w-4 h-4 shrink-0" />
                     <span className="hidden sm:inline">Live Attendance & Controller</span>
-                    <span className="sm:hidden">Live Session</span>
+                    <span className="sm:hidden">Live</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setClassViewTab("roster")}
-                    className={`pb-3 transition-colors border-b-2 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap cursor-pointer ${
+                    className={`pb-3 transition-colors border-b-2 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap cursor-pointer shrink-0 ${
                       currentViewTab === "roster"
                         ? "border-[#1a73e8] text-[#1a73e8] font-bold"
                         : "border-transparent text-[#5f6368] hover:text-[#202124]"
                     }`}
                   >
-                    <IconUsers className="w-4 h-4" />
-                    <span>Class Roster ({classStudents.filter((s) => s.status === "ACTIVE").length})</span>
+                    <IconUsers className="w-4 h-4 shrink-0" />
+                    <span className="hidden sm:inline">Class Roster ({classStudents.filter((s) => s.status === "ACTIVE").length})</span>
+                    <span className="sm:hidden">Roster ({classStudents.filter((s) => s.status === "ACTIVE").length})</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setClassViewTab("history")}
-                    className={`pb-3 transition-colors border-b-2 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap cursor-pointer ${
+                    className={`pb-3 transition-colors border-b-2 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap cursor-pointer shrink-0 ${
                       currentViewTab === "history"
                         ? "border-[#1a73e8] text-[#1a73e8] font-bold"
                         : "border-transparent text-[#5f6368] hover:text-[#202124]"
                     }`}
                   >
-                    <IconClock className="w-4 h-4" />
+                    <IconClock className="w-4 h-4 shrink-0" />
                     <span className="hidden sm:inline">Attendance History</span>
                     <span className="sm:hidden">History</span>
                   </button>
@@ -392,8 +401,28 @@ export function ProfessorPortal({
                 classId={selectedClass.id}
                 className={selectedClass.name}
                 activeSession={activeSession}
-                onSessionChanged={() => {
-                  loadActiveSession(selectedClass.id);
+                onSessionOpened={(newSession) => {
+                  setActiveSession(newSession);
+                  if (newSession?.id) {
+                    loadAttendance(newSession.id, true);
+                  }
+                  loadClasses(true);
+                }}
+                onSessionClosed={() => {
+                  setActiveSession(null);
+                  setSessionAttendance([]);
+                  loadClasses(true);
+                }}
+                onSessionChanged={(session) => {
+                  if (session) {
+                    setActiveSession(session);
+                    if (session.id) {
+                      loadAttendance(session.id, true);
+                    }
+                  } else {
+                    setActiveSession(null);
+                    setSessionAttendance([]);
+                  }
                   loadClasses(true);
                 }}
                 onRefreshAttendance={() => activeSession && loadAttendance(activeSession.id, false)}

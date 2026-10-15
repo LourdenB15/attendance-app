@@ -47,15 +47,22 @@ export function AuthView() {
            <div className="lg:col-span-6 xl:col-span-5 flex flex-col justify-between p-6 sm:p-10 lg:p-12 bg-white">
               {/* Mobile-only Header */}
               <div className="block lg:hidden mb-6 text-center">
-                 <div className="flex justify-center mb-2.5">
-                    <AppLogo className="w-12 h-12 rounded-xl shadow-xs" />
-                 </div>
-                 <h1 className="text-xl font-bold text-[#202124] tracking-tight">
-                    Attendance Live
-                 </h1>
-                 <p className="text-xs text-[#5f6368] mt-0.5">
-                    Smart Classroom Attendance
-                 </p>
+                 <button
+                    type="button"
+                    onClick={() => setAuthTab("login")}
+                    className="inline-flex flex-col items-center group cursor-pointer focus:outline-none"
+                    title="Go to Sign In"
+                 >
+                    <div className="flex justify-center mb-2.5 transition-transform group-hover:scale-105">
+                       <AppLogo className="w-12 h-12 rounded-xl shadow-xs" />
+                    </div>
+                    <h1 className="text-xl font-bold text-[#202124] tracking-tight group-hover:text-[#1a73e8] transition-colors">
+                       Attendance Live
+                    </h1>
+                    <p className="text-xs text-[#5f6368] mt-0.5">
+                       Smart Classroom Attendance
+                    </p>
+                 </button>
                  <hr className="my-4 border-t border-[#dadce0]/60" />
               </div>
 

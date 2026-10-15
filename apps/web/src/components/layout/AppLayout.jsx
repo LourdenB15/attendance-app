@@ -156,13 +156,24 @@ export function AppLayout() {
     setNavKey((k) => k + 1);
   }, []);
 
+  const handleGoHome = useCallback(() => {
+    const homeNav = role === "ADMIN" ? "users" : "classes";
+    setTargetClassId(null);
+    setActiveNav(homeNav);
+    updateUrlParams({ nav: homeNav, classId: null }, false);
+    setNavKey((k) => k + 1);
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [role]);
+
   return (
     <div className="min-h-screen bg-[#f8f9fa] text-[#202124] flex flex-col font-sans">
       {/* App Header */}
       <Header
         onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
         onOpenSettings={() => handleNavSelect("settings")}
-        onNavigateHome={() => handleNavSelect(defaultNav)}
+        onGoHome={handleGoHome}
       />
 
       <div className="flex-1 flex flex-col">
@@ -176,6 +187,7 @@ export function AppLayout() {
           onSelectClass={handleSelectClass}
           onOpenSettings={() => handleNavSelect("settings")}
           onLogout={logout}
+          onGoHome={handleGoHome}
         />
 
         {/* Main Content Area (smoothly offsets by w-72 when sidebar is open on desktop) */}
@@ -245,9 +257,9 @@ export function AppLayout() {
       </div>
 
       {/* Educational Footer */}
-      <footer className="bg-white border-t border-[#dadce0] py-4 text-center text-xs text-[#70757a]">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>Attendance Live • AI-Powered Biometric Liveness Verification</span>
+      <footer className="bg-white border-t border-[#dadce0] py-3 sm:py-3.5 text-center text-[#70757a]">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-1.5 sm:gap-2 text-[11px] sm:text-xs leading-normal">
+          <span className="font-medium">Attendance Live • Biometric Verification</span>
           <span>© {new Date().getFullYear()} Attendance Live. All rights reserved.</span>
         </div>
       </footer>

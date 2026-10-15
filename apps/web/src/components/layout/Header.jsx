@@ -11,7 +11,7 @@ import {
   IconChevronDown,
 } from "../ui/Icons";
 
-export function Header({ onToggleSidebar, onOpenSettings, onNavigateHome }) {
+export function Header({ onToggleSidebar, onOpenSettings, onGoHome }) {
   const { currentUser, logout } = useAuth();
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
@@ -25,15 +25,6 @@ export function Header({ onToggleSidebar, onOpenSettings, onNavigateHome }) {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const handleHomeClick = (e) => {
-    if (e.button === 0 && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey) {
-      e.preventDefault();
-      if (onNavigateHome) {
-        onNavigateHome();
-      }
-    }
-  };
 
   if (!currentUser) return null;
 
@@ -60,13 +51,15 @@ export function Header({ onToggleSidebar, onOpenSettings, onNavigateHome }) {
             <IconMenu className="w-5 h-5" />
           </button>
 
-          <a
-            href="/"
-            onClick={handleHomeClick}
+          {/* Brand Logo & Name (Click to navigate Home) */}
+          <button
+            type="button"
+            onClick={onGoHome || (() => window.scrollTo({ top: 0, behavior: "smooth" }))}
+            className="flex items-center gap-2.5 cursor-pointer text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1a73e8] rounded-lg"
+            title="Attendance Live Home"
             aria-label="Attendance Live Home"
-            className="flex items-center gap-2.5 cursor-pointer rounded-xl p-1 -m-1 hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1a73e8] transition-opacity"
           >
-            <AppLogo className="w-9 h-9" />
+            <AppLogo className="w-9 h-9 shrink-0" />
             <div className="flex items-center gap-2">
               <span className="text-base sm:text-lg font-bold text-[#202124] tracking-tight leading-none">
                 Attendance Live
@@ -75,7 +68,7 @@ export function Header({ onToggleSidebar, onOpenSettings, onNavigateHome }) {
                 Classroom
               </span>
             </div>
-          </a>
+          </button>
         </div>
 
         {/* Right: User Profile Dropdown */}
@@ -94,10 +87,10 @@ export function Header({ onToggleSidebar, onOpenSettings, onNavigateHome }) {
                 textClassName="text-xs font-bold"
               />
               <div className="text-left hidden md:block">
-                <div className="text-xs font-semibold text-[#202124] leading-tight truncate max-w-[140px]">
+                <div className="text-xs font-semibold text-[#202124] leading-tight truncate max-w-35">
                   {currentUser.full_name}
                 </div>
-                <div className="text-[10px] text-[#5f6368] leading-tight truncate max-w-[140px]">
+                <div className="text-[10px] text-[#5f6368] leading-tight truncate max-w-35">
                   {currentUser.email}
                 </div>
               </div>

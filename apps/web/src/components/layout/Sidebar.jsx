@@ -24,6 +24,7 @@ export function Sidebar({
   onNavSelect,
   onOpenSettings,
   onLogout,
+  onGoHome,
 }) {
   if (!currentUser) return null;
 
@@ -134,8 +135,17 @@ export function Sidebar({
       >
         {/* Mobile-only Drawer Header */}
         <div className="h-16 px-4 border-b border-[#dadce0] flex items-center justify-between lg:hidden select-none shrink-0">
-          <div className="flex items-center gap-2.5">
-            <AppLogo className="w-8 h-8" />
+          <button
+            type="button"
+            onClick={() => {
+              if (onGoHome) onGoHome();
+              if (onClose) onClose();
+            }}
+            className="flex items-center gap-2.5 cursor-pointer text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1a73e8] rounded-lg"
+            title="Attendance Live Home"
+            aria-label="Attendance Live Home"
+          >
+            <AppLogo className="w-8 h-8 shrink-0" />
             <div>
               <span className="font-bold text-sm text-[#202124] leading-tight block">
                 Attendance Live
@@ -144,7 +154,7 @@ export function Sidebar({
                 Classroom
               </span>
             </div>
-          </div>
+          </button>
           <button
             type="button"
             onClick={onClose}

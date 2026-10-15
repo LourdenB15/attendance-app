@@ -95,29 +95,33 @@ export function UserDirectoryTable({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-xs border border-[#dadce0] overflow-hidden">
+    <div className="bg-white rounded-2xl shadow-xs border border-[#dadce0] overflow-hidden relative">
+      {loading && users.length > 0 && (
+        <div className="absolute top-0 left-0 right-0 z-10">
+          <GoogleProgressBar height="h-0.5" />
+        </div>
+      )}
       {/* Directory Filter & Search Header */}
       <div className="p-3.5 sm:p-5 border-b border-[#dadce0] flex flex-col md:flex-row md:items-center justify-between gap-3">
-        {/* Role Filter Tabs */}
-        <div className="grid grid-cols-4 md:flex bg-[#f1f3f4] p-1 rounded-lg text-[11px] sm:text-xs font-semibold w-full md:w-auto shrink-0">
+        <div className="grid grid-cols-4 md:flex bg-[#f1f3f4] p-1 rounded-lg text-xs font-semibold w-full md:w-auto shrink-0">
           {[
             { id: "ALL", label: "All Users", mobileLabel: "All" },
-            { id: "PROFESSOR", label: "Professors", mobileLabel: "Professors" },
-            { id: "STUDENT", label: "Students", mobileLabel: "Students" },
-            { id: "ADMIN", label: "Admins", mobileLabel: "Admins" },
+            { id: "PROFESSOR", label: "Professors", mobileLabel: "Profs" },
+            { id: "STUDENT", label: "Students" },
+            { id: "ADMIN", label: "Admins" },
           ].map((tab) => (
             <button
               key={tab.id}
               type="button"
               onClick={() => onRoleFilterChange && onRoleFilterChange(tab.id)}
-              className={`flex-1 md:flex-initial px-1 sm:px-3 py-1.5 rounded-md transition-all text-center truncate cursor-pointer ${
+              className={`flex-1 md:flex-initial px-1 sm:px-3 py-1.5 rounded-md transition-all text-center truncate cursor-pointer text-[11px] sm:text-xs ${
                 roleFilter === tab.id
                   ? "bg-white text-[#1a73e8] shadow-xs font-bold"
                   : "text-[#5f6368] hover:text-[#202124]"
               }`}
             >
-              <span className="hidden sm:inline">{tab.label}</span>
-              <span className="sm:hidden">{tab.mobileLabel}</span>
+              <span className={tab.mobileLabel ? "hidden sm:inline" : ""}>{tab.label}</span>
+              {tab.mobileLabel && <span className="sm:hidden">{tab.mobileLabel}</span>}
             </button>
           ))}
         </div>
@@ -182,11 +186,6 @@ export function UserDirectoryTable({
           </button>
         </div>
       </div>
-
-      {/* Pinned Google Indeterminate Progress Bar during background refresh */}
-      {loading && users.length > 0 && (
-        <GoogleProgressBar height="h-1" />
-      )}
 
       {/* Loading Skeleton */}
       {loading && users.length === 0 ? (
@@ -378,7 +377,7 @@ export function UserDirectoryTable({
                   <tr>
                     <th
                       onClick={() => handleSort("full_name")}
-                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[150px] sm:min-w-[180px]"
+                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-40 sm:min-w-45"
                     >
                       <div className="flex items-center justify-between">
                         <span>User</span>
@@ -387,19 +386,19 @@ export function UserDirectoryTable({
                     </th>
                     <th
                       onClick={() => handleSort("role")}
-                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px] sm:min-w-[120px]"
+                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-25 sm:min-w-30"
                     >
                       <div className="flex items-center justify-between">
                         <span>Role</span>
                         {renderSortIndicator("role")}
                       </div>
                     </th>
-                    <th className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 min-w-[120px] sm:min-w-[140px]">
+                    <th className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 min-w-30 sm:min-w-35">
                       Change Role
                     </th>
                     <th
                       onClick={() => handleSort("is_active")}
-                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[110px] sm:min-w-[130px]"
+                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-27.5 sm:min-w-32.5"
                     >
                       <div className="flex items-center justify-between">
                         <span>Account Status</span>
@@ -408,14 +407,14 @@ export function UserDirectoryTable({
                     </th>
                     <th
                       onClick={() => handleSort("created_at")}
-                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px] sm:min-w-[120px]"
+                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-25 sm:min-w-30"
                     >
                       <div className="flex items-center justify-between">
                         <span>Created</span>
                         {renderSortIndicator("created_at")}
                       </div>
                     </th>
-                    <th className="px-3 sm:px-5 py-2.5 sm:py-3 text-right min-w-[90px] sm:min-w-[100px]">Actions</th>
+                    <th className="px-3 sm:px-5 py-2.5 sm:py-3 text-right min-w-22.5m:min-w-25">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#e8eaed] bg-white">
@@ -453,7 +452,7 @@ export function UserDirectoryTable({
                       return (
                         <tr key={u.id} className="hover:bg-[#f8f9fa] transition-colors group">
                           {/* User column (frozen on md+ desktop only) */}
-                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">
+                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-40 sm:min-w-45 whitespace-nowrap">
                             <div className="flex items-center gap-3">
                               <UserAvatar
                                 user={u}

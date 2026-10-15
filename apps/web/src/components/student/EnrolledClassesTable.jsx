@@ -25,6 +25,7 @@ import {
   IconRefresh,
   IconDotsVertical,
   IconCopy,
+  IconClassroom,
 } from "../ui/Icons";
 
 export function EnrolledClassesTable({
@@ -172,8 +173,14 @@ export function EnrolledClassesTable({
   return (
     <div className="space-y-4">
       {/* Top Filter & View Controls */}
-      <div className="bg-white border border-[#dadce0] rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shadow-xs">
-        {/* Segmented Tab Toggle: Active vs Archived */}
+      <div className="bg-white border border-[#dadce0] rounded-xl relative overflow-hidden shadow-xs">
+        {loading && visibleClasses.length > 0 && (
+          <div className="absolute top-0 left-0 right-0 z-10">
+            <GoogleProgressBar height="h-0.5" />
+          </div>
+        )}
+        <div className="p-3 sm:p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          {/* Segmented Tab Toggle: Active vs Archived */}
         <div className="grid grid-cols-2 sm:flex bg-[#f1f3f4] p-1 rounded-lg text-xs font-semibold w-full sm:w-auto shrink-0">
           <button
             type="button"
@@ -184,7 +191,8 @@ export function EnrolledClassesTable({
                 : "text-[#5f6368] hover:text-[#202124]"
             }`}
           >
-            Active Classes ({activeClasses.length})
+            <span className="hidden sm:inline">Active Classes ({activeClasses.length})</span>
+            <span className="sm:hidden">Active ({activeClasses.length})</span>
           </button>
           <button
             type="button"
@@ -195,7 +203,8 @@ export function EnrolledClassesTable({
                 : "text-[#5f6368] hover:text-[#202124]"
             }`}
           >
-            Archived ({archivedClasses.length})
+            <span className="hidden sm:inline">Archived ({archivedClasses.length})</span>
+            <span className="sm:hidden">Archived ({archivedClasses.length})</span>
           </button>
         </div>
 
@@ -264,13 +273,7 @@ export function EnrolledClassesTable({
           )}
         </div>
       </div>
-
-      {/* Pinned Google Indeterminate Progress Bar during background refresh */}
-      {loading && visibleClasses.length > 0 && (
-        <div className="rounded-xl overflow-hidden -mb-1 shadow-2xs">
-          <GoogleProgressBar height="h-1" />
-        </div>
-      )}
+    </div>
 
       {/* Loading Skeleton on Cold Start (no existing data) */}
       {loading && visibleClasses.length === 0 ? (
@@ -345,11 +348,11 @@ export function EnrolledClassesTable({
                 {/* Header Banner */}
                 <div
                   style={{ background: theme.gradient, backgroundColor: theme.accentHex }}
-                  className={`p-5 text-white flex flex-col justify-between min-h-[120px] relative rounded-t-2xl ${theme.headerBg || theme.bannerBg}`}
+                  className={`p-5 text-white flex flex-col justify-between min-h-30 relative rounded-t-2xl ${theme.headerBg || theme.bannerBg}`}
                 >
                   <div className="absolute inset-0 overflow-hidden rounded-t-2xl pointer-events-none">
                     <div className="absolute right-0 bottom-0 translate-x-3 translate-y-3 opacity-15">
-                      <IconBook className="w-28 h-28" />
+                      <IconClassroom className="w-28 h-28" />
                     </div>
                   </div>
 
@@ -571,7 +574,7 @@ export function EnrolledClassesTable({
                 <tr>
                   <th
                     onClick={() => handleSort("name")}
-                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[140px] sm:min-w-[180px]"
+                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-35in-w-[180px]"
                   >
                     <div className="flex items-center justify-between">
                       <span>Class Name</span>
@@ -580,7 +583,7 @@ export function EnrolledClassesTable({
                   </th>
                   <th
                     onClick={() => handleSort("professor_name")}
-                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[110px] sm:min-w-[140px]"
+                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-27.5 sm:min-w-35"
                   >
                     <div className="flex items-center justify-between">
                       <span>Teacher</span>
@@ -589,7 +592,7 @@ export function EnrolledClassesTable({
                   </th>
                   <th
                     onClick={() => handleSort("section")}
-                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px] sm:min-w-[120px]"
+                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-25 sm:min-w-30"
                   >
                     <div className="flex items-center justify-between">
                       <span>Section / Term</span>
@@ -598,7 +601,7 @@ export function EnrolledClassesTable({
                   </th>
                   <th
                     onClick={() => handleSort("join_code")}
-                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px] sm:min-w-[120px]"
+                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-25 sm:min-w-30"
                   >
                     <div className="flex items-center justify-between">
                       <span>Class Code</span>
@@ -607,14 +610,14 @@ export function EnrolledClassesTable({
                   </th>
                   <th
                     onClick={() => handleSort("status")}
-                    className="px-3 sm:px-5 py-2.5 sm:py-3 text-center border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px] sm:min-w-[120px]"
+                    className="px-3 sm:px-5 py-2.5 sm:py-3 text-center border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-25 sm:min-w-30"
                   >
                     <div className="flex items-center justify-center gap-1">
                       <span>Status</span>
                       {renderSortIndicator("status")}
                     </div>
                   </th>
-                  <th className="px-3 sm:px-5 py-2.5 sm:py-3 text-right min-w-[120px] sm:min-w-[140px]">Action</th>
+                  <th className="px-3 sm:px-5 py-2.5 sm:py-3 text-right min-w-30 sm:min-w-35">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e8eaed] bg-white">
@@ -637,7 +640,7 @@ export function EnrolledClassesTable({
                       }`}
                     >
                       {/* Class Name column (frozen on md+ desktop only) */}
-                      <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 font-semibold text-[#202124] group-hover:text-[#1a73e8] border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] whitespace-nowrap">
+                      <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 font-semibold text-[#202124] group-hover:text-[#1a73e8] border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] whitespace-nowrap min-w-35 sm:min-w-45">
                         <div className="flex items-center gap-2">
                           <span>{formatClassDisplayName(c.name, c.section)}</span>
                           {isProfArchived && (

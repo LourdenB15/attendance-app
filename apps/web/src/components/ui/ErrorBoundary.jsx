@@ -35,7 +35,7 @@ export class ErrorBoundary extends React.Component {
       }
 
       return (
-        <div className="min-h-[400px] flex items-center justify-center p-6 font-sans">
+        <div className="min-h-100 flex items-center justify-center p-6 font-sans">
           <div className="bg-white border border-[#dadce0] rounded-2xl p-6 sm:p-8 max-w-md w-full text-center shadow-xs">
             <div className="w-12 h-12 rounded-full bg-[#fce8e6] text-[#c5221f] flex items-center justify-center mx-auto mb-4">
               <IconAlert className="w-6 h-6" />

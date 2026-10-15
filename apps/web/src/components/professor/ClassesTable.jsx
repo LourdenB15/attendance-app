@@ -196,8 +196,14 @@ export function ClassesTable({
   return (
     <div className="space-y-4">
       {/* Top Filter & View Controls */}
-      <div className="bg-white border border-[#dadce0] rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shadow-xs">
-        {/* Segmented Tab Toggle: Active vs Archived */}
+      <div className="bg-white border border-[#dadce0] rounded-xl relative overflow-hidden shadow-xs">
+        {loading && visibleClasses.length > 0 && (
+          <div className="absolute top-0 left-0 right-0 z-10">
+            <GoogleProgressBar height="h-0.5" />
+          </div>
+        )}
+        <div className="p-3 sm:p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          {/* Segmented Tab Toggle: Active vs Archived */}
         <div className="grid grid-cols-2 sm:flex bg-[#f1f3f4] p-1 rounded-lg text-xs font-semibold w-full sm:w-auto shrink-0">
           <button
             type="button"
@@ -208,7 +214,8 @@ export function ClassesTable({
                 : "text-[#5f6368] hover:text-[#202124]"
             }`}
           >
-            Active Classes ({activeClasses.length})
+            <span className="hidden sm:inline">Active Classes ({activeClasses.length})</span>
+            <span className="sm:hidden">Active ({activeClasses.length})</span>
           </button>
           <button
             type="button"
@@ -219,7 +226,8 @@ export function ClassesTable({
                 : "text-[#5f6368] hover:text-[#202124]"
             }`}
           >
-            Archived ({archivedClasses.length})
+            <span className="hidden sm:inline">Archived ({archivedClasses.length})</span>
+            <span className="sm:hidden">Archived ({archivedClasses.length})</span>
           </button>
         </div>
 
@@ -288,13 +296,7 @@ export function ClassesTable({
           )}
         </div>
       </div>
-
-      {/* Pinned Google Indeterminate Progress Bar during background refresh */}
-      {loading && visibleClasses.length > 0 && (
-        <div className="rounded-xl overflow-hidden -mb-1 shadow-2xs">
-          <GoogleProgressBar height="h-1" />
-        </div>
-      )}
+    </div>
 
       {/* Loading Skeleton on Cold Start (no existing data) */}
       {loading && visibleClasses.length === 0 ? (
@@ -364,7 +366,7 @@ export function ClassesTable({
                 {/* Colored Top Header Tile */}
                 <div
                   style={{ background: theme.gradient, backgroundColor: theme.accentHex }}
-                  className={`p-5 text-white flex flex-col justify-between min-h-[120px] relative rounded-t-2xl ${theme.headerBg || theme.bannerBg}`}
+                  className={`p-5 text-white flex flex-col justify-between min-h-30 relative rounded-t-2xl ${theme.headerBg || theme.bannerBg}`}
                 >
                   <div className="absolute inset-0 overflow-hidden rounded-t-2xl pointer-events-none">
                     <div className="absolute right-0 bottom-0 translate-x-3 translate-y-3 opacity-15">
@@ -584,7 +586,7 @@ export function ClassesTable({
                 <tr>
                   <th
                     onClick={() => handleSort("name")}
-                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[140px] sm:min-w-[180px]"
+                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-35 sm:min-w-45"
                   >
                     <div className="flex items-center justify-between">
                       <span>Class Name</span>
@@ -593,7 +595,7 @@ export function ClassesTable({
                   </th>
                   <th
                     onClick={() => handleSort("semester")}
-                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px] sm:min-w-[120px]"
+                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-25 sm:min-w-30"
                   >
                     <div className="flex items-center justify-between">
                       <span>Semester</span>
@@ -602,7 +604,7 @@ export function ClassesTable({
                   </th>
                   <th
                     onClick={() => handleSort("section")}
-                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[80px] sm:min-w-[100px]"
+                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-20 sm:min-w-25"
                   >
                     <div className="flex items-center justify-between">
                       <span>Section / Block</span>
@@ -611,7 +613,7 @@ export function ClassesTable({
                   </th>
                   <th
                     onClick={() => handleSort("join_code")}
-                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px] sm:min-w-[120px]"
+                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-25 sm:min-w-30"
                   >
                     <div className="flex items-center justify-between">
                       <span>Join Code</span>
@@ -620,14 +622,14 @@ export function ClassesTable({
                   </th>
                   <th
                     onClick={() => handleSort("status")}
-                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[80px] sm:min-w-[100px]"
+                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-20 sm:min-w-25"
                   >
                     <div className="flex items-center justify-between">
                       <span>Status</span>
                       {renderSortIndicator("status")}
                     </div>
                   </th>
-                  <th className="px-3 sm:px-5 py-2.5 sm:py-3 text-right min-w-[120px] sm:min-w-[140px]">Actions</th>
+                  <th className="px-3 sm:px-5 py-2.5 sm:py-3 text-right min-w-30 sm:min-w-35">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e8eaed] bg-white">
@@ -642,7 +644,7 @@ export function ClassesTable({
                     }`}
                   >
                     {/* Class Name column (frozen on md+ desktop only) */}
-                    <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 font-semibold text-[#202124] group-hover:text-[#1a73e8] border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] whitespace-nowrap">
+                    <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 font-semibold text-[#202124] group-hover:text-[#1a73e8] border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] whitespace-nowrap min-w-35 sm:min-w-45">
                       {formatClassDisplayName(cls.name, cls.section)}
                     </td>
                     <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-[#5f6368] border-r border-[#e8eaed] whitespace-nowrap uppercase">
@@ -852,7 +854,7 @@ export function ClassesTable({
                 onClick={(e) =>
                   handleCopyJoinCode(e, presentingClass.join_code, presentingClass.id)
                 }
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#1a73e8] hover:bg-[#1557b0] text-white rounded-xl text-xs font-semibold shadow-xs transition cursor-pointer disabled:cursor-default min-h-[40px]"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#1a73e8] hover:bg-[#1557b0] text-white rounded-xl text-xs font-semibold shadow-xs transition cursor-pointer disabled:cursor-default min-h-10"
               >
                 {copiedId === presentingClass.id ? (
                   <>
@@ -869,7 +871,7 @@ export function ClassesTable({
               <button
                 type="button"
                 onClick={() => setPresentingClass(null)}
-                className="w-full sm:w-auto px-5 py-2.5 bg-[#f1f3f4] hover:bg-[#e8eaed] text-[#202124] rounded-xl text-xs font-semibold transition cursor-pointer min-h-[40px]"
+                className="w-full sm:w-auto px-5 py-2.5 bg-[#f1f3f4] hover:bg-[#e8eaed] text-[#202124] rounded-xl text-xs font-semibold transition cursor-pointer min-h-10"
               >
                 Done
               </button>

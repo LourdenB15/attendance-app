@@ -14,6 +14,7 @@ export function SessionController({
   activeSession,
   onSessionOpened,
   onSessionClosed,
+  onSessionChanged,
   onRefreshAttendance,
   refreshingAttendance = false,
 }) {
@@ -61,6 +62,7 @@ export function SessionController({
       showToast("success", "Attendance session opened successfully.");
       setLabel("");
       if (onSessionOpened) onSessionOpened(session);
+      if (onSessionChanged) onSessionChanged(session);
     } catch (err) {
       showToast("error", err.message);
     } finally {
@@ -75,8 +77,16 @@ export function SessionController({
       await sessionsApi.closeSession(activeSession.id);
       showToast("success", "Attendance session closed.");
       if (onSessionClosed) onSessionClosed();
+      if (onSessionChanged) onSessionChanged(null);
     } catch (err) {
-      showToast("error", err.message);
+      // If the session was already closed or expired on the server, gracefully sync UI state
+      if (err.message && err.message.toLowerCase().includes("no open session")) {
+        showToast("info", "Session was already closed.");
+        if (onSessionClosed) onSessionClosed();
+        if (onSessionChanged) onSessionChanged(null);
+      } else {
+        showToast("error", err.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -155,7 +165,7 @@ export function SessionController({
               type="button"
               disabled={refreshingAttendance}
               onClick={onRefreshAttendance}
-              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-white hover:bg-[#f1f3f4] text-[#3c4043] border border-[#dadce0] rounded-xl text-xs font-semibold transition shadow-2xs min-h-[40px] cursor-pointer disabled:opacity-70"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-white hover:bg-[#f1f3f4] text-[#3c4043] border border-[#dadce0] rounded-xl text-xs font-semibold transition shadow-2xs min-h-10 cursor-pointer disabled:opacity-70"
             >
               <IconRefresh className={`w-4 h-4 text-[#5f6368] ${refreshingAttendance ? "animate-spin text-[#1a73e8]" : ""}`} />
               <span>Refresh Attendance Roster</span>
@@ -165,7 +175,7 @@ export function SessionController({
               type="button"
               disabled={loading}
               onClick={handleClose}
-              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#d93025] hover:bg-[#b3261e] disabled:opacity-50 text-white rounded-xl text-xs font-semibold transition shadow-xs min-h-[40px]"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-[#d93025] hover:bg-[#b3261e] disabled:opacity-50 text-white rounded-xl text-xs font-semibold transition shadow-xs min-h-10"
             >
               <IconClose className="w-4 h-4" />
               <span>{loading ? "Closing..." : "Close Session Now"}</span>
@@ -209,7 +219,7 @@ export function SessionController({
 
           {/* Quick Preset Buttons */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-[#e8eaed]">
-            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1 sm:pb-0">
+            <div className="flex items-center gap-1.5 flex-wrap sm:flex-nowrap pb-1 sm:pb-0">
               <span className="text-[11px] text-[#70757a] font-semibold uppercase tracking-wider mr-1 shrink-0">
                 Presets:
               </span>
@@ -218,7 +228,7 @@ export function SessionController({
                   key={m}
                   type="button"
                   onClick={() => setDurationMinutes(m)}
-                  className={`px-3 py-1.5 text-xs rounded-lg transition font-semibold shrink-0 min-h-[36px] min-w-[42px] ${
+                  className={`px-3 py-1.5 text-xs rounded-lg transition font-semibold shrink-0 min-h-9 min-w-10.5 ${
                     Number(durationMinutes) === m
                       ? "bg-[#e8f0fe] text-[#1a73e8] border border-[#d2e3fc] font-bold shadow-2xs"
                       : "bg-[#f1f3f4] text-[#5f6368] hover:bg-[#e8eaed]"
@@ -232,7 +242,7 @@ export function SessionController({
             <button
               type="submit"
               disabled={loading}
-              className="w-full sm:w-auto px-5 py-2.5 bg-[#1a73e8] hover:bg-[#1557b0] disabled:opacity-50 text-white font-semibold rounded-xl text-xs shadow-xs transition inline-flex items-center justify-center gap-1.5 min-h-[42px]"
+              className="w-full sm:w-auto px-5 py-2.5 bg-[#1a73e8] hover:bg-[#1557b0] disabled:opacity-50 text-white font-semibold rounded-xl text-xs shadow-xs transition inline-flex items-center justify-center gap-1.5 min-h-10.5"
             >
               <span>{loading ? "Starting..." : "Start Attendance Window"}</span>
               <span>→</span>

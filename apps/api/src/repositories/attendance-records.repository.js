@@ -29,7 +29,7 @@ export async function findRecord(sessionId, studentId) {
 
 export async function findForSession(classId, sessionId) {
   const result = await pool.query(
-    `SELECT u.id AS student_id, u.full_name, u.email,
+    `SELECT u.id AS student_id, u.full_name, u.email, u.avatar_url,
             COALESCE(ar.status, 'ABSENT') AS status,
             ar.source, ar.recorded_at, ar.override_reason
      FROM enrollments e
@@ -98,7 +98,7 @@ export async function findSessionsWithStatsByClass(classId, professorId) {
 
 export async function findSectionAttendanceSummary(classId, professorId) {
   const result = await pool.query(
-    `SELECT u.id AS student_id, u.full_name, u.email,
+    `SELECT u.id AS student_id, u.full_name, u.email, u.avatar_url,
             COUNT(DISTINCT s.id)::int AS total_sessions,
             COUNT(DISTINCT CASE WHEN ar.status = 'PRESENT' THEN ar.session_id END)::int AS present_sessions,
             COUNT(DISTINCT CASE WHEN ar.status = 'ABSENT' OR (s.id IS NOT NULL AND ar.status IS NULL) THEN s.id END)::int AS absent_sessions
@@ -108,7 +108,7 @@ export async function findSectionAttendanceSummary(classId, professorId) {
      LEFT JOIN attendance_sessions s ON s.class_id = e.class_id
      LEFT JOIN attendance_records ar ON ar.session_id = s.id AND ar.student_id = e.student_id
      WHERE e.class_id = $1 AND e.status = 'ACTIVE'
-     GROUP BY u.id, u.full_name, u.email
+     GROUP BY u.id, u.full_name, u.email, u.avatar_url
      ORDER BY u.full_name ASC`,
     [classId, professorId],
   );

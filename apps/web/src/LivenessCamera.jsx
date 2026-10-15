@@ -20,6 +20,81 @@ const UI_STATE = {
   CAMERA_ERROR: "CAMERA_ERROR",
 };
 
+/**
+ * Resolves FaceMesh constructor from window global (loaded via index.html script)
+ */
+async function getFaceMeshConstructor(maxWaitMs = 2000) {
+  if (typeof window === "undefined") return null;
+  if (window.FaceMesh) return window.FaceMesh;
+
+  const startTime = Date.now();
+  while (Date.now() - startTime < maxWaitMs) {
+    if (window.FaceMesh) return window.FaceMesh;
+    await new Promise((r) => setTimeout(r, 50));
+  }
+
+  return window.FaceMesh || null;
+}
+
+/**
+ * Asynchronously loads and initializes MediaPipe Face Mesh model assets.
+ * Ensures the WASM binary, binarypb graph, and solution packed assets
+ * are fully pre-fetched, compiled, and ready in browser memory/cache.
+ */
+async function loadFaceMeshModel(basePath = "") {
+  const cleanBasePath = (basePath || "").replace(/\/+$/, "");
+
+  // 1. Pre-fetch binarypb and WASM solution files into browser HTTP cache
+  const assets = [
+    `${cleanBasePath}/face_mesh/face_mesh.binarypb`,
+    `${cleanBasePath}/face_mesh/face_mesh_solution_packed_assets.data`,
+    `${cleanBasePath}/face_mesh/face_mesh_solution_simd_wasm_bin.wasm`,
+    `${cleanBasePath}/face_mesh/face_mesh_solution_simd_wasm_bin.js`,
+    `${cleanBasePath}/face_mesh/face_mesh_solution_packed_assets_loader.js`,
+  ];
+
+  const prefetchPromise = Promise.allSettled(
+    assets.map(async (url) => {
+      const res = await fetch(url);
+      if (!res.ok) {
+        throw new Error(`Failed to load ${url} (status: ${res.status})`);
+      }
+      return res;
+    })
+  );
+
+  // 2. Resolve constructor and initialize graph to compile WASM
+  const FaceMeshConstructor = await getFaceMeshConstructor();
+  if (FaceMeshConstructor) {
+    try {
+      const meshInstance = new FaceMeshConstructor({
+        locateFile: (file) => `${cleanBasePath}/face_mesh/${file}`,
+      });
+      meshInstance.setOptions({
+        maxNumFaces: 1,
+        refineLandmarks: true,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5,
+      });
+      await meshInstance.initialize();
+      try {
+        await meshInstance.close();
+      } catch {
+        // ignore close cleanup error
+      }
+    } catch (err) {
+      console.warn("FaceMesh runtime initialization warning, waiting on asset prefetch:", err);
+      await prefetchPromise;
+    }
+  } else {
+    const results = await prefetchPromise;
+    const failures = results.filter((r) => r.status === "rejected");
+    if (failures.length === assets.length) {
+      throw new Error("Unable to fetch Face Mesh model assets.");
+    }
+  }
+}
+
 export function LivenessCamera({
   onComplete,
   onCancel,
@@ -29,12 +104,13 @@ export function LivenessCamera({
 }) {
   const isAttendance = mode === "attendance";
   const [uiState, setUiState] = useState(UI_STATE.LOADING_MODELS);
-  const [instruction, setInstruction] = useState("Initializing AI biometric models...");
+  const [instruction, setInstruction] = useState("Initializing Face Mesh & biometric AI models...");
   const [currentChallenge, setCurrentChallenge] = useState(null);
   const [distanceHint, setDistanceHint] = useState(null);
   const [progress, setProgress] = useState(0);
   const selectedChallenges = defaultChallenges ?? (isAttendance ? ["WAITING"] : null);
   const [resultData, setResultData] = useState(null);
+  const [useContainFit, setUseContainFit] = useState(false);
   const [isPortraitMode, setIsPortraitMode] = useState(() => {
     if (typeof window === "undefined") return false;
     return (
@@ -78,25 +154,35 @@ export function LivenessCamera({
 
   useEffect(() => {
     let isMounted = true;
+    let isSdkReady = false;
+    let isMeshReady = false;
+
+    const checkAllReady = () => {
+      if (!isMounted) return;
+      if (isSdkReady && isMeshReady) {
+        isModelLoadedRef.current = true;
+        setUiState(UI_STATE.READY_TO_START);
+        setInstruction(
+          isAttendanceRef.current
+            ? 'Look straight at the camera and click "Start Attendance Scan"'
+            : 'Click "Begin Biometric Scan" to register your facial profile.'
+        );
+      }
+    };
 
     const sdk = new LivenessSDK({
       basePath: "",
       headTurnThreshold: 0.4,
       challengeTimeout: 10000,
-      minFaceSize: 0.15,
-      maxFaceSize: 0.70,
+      minFaceSize: 0.10,
+      maxFaceSize: 0.75,
     });
     sdkRef.current = sdk;
 
     sdk.on("ready", () => {
       if (!isMounted) return;
-      isModelLoadedRef.current = true;
-      setUiState(UI_STATE.READY_TO_START);
-      setInstruction(
-        isAttendanceRef.current
-          ? 'Look straight at the camera and click "Start Attendance Scan"'
-          : 'Click "Begin Biometric Scan" to register your facial profile.'
-      );
+      isSdkReady = true;
+      checkAllReady();
     });
 
     sdk.on("challenge", ({ type, instruction: challengeInstruction, distance }) => {
@@ -148,6 +234,7 @@ export function LivenessCamera({
       setCurrentChallenge(null);
       if (err?.code === "MODEL_LOAD_FAILED") {
         isModelLoadedRef.current = false;
+        isSdkReady = false;
       }
       setUiState(UI_STATE.FAILURE);
       setInstruction(err.message || "Liveness verification was not completed.");
@@ -157,18 +244,31 @@ export function LivenessCamera({
       if (!isMounted) return;
       if (err?.code === "MODEL_LOAD_FAILED") {
         isModelLoadedRef.current = false;
+        isSdkReady = false;
       }
       setUiState(UI_STATE.CAMERA_ERROR);
       setInstruction(err.message || "Unable to access camera or load biometric models.");
     });
 
-    sdk.load().catch((err) => {
-      if (!isMounted) return;
-      isModelLoadedRef.current = false;
-      console.error("SDK load error:", err);
-      setUiState(UI_STATE.FAILURE);
-      setInstruction("Failed to load AI biometric models.");
-    });
+    // Concurrently load FaceMesh assets and FaceRecognition models
+    Promise.all([
+      sdk.load().then(() => {
+        isSdkReady = true;
+      }),
+      loadFaceMeshModel("").then(() => {
+        isMeshReady = true;
+      }),
+    ])
+      .then(() => {
+        checkAllReady();
+      })
+      .catch((err) => {
+        if (!isMounted) return;
+        isModelLoadedRef.current = false;
+        console.error("AI model initialization error (FaceMesh / Recognition):", err);
+        setUiState(UI_STATE.FAILURE);
+        setInstruction(err.message || "Failed to load AI face mesh & biometric models.");
+      });
 
     const currentVideo = videoRef.current;
     return () => {
@@ -215,13 +315,18 @@ export function LivenessCamera({
 
     if (!isModelLoadedRef.current) {
       setUiState(UI_STATE.LOADING_MODELS);
-      setInstruction("Loading AI models, please wait...");
+      setInstruction("Loading AI face mesh & biometric models, please wait...");
       try {
-        await sdkRef.current.load();
+        await Promise.all([
+          sdkRef.current.load(),
+          loadFaceMeshModel(""),
+        ]);
+        isModelLoadedRef.current = true;
+        setUiState(UI_STATE.READY_TO_START);
       } catch (err) {
         console.error("SDK reload error:", err);
         setUiState(UI_STATE.FAILURE);
-        setInstruction(err.message || "Failed to load AI models.");
+        setInstruction(err.message || "Failed to load AI face mesh & biometric models.");
         return;
       }
       if (!isModelLoadedRef.current) {
@@ -248,8 +353,8 @@ export function LivenessCamera({
     sdkRef.current.updateConfig({
       sessionToken,
       challenges: selectedChallenges,
-      minFaceSize: 0.15,
-      maxFaceSize: 0.70,
+      minFaceSize: 0.10,
+      maxFaceSize: 0.75,
     });
 
     try {
@@ -263,14 +368,14 @@ export function LivenessCamera({
 
       let stream = null;
       if (isPortrait) {
-        // Phone/Portrait: Request native 3:4 uncropped camera sensor stream matching the viewport
+        // Phone/Portrait: Request wide uncropped camera sensor stream matching 4:5 / 3:4 viewport
         try {
           stream = await navigator.mediaDevices.getUserMedia({
             video: {
               facingMode: "user",
-              width: { ideal: 720, max: 1080 },
-              height: { ideal: 960, max: 1440 },
-              aspectRatio: { ideal: 3 / 4 },
+              aspectRatio: { ideal: 4 / 5 },
+              width: { ideal: 960, max: 1440 },
+              height: { ideal: 1200, max: 1920 },
             },
             audio: false,
           });
@@ -279,13 +384,26 @@ export function LivenessCamera({
             stream = await navigator.mediaDevices.getUserMedia({
               video: {
                 facingMode: "user",
-                width: { ideal: 720 },
-                height: { ideal: 960 },
+                aspectRatio: { ideal: 3 / 4 },
+                width: { ideal: 720, max: 1080 },
+                height: { ideal: 960, max: 1440 },
               },
               audio: false,
             });
           } catch {
-            // will fallback below
+            try {
+              stream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                  facingMode: "user",
+                  width: { ideal: 720 },
+                  height: { ideal: 960 },
+                  aspectRatio: { ideal: 3 / 4 },
+                },
+                audio: false,
+              });
+            } catch {
+              // will fallback below
+            }
           }
         }
       } else {
@@ -313,6 +431,22 @@ export function LivenessCamera({
         });
       }
 
+      // Ensure mobile camera uses widest optical field of view (no digital zoom)
+      const [videoTrack] = stream.getVideoTracks();
+      if (videoTrack) {
+        try {
+          const capabilities = videoTrack.getCapabilities?.() || {};
+          if (capabilities.zoom) {
+            const minZoom = capabilities.zoom.min || 1;
+            await videoTrack.applyConstraints({
+              advanced: [{ zoom: minZoom }],
+            });
+          }
+        } catch {
+          // ignore if zoom constraint is not supported by driver
+        }
+      }
+
       const videoEl = videoRef.current;
       videoEl.srcObject = stream;
 
@@ -329,6 +463,16 @@ export function LivenessCamera({
           };
         }
       });
+
+      // If the viewport is in portrait mode, but the camera stream delivered is landscape (width > height),
+      // object-cover would zoom in by over 200%, cutting off the face. Using object-contain preserves the full uncropped camera view.
+      const vW = videoEl.videoWidth || 1;
+      const vH = videoEl.videoHeight || 1;
+      if (isPortrait && vW > vH) {
+        setUseContainFit(true);
+      } else {
+        setUseContainFit(false);
+      }
 
       // Start the SDK with our pre-configured portrait/landscape stream
       await sdkRef.current.start(videoRef.current, canvasRef.current);
@@ -380,8 +524,8 @@ export function LivenessCamera({
           <div
             className={`relative w-full overflow-hidden rounded-xl bg-slate-950 shadow-inner border border-slate-800 transition-all duration-200 ${
               isPortraitMode
-                ? "aspect-[3/4] max-h-[62vh]"
-                : "aspect-[4/3] max-h-[68vh]"
+                ? "aspect-4/5 max-h-[60vh]"
+                : "aspect-4/3 max-h-[68vh]"
             }`}
           >
             <video
@@ -389,11 +533,15 @@ export function LivenessCamera({
               playsInline
               muted
               autoPlay
-              className="absolute inset-0 h-full w-full scale-x-[-1] object-cover"
+              className={`absolute inset-0 h-full w-full scale-x-[-1] ${
+                useContainFit ? "object-contain" : "object-cover"
+              }`}
             />
             <canvas
               ref={canvasRef}
-              className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+              className={`pointer-events-none absolute inset-0 h-full w-full ${
+                useContainFit ? "object-contain" : "object-cover"
+              }`}
             />
 
             {/* Oval Face Guide Overlay during active checking */}
@@ -401,7 +549,7 @@ export function LivenessCamera({
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                 <div
                   className={`rounded-[50%] border-2 border-dashed border-white/70 animate-pulse transition-all shadow-sm ${
-                    isPortraitMode ? "w-36 h-48 sm:w-42 sm:h-56" : "w-48 h-64"
+                    isPortraitMode ? "w-36 h-50 sm:w-42 sm:h-58" : "w-52 h-68"
                   }`}
                 />
               </div>
@@ -413,7 +561,7 @@ export function LivenessCamera({
               {uiState === UI_STATE.LOADING_MODELS ? (
                 <>
                   <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin shrink-0"></div>
-                  <span>Loading AI Models...</span>
+                  <span>{instruction || "Loading AI face mesh & biometric models..."}</span>
                 </>
               ) : (
                 <span>{instruction}</span>
@@ -426,7 +574,11 @@ export function LivenessCamera({
             <div className="absolute top-1/2 inset-x-0 z-10 flex justify-center pointer-events-none -translate-y-1/2 px-4">
               <div className="rounded-full border border-amber-300/40 bg-[#b06000]/90 px-4 py-2 text-xs font-bold text-white shadow-lg backdrop-blur-md animate-bounce flex items-center gap-1.5">
                 <IconAlert className="w-4 h-4 text-amber-200" />
-                <span>Move {distanceHint.toLowerCase()} to camera</span>
+                <span>
+                  {distanceHint === "FURTHER"
+                    ? "Move farther back from camera"
+                    : "Move closer to camera"}
+                </span>
               </div>
             </div>
           )}

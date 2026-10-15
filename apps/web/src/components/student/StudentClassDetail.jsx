@@ -7,8 +7,8 @@ import { LoadingOverlay } from "../ui/LoadingOverlay";
 import { Badge } from "../ui/Badge";
 import { getClassTheme } from "../ui/classroomThemes";
 import { TableSkeleton } from "../ui/Skeleton";
-import { formatClassDisplayName } from "../../utils/classFormatting";
 import { UserAvatar } from "../ui/UserAvatar";
+import { formatClassDisplayName } from "../../utils/classFormatting";
 import {
   IconChevronLeft,
   IconCamera,
@@ -22,6 +22,7 @@ import {
   IconList,
   IconGrid,
   IconAlert,
+  IconClassroom,
 } from "../ui/Icons";
 
 export function StudentClassDetail({
@@ -244,7 +245,11 @@ export function StudentClassDetail({
         style={{ background: theme.gradient, backgroundColor: theme.accentHex }}
         className={`${theme.bannerBg} rounded-2xl p-6 sm:p-8 text-white shadow-sm relative overflow-hidden`}
       >
-        <div className="absolute -right-8 -bottom-12 w-48 h-48 rounded-full bg-white/10 pointer-events-none" />
+        {/* Subtle decorative elements */}
+        <div className="absolute right-0 bottom-0 translate-x-4 translate-y-4 opacity-15 pointer-events-none">
+          <IconClassroom className="w-40 h-40 sm:w-48 sm:h-48" />
+        </div>
+        <div className="absolute right-36 -top-10 w-28 h-28 rounded-full bg-white/5 pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
@@ -257,15 +262,22 @@ export function StudentClassDetail({
               <span>Back to My Classes</span>
             </button>
 
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white leading-tight">
+            <h2 className="text-xl sm:text-3xl font-bold tracking-tight text-white leading-tight">
               {formatClassDisplayName(classItem.name, classItem.section)}
             </h2>
-            <p className={`text-sm ${theme.subText} font-medium mt-1`}>
-              Teacher: {classItem.professor_name || "Faculty Member"} • Section {classItem.section ? classItem.section.toUpperCase() : "—"} ({classItem.semester ? classItem.semester.toUpperCase() : "—"})
-            </p>
+            <div className={`text-xs sm:text-sm ${theme.subText} font-medium mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1`}>
+              <span>Teacher: {classItem.professor_name || "Faculty Member"}</span>
+              <span className="opacity-60 hidden sm:inline">•</span>
+              <span className="inline-flex items-center gap-1.5 bg-black/15 px-2.5 py-0.5 rounded-full text-xs font-semibold backdrop-blur-xs">
+                <span>Section {classItem.section ? classItem.section.toUpperCase() : "—"}</span>
+                {classItem.semester && (
+                  <span className="opacity-80">({classItem.semester.toUpperCase()})</span>
+                )}
+              </span>
+            </div>
           </div>
 
-          <div className="bg-white/15 backdrop-blur-md border border-white/25 rounded-2xl px-4 py-3 self-start md:self-auto min-w-[170px]">
+          <div className="bg-white/15 backdrop-blur-md border border-white/25 rounded-2xl px-4 py-3 w-full sm:w-auto self-stretch sm:self-auto min-w-42.5">
             <span className="block text-[10px] font-bold uppercase tracking-wider text-white/80 mb-0.5">
               {classItem.is_archived ? "Status" : "Class Code"}
             </span>
@@ -294,20 +306,27 @@ export function StudentClassDetail({
       </div>
 
       {/* Google Classroom Style Sub-Tab Bar */}
-      <div className="flex items-center gap-1 border-b border-[#dadce0] bg-white rounded-xl px-2 shadow-2xs">
+      <div className="flex border-b border-[#dadce0] gap-4 sm:gap-6 text-xs sm:text-sm font-semibold w-full justify-start overflow-x-auto no-scrollbar">
         <button
           type="button"
           onClick={() => setDetailTab("attendance")}
-          className={`px-4 py-3 text-xs font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+          className={`pb-3 transition-colors border-b-2 flex items-center gap-1.5 sm:gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
             detailTab === "attendance"
               ? "border-[#1a73e8] text-[#1a73e8] font-bold"
               : "border-transparent text-[#5f6368] hover:text-[#202124]"
           }`}
         >
-          <IconClock className="w-4 h-4" />
-          <span>Attendance & Sessions</span>
+          <IconClock className="w-4 h-4 shrink-0" />
+          <span className="hidden sm:inline">Attendance & Sessions</span>
+          <span className="sm:hidden">Attendance</span>
           {classRecords.length > 0 && (
-            <span className="px-1.5 py-0.2 rounded-full bg-[#f1f3f4] text-[#5f6368] text-[10px] font-bold">
+            <span
+              className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
+                detailTab === "attendance"
+                  ? "bg-[#e8f0fe] text-[#1a73e8]"
+                  : "bg-[#f1f3f4] text-[#5f6368]"
+              }`}
+            >
               {classRecords.length}
             </span>
           )}
@@ -316,16 +335,22 @@ export function StudentClassDetail({
         <button
           type="button"
           onClick={() => setDetailTab("classmates")}
-          className={`px-4 py-3 text-xs font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
+          className={`pb-3 transition-colors border-b-2 flex items-center gap-1.5 sm:gap-2 cursor-pointer shrink-0 whitespace-nowrap ${
             detailTab === "classmates"
               ? "border-[#1a73e8] text-[#1a73e8] font-bold"
               : "border-transparent text-[#5f6368] hover:text-[#202124]"
           }`}
         >
-          <IconUsers className="w-4 h-4" />
+          <IconUsers className="w-4 h-4 shrink-0" />
           <span>Classmates</span>
           {classmates.length > 0 && (
-            <span className="px-1.5 py-0.2 rounded-full bg-[#e8f0fe] text-[#1a73e8] text-[10px] font-bold">
+            <span
+              className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
+                detailTab === "classmates"
+                  ? "bg-[#e8f0fe] text-[#1a73e8]"
+                  : "bg-[#f1f3f4] text-[#5f6368]"
+              }`}
+            >
               {classmates.length}
             </span>
           )}
@@ -441,7 +466,7 @@ export function StudentClassDetail({
                     type="button"
                     disabled={checkingIn}
                     onClick={handleTakeAttendanceClick}
-                    className="px-6 py-3 bg-[#1a73e8] hover:bg-[#1557b0] disabled:opacity-50 text-white font-bold rounded-xl shadow-md text-xs transition shrink-0 inline-flex items-center gap-2 hover:scale-102 active:scale-98 cursor-pointer"
+                    className="w-full sm:w-auto px-6 py-3 bg-[#1a73e8] hover:bg-[#1557b0] disabled:opacity-50 text-white font-bold rounded-xl shadow-md text-xs sm:text-sm transition shrink-0 inline-flex items-center justify-center gap-2 hover:scale-102 active:scale-98 cursor-pointer"
                   >
                     <IconCamera className="w-4 h-4" />
                     <span>Verify Face & Check In</span>
@@ -505,7 +530,7 @@ export function StudentClassDetail({
                     <tr>
                       <th
                         onClick={() => handleSort("session_label")}
-                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition"
+                        className="px-4 sm:px-6 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-55 sm:min-w-[320px]"
                       >
                         <div className="flex items-center justify-between">
                           <span>Session Topic / Label</span>
@@ -514,7 +539,7 @@ export function StudentClassDetail({
                       </th>
                       <th
                         onClick={() => handleSort("recorded_at")}
-                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[130px] sm:min-w-[160px]"
+                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-35in-w-[170px]"
                       >
                         <div className="flex items-center justify-between">
                           <span>Check-in Time</span>
@@ -523,7 +548,7 @@ export function StudentClassDetail({
                       </th>
                       <th
                         onClick={() => handleSort("status")}
-                        className="px-3 sm:px-5 py-2.5 sm:py-3 text-center cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[90px] sm:min-w-[100px]"
+                        className="px-3 sm:px-5 py-2.5 sm:py-3 text-center cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-22.5 sm:min-w-25"
                       >
                         <div className="flex items-center justify-center gap-1">
                           <span>Status</span>
@@ -544,13 +569,18 @@ export function StudentClassDetail({
                     ) : (
                       filteredRecords.map((r, i) => (
                         <tr key={r.session_id || i} className="hover:bg-[#f8f9fa] transition-colors">
-                          <td className="px-5 py-3.5 font-medium text-[#202124] border-r border-[#e8eaed]">
-                            {r.session_label || "Standard Class Session"}
+                          <td className="px-4 sm:px-6 py-3 sm:py-3.5 border-r border-[#e8eaed] min-w-55 sm:min-w-[320px]">
+                            <p
+                              className="font-medium text-xs sm:text-sm text-[#202124] wrap-break-word leading-relaxed max-w-sm sm:max-w-md"
+                              title={r.session_label || "Standard Class Session"}
+                            >
+                              {r.session_label || "Standard Class Session"}
+                            </p>
                           </td>
-                          <td className="px-5 py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed]">
+                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed] whitespace-nowrap">
                             {r.recorded_at ? new Date(r.recorded_at).toLocaleString() : "—"}
                           </td>
-                          <td className="px-5 py-3.5 text-center">
+                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-center whitespace-nowrap">
                             {r.status === "PRESENT" ? (
                               <Badge variant="success" size="xs" dot>
                                 Present
@@ -714,7 +744,6 @@ export function StudentClassDetail({
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                 {filteredClassmates.map((c) => {
                   const isCurrentUser = c.student_id === currentUser?.id;
-                  const initial = (c.full_name || "S")[0].toUpperCase();
 
                   return (
                     <div
@@ -783,7 +812,7 @@ export function StudentClassDetail({
                       <tr>
                         <th
                           onClick={() => handleClassmateSort("full_name")}
-                          className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)] min-w-[140px] sm:min-w-[180px]"
+                          className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)] min-w-35 sm:min-w-45"
                         >
                           <div className="flex items-center justify-between">
                             <span>Classmate Name</span>
@@ -792,7 +821,7 @@ export function StudentClassDetail({
                         </th>
                         <th
                           onClick={() => handleClassmateSort("email")}
-                          className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[140px] sm:min-w-[180px]"
+                          className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-35 sm:min-w-45"
                         >
                           <div className="flex items-center justify-between">
                             <span>Email Address</span>
@@ -801,14 +830,14 @@ export function StudentClassDetail({
                         </th>
                         <th
                           onClick={() => handleClassmateSort("enrolled_at")}
-                          className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px] sm:min-w-[130px]"
+                          className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-25 sm:min-w-32.5"
                         >
                           <div className="flex items-center justify-between">
                             <span>Enrolled On</span>
                             {renderClassmateSortIndicator("enrolled_at")}
                           </div>
                         </th>
-                        <th className="px-3 sm:px-5 py-2.5 sm:py-3 text-center min-w-[80px] sm:min-w-[100px]">
+                        <th className="px-3 sm:px-5 py-2.5 sm:py-3 text-center min-w-20 sm:min-w-25">
                           <span>Status</span>
                         </th>
                       </tr>
@@ -816,7 +845,6 @@ export function StudentClassDetail({
                     <tbody className="divide-y divide-[#e8eaed] bg-white">
                       {filteredClassmates.map((c) => {
                         const isCurrentUser = c.student_id === currentUser?.id;
-                        const initial = (c.full_name || "S")[0].toUpperCase();
 
                         return (
                           <tr
@@ -826,7 +854,7 @@ export function StudentClassDetail({
                             }`}
                           >
                             {/* Classmate Name column (frozen on md+ desktop only) */}
-                            <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)] whitespace-nowrap">
+                            <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)] whitespace-nowrap min-w-35 sm:min-w-45">
                               <div className="flex items-center gap-2.5 sm:gap-3">
                                 <UserAvatar
                                   user={c}

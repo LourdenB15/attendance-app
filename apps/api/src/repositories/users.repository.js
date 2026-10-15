@@ -5,7 +5,7 @@ export async function createUser(fullName, email, passwordHash, role, mustChange
   const result = await pool.query(
     `INSERT INTO users (full_name, email, password_hash, role, must_change_password, is_email_verified)
      VALUES ($1, $2, $3, $4, $5, $6)
-     RETURNING id, full_name, email, role, must_change_password, is_active, is_email_verified, created_at`,
+     RETURNING id, full_name, email, role, avatar_url, must_change_password, is_active, is_email_verified, created_at`,
     [fullName, email, passwordHash, role, mustChangePassword, isEmailVerified],
   );
   return result.rows[0];
@@ -44,7 +44,7 @@ export async function updateRole(id, role) {
     `UPDATE users
      SET role = $1, token_version = token_version + 1, updated_at = now()
      WHERE id = $2
-     RETURNING id, full_name, email, role, must_change_password, is_active, is_email_verified, created_at, token_version`,
+     RETURNING id, full_name, email, role, avatar_url, must_change_password, is_active, is_email_verified, created_at, token_version`,
     [role, id],
   );
   return result.rows[0];
@@ -55,9 +55,21 @@ export async function updateProfile(id, fullName) {
     `UPDATE users
      SET full_name = $1, updated_at = now()
      WHERE id = $2
-     RETURNING id, full_name, email, role, must_change_password, is_active, is_email_verified, created_at,
+     RETURNING id, full_name, email, role, avatar_url, must_change_password, is_active, is_email_verified, created_at,
              password_hash IS NOT NULL AS has_password`,
     [fullName, id],
+  );
+  return result.rows[0];
+}
+
+export async function updateAvatar(id, avatarUrl) {
+  const result = await pool.query(
+    `UPDATE users
+     SET avatar_url = $1, updated_at = now()
+     WHERE id = $2
+     RETURNING id, full_name, email, role, avatar_url, must_change_password, is_active, is_email_verified, created_at,
+             password_hash IS NOT NULL AS has_password`,
+    [avatarUrl, id],
   );
   return result.rows[0];
 }
@@ -66,7 +78,7 @@ export async function setEmailVerified(id) {
   const result = await pool.query(
     `UPDATE users SET is_email_verified = true, updated_at = now()
      WHERE id = $1
-     RETURNING id, full_name, email, role, must_change_password, is_active, is_email_verified, created_at,
+     RETURNING id, full_name, email, role, avatar_url, must_change_password, is_active, is_email_verified, created_at,
              password_hash IS NOT NULL AS has_password`,
     [id],
   );
@@ -100,7 +112,10 @@ export async function findByGoogleId(googleId) {
 export async function linkGoogleAccount(userId, googleId, avatarUrl = null) {
   const result = await pool.query(
     `UPDATE users
-     SET google_id = $1, avatar_url = COALESCE($3, avatar_url), is_email_verified = true, updated_at = now()
+     SET google_id = $1,
+         avatar_url = COALESCE($3, avatar_url),
+         is_email_verified = true,
+         updated_at = now()
      WHERE id = $2
      RETURNING id, full_name, email, role, avatar_url, must_change_password, is_active, is_email_verified, created_at,
              password_hash IS NOT NULL AS has_password`,

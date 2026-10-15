@@ -170,7 +170,8 @@ export function EnrolledStudentsTable({
                 : "text-[#5f6368] hover:text-[#202124]"
             }`}
           >
-            Active Enrolled ({activeStudents.length})
+            <span className="hidden sm:inline">Active Enrolled ({activeStudents.length})</span>
+            <span className="sm:hidden">Active ({activeStudents.length})</span>
           </button>
           <button
             type="button"
@@ -181,7 +182,8 @@ export function EnrolledStudentsTable({
                 : "text-[#5f6368] hover:text-[#202124]"
             }`}
           >
-            Dropped ({droppedStudents.length})
+            <span className="hidden sm:inline">Dropped ({droppedStudents.length})</span>
+            <span className="sm:hidden">Dropped ({droppedStudents.length})</span>
           </button>
         </div>
 
@@ -331,7 +333,7 @@ export function EnrolledStudentsTable({
                       <button
                         type="button"
                         onClick={() => handleDrop(s)}
-                        className="w-full py-2 text-xs font-semibold text-[#c5221f] bg-[#fce8e6] hover:bg-[#fad2cf] border border-[#fad2cf] rounded-xl transition min-h-[38px] cursor-pointer"
+                        className="w-full py-2 text-xs font-semibold text-[#c5221f] bg-[#fce8e6] hover:bg-[#fad2cf] border border-[#fad2cf] rounded-xl transition min-h-9.5 cursor-pointer"
                       >
                         Drop Student from Section
                       </button>
@@ -339,7 +341,7 @@ export function EnrolledStudentsTable({
                       <button
                         type="button"
                         onClick={() => handleRestore(s)}
-                        className="w-full py-2 text-xs font-semibold text-[#1a73e8] bg-[#e8f0fe] hover:bg-[#d2e3fc] border border-[#d2e3fc] rounded-xl transition min-h-[38px] cursor-pointer"
+                        className="w-full py-2 text-xs font-semibold text-[#1a73e8] bg-[#e8f0fe] hover:bg-[#d2e3fc] border border-[#d2e3fc] rounded-xl transition min-h-9.5 cursor-pointer"
                       >
                         Restore Student to Section
                       </button>
@@ -364,7 +366,7 @@ export function EnrolledStudentsTable({
                   <tr>
                     <th
                       onClick={() => handleSort("full_name")}
-                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[140px] sm:min-w-[180px]"
+                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-37.5 sm:min-w-45"
                     >
                       <div className="flex items-center justify-between">
                         <span>Student Name</span>
@@ -373,7 +375,7 @@ export function EnrolledStudentsTable({
                     </th>
                     <th
                       onClick={() => handleSort("email")}
-                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[140px] sm:min-w-[180px]"
+                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-35 sm:min-w-45"
                     >
                       <div className="flex items-center justify-between">
                         <span>Email Address</span>
@@ -382,7 +384,7 @@ export function EnrolledStudentsTable({
                     </th>
                     <th
                       onClick={() => handleSort("enrolled_via")}
-                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px] sm:min-w-[120px]"
+                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-25 sm:min-w-30"
                     >
                       <div className="flex items-center justify-between">
                         <span>Enrolled Via</span>
@@ -391,7 +393,7 @@ export function EnrolledStudentsTable({
                     </th>
                     <th
                       onClick={() => handleSort("status")}
-                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[90px] sm:min-w-[100px]"
+                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-22.5 sm:min-w-25"
                     >
                       <div className="flex items-center justify-between">
                         <span>Status</span>
@@ -400,14 +402,14 @@ export function EnrolledStudentsTable({
                     </th>
                     <th
                       onClick={() => handleSort("enrolled_at")}
-                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px] sm:min-w-[120px]"
+                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-25 sm:min-w-30"
                     >
                       <div className="flex items-center justify-between">
                         <span>Date Joined</span>
                         {renderSortIndicator("enrolled_at")}
                       </div>
                     </th>
-                    <th className="px-3 sm:px-5 py-2.5 sm:py-3 text-right min-w-[90px] sm:min-w-[110px]">Action</th>
+                    <th className="px-3 sm:px-5 py-2.5 sm:py-3 text-right min-w-22.5 sm:min-w-27.5">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#e8eaed] bg-white">
@@ -441,14 +443,14 @@ export function EnrolledStudentsTable({
                         className="hover:bg-[#f8f9fa] transition-colors group"
                       >
                         {/* Student Name column (frozen on md+ desktop only) */}
-                        <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)]">
+                        <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-37.5 sm:min-w-45 whitespace-nowrap">
                           <div className="flex items-center gap-3">
                             <UserAvatar
                               user={s}
-                              className="w-8 h-8"
+                              className="w-8 h-8 shrink-0"
                               textClassName="text-xs font-bold"
                             />
-                            <span className="font-semibold text-[#202124] truncate">
+                            <span className="font-semibold text-[#202124]">
                               {s.full_name}
                             </span>
                           </div>

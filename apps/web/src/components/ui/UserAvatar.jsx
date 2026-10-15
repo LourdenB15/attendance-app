@@ -1,78 +1,138 @@
-// apps/web/src/components/ui/UserAvatar.jsx
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
-const AVATAR_COLORS = [
-  "bg-[#1a73e8]", // Google Blue
-  "bg-[#0d652d]", // Dark Emerald
-  "bg-[#e37400]", // Warm Amber
-  "bg-[#7b1fa2]", // Royal Purple
-  "bg-[#007b83]", // Teal
-  "bg-[#188038]", // Green
-  "bg-[#b31412]", // Ruby
-  "bg-[#3f51b5]", // Indigo
-  "bg-[#d81b60]", // Rose
+// Curated accessible palette (WCAG AA compliant contrast with white text)
+const PALETTE = [
+  "#1a73e8", // Google Blue
+  "#1e8e3e", // Google Green
+  "#d93025", // Google Red
+  "#e37400", // Google Amber/Orange
+  "#8430ce", // Google Purple
+  "#129eaf", // Google Teal/Cyan
+  "#b80672", // Google Berry/Pink
+  "#4385f4", // Google Light Blue
+  "#0f9d58", // Accent Forest Green
+  "#7b1fa2", // Deep Violet
 ];
 
-function getAvatarColor(seed = "") {
-  if (!seed) return AVATAR_COLORS[0];
+function getDeterministicColor(identifier) {
+  if (!identifier) return PALETTE[0];
   let hash = 0;
-  for (let i = 0; i < seed.length; i++) {
-    hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+  for (let i = 0; i < identifier.length; i++) {
+    hash = (hash << 5) - hash + identifier.charCodeAt(i);
+    hash |= 0;
   }
-  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+  const index = Math.abs(hash) % PALETTE.length;
+  return PALETTE[index];
+}
+
+function getInitials(name, email) {
+  if (name && typeof name === "string") {
+    const trimmed = name.trim();
+    if (trimmed) {
+      const parts = trimmed.split(/\s+/).filter(Boolean);
+      if (parts.length >= 2) {
+        const first = Array.from(parts[0])[0] || "";
+        const last = Array.from(parts[parts.length - 1])[0] || "";
+        const combined = (first + last).toUpperCase();
+        if (combined) return combined;
+      }
+      const chars = Array.from(trimmed);
+      if (chars.length >= 2) {
+        return (chars[0] + chars[1]).toUpperCase();
+      }
+      return (chars[0] || "U").toUpperCase();
+    }
+  }
+
+  if (email && typeof email === "string") {
+    const handle = email.split("@")[0]?.trim();
+    if (handle) {
+      const chars = Array.from(handle);
+      if (chars.length >= 2) {
+        return (chars[0] + chars[1]).toUpperCase();
+      }
+      return (chars[0] || "U").toUpperCase();
+    }
+  }
+
+  return "U";
 }
 
 export function UserAvatar({
   user,
   className = "w-8 h-8",
   textClassName = "text-xs font-bold",
+  alt,
+  ...props
 }) {
-  const [imgFailed, setImgFailed] = useState(false);
+  const [failedSrc, setFailedSrc] = useState(null);
 
-  const email = user?.email?.toLowerCase() || "";
-  const cachedAvatar =
-    typeof window !== "undefined" && email
-      ? localStorage.getItem(`user_avatar_${email}`)
-      : null;
+  // Resolution precedence:
+  // 1. Explicit / custom avatar URL
+  // 2. Google profile picture / avatar_url
+  // 3. Other trusted avatar properties
+  const avatarSrc = useMemo(() => {
+    const src =
+      user?.custom_avatar_url ||
+      user?.avatar_url ||
+      user?.avatar ||
+      user?.picture ||
+      user?.photo_url ||
+      user?.image_url ||
+      null;
 
-  // 1. Direct avatar from database record, Google auth payload, or cached device storage
-  let avatarSrc =
-    user?.avatar_url ||
-    user?.avatar ||
-    user?.picture ||
-    user?.photo_url ||
-    cachedAvatar;
-
-  // 2. Fallback unavatar query for non-empty emails if no direct avatar is available
-  if (!avatarSrc && email && !imgFailed) {
-    if (email.endsWith("@gmail.com")) {
-      avatarSrc = `https://unavatar.io/google/${encodeURIComponent(email)}?fallback=false`;
-    } else {
-      avatarSrc = `https://unavatar.io/${encodeURIComponent(email)}?fallback=false`;
+    if (typeof src === "string" && src.trim().length > 0) {
+      return src.trim();
     }
-  }
+    return null;
+  }, [
+    user?.custom_avatar_url,
+    user?.avatar_url,
+    user?.avatar,
+    user?.picture,
+    user?.photo_url,
+    user?.image_url,
+  ]);
 
-  const initial = user?.full_name ? user.full_name[0].toUpperCase() : "U";
-  const bgColorClass = getAvatarColor(email || user?.full_name || "user");
+  const displayName = user?.full_name || user?.name || "User";
+  const email = user?.email || "";
+  const identifier = String(user?.id || user?.student_id || email || displayName);
+  const initials = useMemo(
+    () => getInitials(displayName !== "User" ? displayName : null, email),
+    [displayName, email],
+  );
+  const backgroundColor = useMemo(
+    () => getDeterministicColor(identifier),
+    [identifier],
+  );
 
-  if (avatarSrc && !imgFailed) {
+  const hasFailed = failedSrc === avatarSrc;
+
+  if (avatarSrc && !hasFailed) {
     return (
       <img
         src={avatarSrc}
-        alt={user?.full_name || "User Avatar"}
+        alt={alt || `${displayName}'s avatar`}
+        title={alt || displayName}
         referrerPolicy="no-referrer"
-        onError={() => setImgFailed(true)}
-        className={`${className} rounded-full object-cover shrink-0 border border-black/10 shadow-2xs`}
+        crossOrigin="anonymous"
+        onError={() => setFailedSrc(avatarSrc)}
+        className={`${className} rounded-full object-cover shrink-0 border border-black/10 shadow-2xs select-none`}
+        {...props}
       />
     );
   }
 
   return (
     <div
-      className={`${className} rounded-full ${bgColorClass} text-white flex items-center justify-center shrink-0 shadow-2xs ${textClassName}`}
-      title={user?.full_name || email || "User"}
+      style={{ backgroundColor }}
+      className={`${className} rounded-full text-white flex items-center justify-center shrink-0 shadow-2xs select-none tracking-tight ${textClassName}`}
+      aria-label={alt || displayName}
+      title={alt || displayName}
+      role="img"
+      {...props}
     >
-      {initial}
+      <span>{initials}</span>
     </div>
   );
 }
