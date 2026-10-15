@@ -378,7 +378,7 @@ export function UserDirectoryTable({
                   <tr>
                     <th
                       onClick={() => handleSort("full_name")}
-                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[160px] sm:min-w-[180px]"
+                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-40 sm:min-w-45"
                     >
                       <div className="flex items-center justify-between">
                         <span>User</span>
@@ -387,19 +387,19 @@ export function UserDirectoryTable({
                     </th>
                     <th
                       onClick={() => handleSort("role")}
-                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px] sm:min-w-[120px]"
+                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-25 sm:min-w-30"
                     >
                       <div className="flex items-center justify-between">
                         <span>Role</span>
                         {renderSortIndicator("role")}
                       </div>
                     </th>
-                    <th className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 min-w-[120px] sm:min-w-[140px]">
+                    <th className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 min-w-30 sm:min-w-35">
                       Change Role
                     </th>
                     <th
                       onClick={() => handleSort("is_active")}
-                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[110px] sm:min-w-[130px]"
+                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-27.5 sm:min-w-32.5"
                     >
                       <div className="flex items-center justify-between">
                         <span>Account Status</span>
@@ -408,14 +408,14 @@ export function UserDirectoryTable({
                     </th>
                     <th
                       onClick={() => handleSort("created_at")}
-                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px] sm:min-w-[120px]"
+                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-25 sm:min-w-30"
                     >
                       <div className="flex items-center justify-between">
                         <span>Created</span>
                         {renderSortIndicator("created_at")}
                       </div>
                     </th>
-                    <th className="px-3 sm:px-5 py-2.5 sm:py-3 text-right min-w-[90px] sm:min-w-[100px]">Actions</th>
+                    <th className="px-3 sm:px-5 py-2.5 sm:py-3 text-right min-w-22.5m:min-w-25">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#e8eaed] bg-white">
@@ -453,7 +453,7 @@ export function UserDirectoryTable({
                       return (
                         <tr key={u.id} className="hover:bg-[#f8f9fa] transition-colors group">
                           {/* User column (frozen on md+ desktop only) */}
-                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[160px] sm:min-w-[180px] whitespace-nowrap">
+                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-40 sm:min-w-45 whitespace-nowrap">
                             <div className="flex items-center gap-3">
                               <UserAvatar
                                 user={u}

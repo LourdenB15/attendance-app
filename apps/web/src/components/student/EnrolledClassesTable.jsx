@@ -347,7 +347,7 @@ export function EnrolledClassesTable({
                 {/* Header Banner */}
                 <div
                   style={{ background: theme.gradient, backgroundColor: theme.accentHex }}
-                  className={`p-5 text-white flex flex-col justify-between min-h-[120px] relative rounded-t-2xl ${theme.headerBg || theme.bannerBg}`}
+                  className={`p-5 text-white flex flex-col justify-between min-h-30tive rounded-t-2xl ${theme.headerBg || theme.bannerBg}`}
                 >
                   <div className="absolute inset-0 overflow-hidden rounded-t-2xl pointer-events-none">
                     <div className="absolute right-0 bottom-0 translate-x-3 translate-y-3 opacity-15">
@@ -573,7 +573,7 @@ export function EnrolledClassesTable({
                 <tr>
                   <th
                     onClick={() => handleSort("name")}
-                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[140px] sm:min-w-[180px]"
+                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-35in-w-[180px]"
                   >
                     <div className="flex items-center justify-between">
                       <span>Class Name</span>
@@ -582,7 +582,7 @@ export function EnrolledClassesTable({
                   </th>
                   <th
                     onClick={() => handleSort("professor_name")}
-                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[110px] sm:min-w-[140px]"
+                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-27.5 sm:min-w-35"
                   >
                     <div className="flex items-center justify-between">
                       <span>Teacher</span>
@@ -591,7 +591,7 @@ export function EnrolledClassesTable({
                   </th>
                   <th
                     onClick={() => handleSort("section")}
-                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px] sm:min-w-[120px]"
+                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-25 sm:min-w-30"
                   >
                     <div className="flex items-center justify-between">
                       <span>Section / Term</span>
@@ -600,7 +600,7 @@ export function EnrolledClassesTable({
                   </th>
                   <th
                     onClick={() => handleSort("join_code")}
-                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px] sm:min-w-[120px]"
+                    className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-25 sm:min-w-30"
                   >
                     <div className="flex items-center justify-between">
                       <span>Class Code</span>
@@ -609,14 +609,14 @@ export function EnrolledClassesTable({
                   </th>
                   <th
                     onClick={() => handleSort("status")}
-                    className="px-3 sm:px-5 py-2.5 sm:py-3 text-center border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px] sm:min-w-[120px]"
+                    className="px-3 sm:px-5 py-2.5 sm:py-3 text-center border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-25 sm:min-w-30"
                   >
                     <div className="flex items-center justify-center gap-1">
                       <span>Status</span>
                       {renderSortIndicator("status")}
                     </div>
                   </th>
-                  <th className="px-3 sm:px-5 py-2.5 sm:py-3 text-right min-w-[120px] sm:min-w-[140px]">Action</th>
+                  <th className="px-3 sm:px-5 py-2.5 sm:py-3 text-right min-w-30 sm:min-w-35">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e8eaed] bg-white">
@@ -639,7 +639,7 @@ export function EnrolledClassesTable({
                       }`}
                     >
                       {/* Class Name column (frozen on md+ desktop only) */}
-                      <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 font-semibold text-[#202124] group-hover:text-[#1a73e8] border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] whitespace-nowrap min-w-[140px] sm:min-w-[180px]">
+                      <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 font-semibold text-[#202124] group-hover:text-[#1a73e8] border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] whitespace-nowrap min-w-35 sm:min-w-45">
                         <div className="flex items-center gap-2">
                           <span>{formatClassDisplayName(c.name, c.section)}</span>
                           {isProfArchived && (

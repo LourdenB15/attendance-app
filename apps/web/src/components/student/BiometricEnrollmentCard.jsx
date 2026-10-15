@@ -149,7 +149,7 @@ export function BiometricEnrollmentCard({ onEnrollmentComplete }) {
           <button
             type="button"
             onClick={() => setShowCamera(true)}
-            className="w-full sm:w-auto px-8 py-3.5 sm:py-3 min-h-[44px] bg-[#1a73e8] hover:bg-[#1557b0] text-white font-bold rounded-xl shadow-xs text-sm transition inline-flex items-center justify-center gap-2 hover:scale-102 active:scale-98"
+            className="w-full sm:w-auto px-8 py-3.5 sm:py-3 min-h-11 bg-[#1a73e8] hover:bg-[#1557b0] text-white font-bold rounded-xl shadow-xs text-sm transition inline-flex items-center justify-center gap-2 hover:scale-102 active:scale-98"
           >
             <IconCamera className="w-4 h-4" />
             <span>

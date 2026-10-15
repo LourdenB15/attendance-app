@@ -72,7 +72,7 @@ export function ClassDetailHeader({ selectedClass, onBack }) {
           </div>
 
           {/* Join Code Display Tile */}
-          <div className="bg-white/15 backdrop-blur-md border border-white/25 rounded-2xl p-4 self-stretch sm:self-start md:self-auto min-w-[240px] shadow-xs">
+          <div className="bg-white/15 backdrop-blur-md border border-white/25 rounded-2xl p-4 self-stretch sm:self-start md:self-auto min-w-60 shadow-xs">
             <div className="flex items-center justify-between mb-1">
               <span className="block text-[10px] font-bold uppercase tracking-wider text-white/80">
                 Student Class Code
@@ -145,7 +145,7 @@ export function ClassDetailHeader({ selectedClass, onBack }) {
               type="button"
               disabled={copied}
               onClick={handleCopy}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#1a73e8] hover:bg-[#1557b0] text-white rounded-xl text-xs font-semibold shadow-xs transition cursor-pointer disabled:cursor-default min-h-[40px]"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#1a73e8] hover:bg-[#1557b0] text-white rounded-xl text-xs font-semibold shadow-xs transition cursor-pointer disabled:cursor-default min-h-10"
             >
               {copied ? (
                 <>
@@ -162,7 +162,7 @@ export function ClassDetailHeader({ selectedClass, onBack }) {
             <button
               type="button"
               onClick={() => setShowPresentModal(false)}
-              className="w-full sm:w-auto px-5 py-2.5 bg-[#f1f3f4] hover:bg-[#e8eaed] text-[#202124] rounded-xl text-xs font-semibold transition cursor-pointer min-h-[40px]"
+              className="w-full sm:w-auto px-5 py-2.5 bg-[#f1f3f4] hover:bg-[#e8eaed] text-[#202124] rounded-xl text-xs font-semibold transition cursor-pointer min-h-10"
             >
               Done
             </button>

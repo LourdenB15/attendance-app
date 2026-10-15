@@ -87,10 +87,10 @@ export function Header({ onToggleSidebar, onOpenSettings, onGoHome }) {
                 textClassName="text-xs font-bold"
               />
               <div className="text-left hidden md:block">
-                <div className="text-xs font-semibold text-[#202124] leading-tight truncate max-w-[140px]">
+                <div className="text-xs font-semibold text-[#202124] leading-tight truncate max-w-35">
                   {currentUser.full_name}
                 </div>
-                <div className="text-[10px] text-[#5f6368] leading-tight truncate max-w-[140px]">
+                <div className="text-[10px] text-[#5f6368] leading-tight truncate max-w-35">
                   {currentUser.email}
                 </div>
               </div>

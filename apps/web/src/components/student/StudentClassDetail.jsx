@@ -272,7 +272,7 @@ export function StudentClassDetail({
             </div>
           </div>
 
-          <div className="bg-white/15 backdrop-blur-md border border-white/25 rounded-2xl px-4 py-3 self-start md:self-auto min-w-[170px]">
+          <div className="bg-white/15 backdrop-blur-md border border-white/25 rounded-2xl px-4 py-3 self-start md:self-auto min-w-42.5">
             <span className="block text-[10px] font-bold uppercase tracking-wider text-white/80 mb-0.5">
               {classItem.is_archived ? "Status" : "Class Code"}
             </span>
@@ -525,7 +525,7 @@ export function StudentClassDetail({
                     <tr>
                       <th
                         onClick={() => handleSort("session_label")}
-                        className="px-4 sm:px-6 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[220px] sm:min-w-[320px]"
+                        className="px-4 sm:px-6 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-55 sm:min-w-[320px]"
                       >
                         <div className="flex items-center justify-between">
                           <span>Session Topic / Label</span>
@@ -534,7 +534,7 @@ export function StudentClassDetail({
                       </th>
                       <th
                         onClick={() => handleSort("recorded_at")}
-                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[140px] sm:min-w-[170px]"
+                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-35in-w-[170px]"
                       >
                         <div className="flex items-center justify-between">
                           <span>Check-in Time</span>
@@ -543,7 +543,7 @@ export function StudentClassDetail({
                       </th>
                       <th
                         onClick={() => handleSort("status")}
-                        className="px-3 sm:px-5 py-2.5 sm:py-3 text-center cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[90px] sm:min-w-[100px]"
+                        className="px-3 sm:px-5 py-2.5 sm:py-3 text-center cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-22.5 sm:min-w-25"
                       >
                         <div className="flex items-center justify-center gap-1">
                           <span>Status</span>
@@ -564,9 +564,9 @@ export function StudentClassDetail({
                     ) : (
                       filteredRecords.map((r, i) => (
                         <tr key={r.session_id || i} className="hover:bg-[#f8f9fa] transition-colors">
-                          <td className="px-4 sm:px-6 py-3 sm:py-3.5 border-r border-[#e8eaed] min-w-[220px] sm:min-w-[320px]">
+                          <td className="px-4 sm:px-6 py-3 sm:py-3.5 border-r border-[#e8eaed] min-w-55 sm:min-w-[320px]">
                             <p
-                              className="font-medium text-xs sm:text-sm text-[#202124] break-words leading-relaxed max-w-sm sm:max-w-md"
+                              className="font-medium text-xs sm:text-sm text-[#202124] wrap-break-word leading-relaxed max-w-sm sm:max-w-md"
                               title={r.session_label || "Standard Class Session"}
                             >
                               {r.session_label || "Standard Class Session"}
@@ -807,7 +807,7 @@ export function StudentClassDetail({
                       <tr>
                         <th
                           onClick={() => handleClassmateSort("full_name")}
-                          className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)] min-w-[140px] sm:min-w-[180px]"
+                          className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)] min-w-35 sm:min-w-45"
                         >
                           <div className="flex items-center justify-between">
                             <span>Classmate Name</span>
@@ -816,7 +816,7 @@ export function StudentClassDetail({
                         </th>
                         <th
                           onClick={() => handleClassmateSort("email")}
-                          className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[140px] sm:min-w-[180px]"
+                          className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-35 sm:min-w-45"
                         >
                           <div className="flex items-center justify-between">
                             <span>Email Address</span>
@@ -825,14 +825,14 @@ export function StudentClassDetail({
                         </th>
                         <th
                           onClick={() => handleClassmateSort("enrolled_at")}
-                          className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px] sm:min-w-[130px]"
+                          className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-25 sm:min-w-32.5"
                         >
                           <div className="flex items-center justify-between">
                             <span>Enrolled On</span>
                             {renderClassmateSortIndicator("enrolled_at")}
                           </div>
                         </th>
-                        <th className="px-3 sm:px-5 py-2.5 sm:py-3 text-center min-w-[80px] sm:min-w-[100px]">
+                        <th className="px-3 sm:px-5 py-2.5 sm:py-3 text-center min-w-20 sm:min-w-25">
                           <span>Status</span>
                         </th>
                       </tr>
@@ -849,7 +849,7 @@ export function StudentClassDetail({
                             }`}
                           >
                             {/* Classmate Name column (frozen on md+ desktop only) */}
-                            <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)] whitespace-nowrap min-w-[140px] sm:min-w-[180px]">
+                            <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.06)] whitespace-nowrap min-w-35 sm:min-w-45">
                               <div className="flex items-center gap-2.5 sm:gap-3">
                                 <UserAvatar
                                   user={c}

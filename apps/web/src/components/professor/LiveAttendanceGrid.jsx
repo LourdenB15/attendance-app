@@ -345,7 +345,7 @@ export function LiveAttendanceGrid({
                         type="button"
                         disabled={isPresent}
                         onClick={() => openDialog(rec, "PRESENT")}
-                        className={`py-2 text-xs font-bold rounded-xl transition flex items-center justify-center min-h-[38px] cursor-pointer ${
+                        className={`py-2 text-xs font-bold rounded-xl transition flex items-center justify-center min-h-9.5 cursor-pointer ${
                           isPresent
                             ? "bg-[#e6f4ea] text-[#137333] border border-[#ceead6] cursor-default opacity-80"
                             : "bg-white text-[#3c4043] hover:bg-[#e6f4ea] hover:text-[#137333] border border-[#dadce0] shadow-2xs"
@@ -357,7 +357,7 @@ export function LiveAttendanceGrid({
                         type="button"
                         disabled={isMarkedAbsent}
                         onClick={() => openDialog(rec, "ABSENT")}
-                        className={`py-2 text-xs font-bold rounded-xl transition flex items-center justify-center min-h-[38px] cursor-pointer ${
+                        className={`py-2 text-xs font-bold rounded-xl transition flex items-center justify-center min-h-9.5rsor-pointer ${
                           isMarkedAbsent
                             ? "bg-[#fce8e6] text-[#c5221f] border border-[#fad2cf] cursor-default opacity-80"
                             : "bg-white text-[#3c4043] hover:bg-[#fce8e6] hover:text-[#c5221f] border border-[#dadce0] shadow-2xs"
@@ -386,7 +386,7 @@ export function LiveAttendanceGrid({
                   <tr>
                     <th
                       onClick={() => handleSort("full_name")}
-                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[150px] sm:min-w-[180px]"
+                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-37.5 sm:min-w-45"
                     >
                       <div className="flex items-center justify-between">
                         <span>Student Name</span>
@@ -395,7 +395,7 @@ export function LiveAttendanceGrid({
                     </th>
                     <th
                       onClick={() => handleSort("status")}
-                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[90px] sm:min-w-[110px]"
+                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-22.5 sm:min-w-27.5"
                     >
                       <div className="flex items-center justify-between">
                         <span>Status</span>
@@ -404,7 +404,7 @@ export function LiveAttendanceGrid({
                     </th>
                     <th
                       onClick={() => handleSort("source")}
-                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[110px] sm:min-w-[130px]"
+                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-27.5 sm:min-w-32.5"
                     >
                       <div className="flex items-center justify-between">
                         <span>Source</span>
@@ -413,15 +413,15 @@ export function LiveAttendanceGrid({
                     </th>
                     <th
                       onClick={() => handleSort("recorded_at")}
-                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[100px] sm:min-w-[120px]"
+                      className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-25 sm:min-w-30"
                     >
                       <div className="flex items-center justify-between">
                         <span>Check-in Time</span>
                         {renderSortIndicator("recorded_at")}
                       </div>
                     </th>
-                    <th className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 min-w-[110px] sm:min-w-[140px]">Notes</th>
-                    <th className="px-3 sm:px-5 py-2.5 sm:py-3 text-right min-w-[140px] sm:min-w-[160px]">Attendance Action</th>
+                    <th className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 min-w-27.5 sm:min-w-35">Notes</th>
+                    <th className="px-3 sm:px-5 py-2.5 sm:py-3 text-right min-w-35 sm:min-w-40">Attendance Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#e8eaed] bg-white">
@@ -455,7 +455,7 @@ export function LiveAttendanceGrid({
                           className="hover:bg-[#f8f9fa] transition-colors group"
                         >
                           {/* Student Name column (frozen on md+ desktop only) */}
-                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[150px] sm:min-w-[180px] whitespace-nowrap">
+                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-37.5 sm:min-w-45 whitespace-nowrap">
                             <div className="flex items-center gap-3">
                               <UserAvatar
                                 user={rec}

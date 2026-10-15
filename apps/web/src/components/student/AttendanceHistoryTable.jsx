@@ -282,7 +282,7 @@ export function AttendanceHistoryTable({
                     <tr>
                       <th
                         onClick={() => handleSort("class_name")}
-                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-[130px] sm:min-w-[160px]"
+                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition md:sticky md:left-0 bg-[#f8f9fa] md:z-20 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] min-w-32.5 sm:min-w-40"
                       >
                         <div className="flex items-center justify-between">
                           <span>Class</span>
@@ -291,7 +291,7 @@ export function AttendanceHistoryTable({
                       </th>
                       <th
                         onClick={() => handleSort("section")}
-                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[80px] sm:min-w-[100px]"
+                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-20 sm:min-w-25"
                       >
                         <div className="flex items-center justify-between">
                           <span>Section</span>
@@ -300,7 +300,7 @@ export function AttendanceHistoryTable({
                       </th>
                       <th
                         onClick={() => handleSort("session_label")}
-                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[120px] sm:min-w-[150px]"
+                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-30 sm:min-w-37.5"
                       >
                         <div className="flex items-center justify-between">
                           <span>Session Label</span>
@@ -309,7 +309,7 @@ export function AttendanceHistoryTable({
                       </th>
                       <th
                         onClick={() => handleSort("opened_at")}
-                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[110px] sm:min-w-[140px]"
+                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-27.5 sm:min-w-35"
                       >
                         <div className="flex items-center justify-between">
                           <span>Date & Time</span>
@@ -318,7 +318,7 @@ export function AttendanceHistoryTable({
                       </th>
                       <th
                         onClick={() => handleSort("status")}
-                        className="px-3 sm:px-5 py-2.5 sm:py-3 text-center border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[80px] sm:min-w-[100px]"
+                        className="px-3 sm:px-5 py-2.5 sm:py-3 text-center border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-20 sm:min-w-25"
                       >
                         <div className="flex items-center justify-center gap-1">
                           <span>Status</span>
@@ -327,14 +327,14 @@ export function AttendanceHistoryTable({
                       </th>
                       <th
                         onClick={() => handleSort("source")}
-                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-[120px] sm:min-w-[150px]"
+                        className="px-3 sm:px-5 py-2.5 sm:py-3 border-r border-[#dadce0]/70 cursor-pointer select-none hover:bg-[#e8eaed] transition min-w-30 sm:min-w-37.5"
                       >
                         <div className="flex items-center justify-between">
                           <span>Verification Source</span>
                           {renderSortIndicator("source")}
                         </div>
                       </th>
-                      <th className="px-3 sm:px-5 py-2.5 sm:py-3 min-w-[110px] sm:min-w-[140px]">Notes</th>
+                      <th className="px-3 sm:px-5 py-2.5 sm:py-3 min-w-27.5 sm:min-w-35">Notes</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#e8eaed] bg-white">
@@ -364,7 +364,7 @@ export function AttendanceHistoryTable({
                           className="hover:bg-[#f8f9fa] transition-colors group"
                         >
                           {/* Class Name column (frozen on md+ desktop only) */}
-                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 font-semibold text-[#202124] border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] whitespace-nowrap min-w-[130px] sm:min-w-[160px]">
+                          <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 font-semibold text-[#202124] border-r border-[#e8eaed] md:sticky md:left-0 bg-white group-hover:bg-[#f8f9fa] md:z-10 md:shadow-[2px_0_5px_-2px_rgba(0,0,0,0.08)] whitespace-nowrap min-w-32.5 sm:min-w-40">
                             {formatClassDisplayName(rec.class_name, rec.section)}
                           </td>
                           <td className="px-3 sm:px-5 py-2.5 sm:py-3.5 text-xs text-[#5f6368] border-r border-[#e8eaed] whitespace-nowrap uppercase">
