@@ -108,7 +108,7 @@ export function LivenessCamera({
   const [currentChallenge, setCurrentChallenge] = useState(null);
   const [distanceHint, setDistanceHint] = useState(null);
   const [progress, setProgress] = useState(0);
-  const selectedChallenges = defaultChallenges ?? (isAttendance ? ["WAITING"] : null);
+  const selectedChallenges = defaultChallenges ?? null;
   const [resultData, setResultData] = useState(null);
   const [useContainFit, setUseContainFit] = useState(false);
   const [isPortraitMode, setIsPortraitMode] = useState(() => {
